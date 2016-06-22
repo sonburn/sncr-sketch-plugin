@@ -1,0 +1,47 @@
+{
+	"name": "SNCR",
+	"description": "Synchronoss plugins to prepare Sketch project for wireframe production",
+	"author": "Jason Burns",
+	"homepage": "http://github.com/example/sketchplugins",
+	"version": 0.1,
+	"identifier": "com.example.sketch.sncr",
+	"updateURL": "https://github.com/downloads/example/sketchplugins/sketchplugins.json",
+	"compatibleVersion": 3,
+	"bundleVersion": 1,
+	"commands": [
+		{
+			"name": "1. Layout Artboards",
+			"identifier": "layout",
+			"script": "layout.js"
+		},
+		{
+			"name": "2. Create Bounds",
+			"identifier": "bounds",
+			"script": "bounds.js"
+		},
+		{
+			"name": "3. Generate Titles",
+			"identifier": "generate",
+			"script": "generate.js"
+		},
+		{
+			"name": "4. Export Wireframes",
+			"identifier": "export",
+			"script": "export.js"
+		},
+		{
+			"name": "Symbol Name to Layer Name",
+			"identifier": "match",
+			"script": "match.js"
+		}
+	],
+	"menu": {
+		"items": [
+			"layout",
+			"bounds",
+			"generate",
+			"export",
+			"match"
+		]
+	}
+}
