@@ -3,7 +3,7 @@
 	"description": "Synchronoss plugins to prepare Sketch project for wireframe production",
 	"author": "Jason Burns",
 	"homepage": "http://github.com/example/sketchplugins",
-	"version": 0.1,
+	"version": 0.2,
 	"identifier": "com.example.sketch.sncr",
 	"updateURL": "https://github.com/downloads/example/sketchplugins/sketchplugins.json",
 	"compatibleVersion": 3,
@@ -30,6 +30,11 @@
 			"script": "export.js"
 		},
 		{
+			"name": "Select Symbol Instances on Page",
+			"identifier": "select-symbol-instances",
+			"script": "select-symbol-instances.js"
+		},
+		{
 			"name": "Symbol Name to Layer Name",
 			"identifier": "match",
 			"script": "match.js"
@@ -41,6 +46,7 @@
 			"bounds",
 			"generate",
 			"export",
+			"select-symbol-instances",
 			"match"
 		]
 	}
