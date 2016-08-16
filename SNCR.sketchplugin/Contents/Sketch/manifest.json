@@ -1,33 +1,27 @@
 {
-	"name": "SNCR",
-	"description": "Synchronoss plugins to prepare Sketch project for wireframe production",
+	"name": "SNCR Plugins",
+	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
-	"homepage": "http://github.com/example/sketchplugins",
-	"version": 0.3,
-	"identifier": "com.example.sketch.sncr",
-	"updateURL": "https://github.com/downloads/example/sketchplugins/sketchplugins.json",
+	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
+	"version": 0.4,
+	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
 	"commands": [
 		{
-			"name": "1. Layout Artboards",
-			"identifier": "layout",
-			"script": "layout.js"
+			"name": "Layout Artboards for Wireframe Export",
+			"identifier": "artboard-wireframe-layout",
+			"script": "artboard-wireframe-layout.js"
 		},
 		{
-			"name": "2. Create Bounds",
-			"identifier": "bounds",
-			"script": "bounds.js"
+			"name": "Create Wireframes Bounds Around Artboards",
+			"identifier": "create-artboard-bounds",
+			"script": "create-artboard-bounds.js"
 		},
 		{
-			"name": "3. Generate Titles",
-			"identifier": "generate",
-			"script": "generate.js"
-		},
-		{
-			"name": "4. Export Wireframes",
-			"identifier": "export",
-			"script": "export.js"
+			"name": "Generate Titles Above Artboards",
+			"identifier": "generate-artboard-titles",
+			"script": "generate-artboard-titles.js"
 		},
 		{
 			"name": "Select Symbol Instances on Page",
@@ -41,13 +35,23 @@
 		}
 	],
 	"menu": {
+    	"isRoot": true,
 		"items": [
-			"layout",
-			"bounds",
-			"generate",
-			"export",
-			"select-symbol-instances",
-			"match-instance-name"
+			{
+				"title": "SNCR - Layout & Wireframes",
+				"items": [
+					"artboard-wireframe-layout",
+					"create-artboard-bounds",
+					"generate-artboard-titles",
+				]
+			},
+			{
+				"title": "SNCR - Tools",
+				"items": [
+					"select-symbol-instances",
+					"match-instance-name"
+				]
+			}
 		]
 	}
 }
