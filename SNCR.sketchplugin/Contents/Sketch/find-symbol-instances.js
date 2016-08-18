@@ -40,9 +40,11 @@ var onRun = function(context) {
 	
 	function getSymbolInstances(symbolMaster,scope) {
 	    if (scope instanceof MSSymbolInstance && [scope symbolMaster].name() == symbolMaster) {
+	        var separator = "*";
+	        
 	        symbolInstances.push({
 	            //page: doc.currentPage().name(),
-	            path: getParentPath(scope)
+	            path: getParentPath(scope) + separator + scope.name() + separator
 	        });
 	        
 	        return symbolInstances;
