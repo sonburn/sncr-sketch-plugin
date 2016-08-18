@@ -3,7 +3,7 @@
 	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.6,
+	"version": 0.7,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -22,6 +22,11 @@
 			"name": "Generate Titles Above Artboards",
 			"identifier": "generate-artboard-titles",
 			"script": "generate-artboard-titles.js"
+		},
+		{
+			"name": "Find All Symbol Instances",
+			"identifier": "find-symbol-instances",
+			"script": "find-symbol-instances.js"
 		},
 		{
 			"name": "Select Symbol Instances on Page",
@@ -48,6 +53,7 @@
 			{
 				"title": "SNCR - Tools",
 				"items": [
+					"find-symbol-instances",
 					"select-symbol-instances",
 					"match-instance-name"
 				]
