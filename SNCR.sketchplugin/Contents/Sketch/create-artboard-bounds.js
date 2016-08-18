@@ -1,55 +1,40 @@
-//@import 'inventory.js';
-
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
 	var page = [doc currentPage];
 	var pages = [doc pages];
-	var pageCount = [pages count];
 	var artboards = [page artboards];
-	var artboardCount = [artboards count];
 	var layers = [page layers];
-	var layerCount = [layers count];
-	
-	
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
 	
 	// Layout variables
-	var firstBoard = [artboards objectAtIndex: 0];
-	
-	var rowCount = (firstBoard.frame().width() > 640) ? 8 : 10;
-	var rowHeight = 0;
-	var xPad = 400;
-	var yPad = 300;
+	var outerPad = 500;
+	var pageBounds = doc.currentPage().contentBounds();
+	var minWidth = 7952;
+	var minHeight = 4420;
 	
 	// Slice variables
 	var sliceName = [page name];
-	var sliceLayer = findLayerByName(layers,sliceName);
+	var sliceLayer = findLayerByName(sliceName,layers);
 	var sliceX = 200;
 	var sliceY = 800;
 	var sliceColor = MSColor.colorWithSVGString('#EFEFEF');
+	var sliceWidth = pageBounds.size.width + sliceX + outerPad;
+	var sliceHeight = pageBounds.size.height + sliceY + outerPad;
 	
+	// Override with minimum slice sizes if necessary
+	sliceWidth = (sliceWidth < minWidth) ? minWidth : sliceWidth;
+	sliceHeight = (sliceHeight < minHeight) ? minHeight : sliceHeight;
+	
+	// Delete page slice if one already exists
 	if (sliceLayer) {
-		sliceLayer.select_byExpandingSelection(true,false);
-		sendAction('delete:');
+		sliceLayer.removeLayer();
 	}
 	
-	var pageBounds = doc.currentPage().contentBounds();
-	var sliceWidth = (firstBoard.frame().width() * rowCount) + (xPad * rowCount) + (sliceX * 2) - 100;
-	
-	var fooHeight = pageBounds.size.height + 500;
-	var sliceHeight = (fooHeight < 4420) ? 4420 : fooHeight; // The hard-coded minimum handset height needs to be moved to variable and changed if tablet
-	
-	// Create slice if not found
+	// Create a new slice
 	sliceLayer = [MSSliceLayer new];
 	[sliceLayer setName:sliceName];
 	[sliceLayer setBackgroundColor:sliceColor];
 	[sliceLayer setIsLocked:true];
-	
 	sliceLayer.hasBackgroundColor = true;
 	
 	// Set slice dimensions
@@ -59,50 +44,36 @@ var onRun = function(context) {
 	[[sliceLayer frame] setHeight:sliceHeight];
 	
 	// Insert slice into page
-	//[[doc currentPage] addLayers:sliceLayer];
 	doc.currentPage().addLayers([sliceLayer]);
 	
-	// Move slice to bottom
+	// Select the slice and move it to the bottom of the layer list
 	sliceLayer.select_byExpandingSelection(true,false);
-	sendAction('moveToBack:');
+    actionWithType("MSMoveToBackAction",context).moveToBack(null);
+
+	// Remove default slice export format
+	sliceLayer.exportOptions().removeAllExportFormats();
 	
-	// Create PDF export option for slice
-	var exportSize = sliceLayer.exportOptions().exportFormats()
-	exportSize.removeAllObjects();
-	exportSize = sliceLayer.exportOptions().addExportFormat();
-	exportSize.setFileFormat("pdf");
+	// Set slice export format to PDF
+	sliceLayer.exportOptions().addExportFormat().setFileFormat("pdf");
 	
+	// Feedback to user
+	doc.showMessage("Bound creation complete!");
 	
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	
-	doc.showMessage("Bound generation complete!");
-	
-	
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
-	
-	
-	// Common functions
-	function findLayerByName(o,n) {
+	function findLayerByName(n,o) {
 		for (var i = 0; i < o.count(); i++) {
 			var layer = [o objectAtIndex: i];
 			if ([layer name] == n) return layer;
 		}
 	}
-	
-	function sendAction(commandToPerform) {
-		try {
-			[NSApp sendAction:commandToPerform to:nil from:doc]
-		} catch(e) {
-			my.log(e)
+
+	function actionWithType(type,context) {
+		var doc = context.document;
+		var controller = doc.actionsController();
+		
+		if (controller.actionWithName) {
+			return controller.actionWithName(type);
+		} else if (controller.actionWithID) {
+			return controller.actionWithID(type);
 		}
 	}
 };

@@ -6,8 +6,6 @@ var onRun = function(context) {
 	var artboards = [page artboards];
 	var artboardCount = [artboards count];
 	
-	
-	
 	// Deselect all layers on page
 	page.deselectAllLayers()
 	
@@ -28,8 +26,6 @@ var onRun = function(context) {
 	    // Layout the artboards
 		artboardLayout(rowCount);
 	}
-	
-	
 	
 	function artboardLayout(rowCount) {
 		var firstBoard = [artboards objectAtIndex: 0];
