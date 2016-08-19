@@ -9,7 +9,7 @@ var onRun = function(context) {
 	// Layout variables
 	var outerPad = 500;
 	var pageBounds = doc.currentPage().contentBounds();
-	var minWidth = 7952;
+	var minWidth = 7900;
 	var minHeight = 4420;
 	
 	// Slice variables

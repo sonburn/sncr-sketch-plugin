@@ -3,7 +3,7 @@
 	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.8,
+	"version": 0.9,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -37,6 +37,11 @@
 			"name": "Match Instance Name to Symbol Name",
 			"identifier": "match-instance-name",
 			"script": "match-instance-name.js"
+		},
+		{
+			"name": "Remove Unused Symbols",
+			"identifier": "remove-unused-symbols",
+			"script": "remove-unused-symbols.js"
 		}
 	],
 	"menu": {
@@ -51,11 +56,12 @@
 				]
 			},
 			{
-				"title": "SNCR - Tools",
+				"title": "SNCR - Symbol Tools",
 				"items": [
 					"find-symbol-instances",
 					"select-symbol-instances",
-					"match-instance-name"
+					"match-instance-name",
+					"remove-unused-symbols"
 				]
 			}
 		]
