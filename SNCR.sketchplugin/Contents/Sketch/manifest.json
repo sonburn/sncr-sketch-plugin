@@ -3,7 +3,7 @@
 	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.9,
+	"version": 0.10,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -24,22 +24,27 @@
 			"script": "generate-artboard-titles.js"
 		},
 		{
-			"name": "Find All Symbol Instances",
+			"name": "Export Wireframe Slices",
+			"identifier": "export-wireframe-slices",
+			"script": "export-wireframe-slices.js"
+		},
+		{
+			"name": "Find All Instances of Selected Symbol",
 			"identifier": "find-symbol-instances",
 			"script": "find-symbol-instances.js"
 		},
 		{
-			"name": "Select Symbol Instances on Page",
+			"name": "Select All Symbol Instances on Current Page",
 			"identifier": "select-symbol-instances",
 			"script": "select-symbol-instances.js"
 		},
 		{
-			"name": "Match Instance Name to Symbol Name",
+			"name": "Rename Selected Instance(s) to Symbol Name",
 			"identifier": "match-instance-name",
 			"script": "match-instance-name.js"
 		},
 		{
-			"name": "Remove Unused Symbols",
+			"name": "Remove Unused Symbols in Document",
 			"identifier": "remove-unused-symbols",
 			"script": "remove-unused-symbols.js"
 		}
@@ -53,6 +58,7 @@
 					"layout-artboards-export",
 					"create-artboard-bounds",
 					"generate-artboard-titles",
+					"export-wireframe-slices"
 				]
 			},
 			{
