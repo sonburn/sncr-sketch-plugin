@@ -3,7 +3,7 @@
 	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.11,
+	"version": 0.12,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -19,7 +19,7 @@
 			"script": "create-artboard-bounds.js"
 		},
 		{
-			"name": "Generate Titles Above Artboards",
+			"name": "Create Titles Above Artboards",
 			"identifier": "create-artboard-titles",
 			"script": "create-artboard-titles.js"
 		},
@@ -27,6 +27,11 @@
 			"name": "Export Wireframe Slices",
 			"identifier": "export-wireframe-slices",
 			"script": "export-wireframe-slices.js"
+		},
+		{
+			"name": "Settings…",
+			"identifier": "layout-settings",
+			"script": "layout-settings.js"
 		},
 		{
 			"name": "Find All Instances of Selected Symbol",
@@ -58,7 +63,8 @@
 					"layout-artboards-export",
 					"create-artboard-bounds",
 					"create-artboard-titles",
-					"export-wireframe-slices"
+					"export-wireframe-slices",
+					"layout-settings"
 				]
 			},
 			{
