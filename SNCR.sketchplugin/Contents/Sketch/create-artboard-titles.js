@@ -18,7 +18,11 @@ var onRun = function(context) {
 	if (titleGroup) page.removeLayer(titleGroup);
 
 	// Add new screen title group
-	titleGroup = addLayerGroup(page,titleGroupName,0,0,true,true);
+	titleGroup = addLayerGroup(page,titleGroupName,0,0,true);
+
+	// Set clickThrough and lock title group
+	titleGroup.setIsLocked(true);
+	titleGroup.setHasClickThrough(true);
 
 	// Iterate through each artboard on the page
 	for (var i = 0; i < artboards.count(); i++) {
@@ -75,7 +79,7 @@ var onRun = function(context) {
 		return false;
 	}
 
-	function addLayerGroup(output,layerName,x,y,isLocked,isUnique) {
+	function addLayerGroup(output,layerName,x,y,isUnique) {
 		var layerGroup = findLayerByName(output,layerName);
 
 		if (isUnique && layerGroup) {
@@ -86,7 +90,6 @@ var onRun = function(context) {
 			layerGroup.setName(layerName);
 			layerGroup.frame().setX(x);
 			layerGroup.frame().setY(y);
-			layerGroup.setIsLocked(isLocked);
 
 			output.addLayers([layerGroup]);
 		}
