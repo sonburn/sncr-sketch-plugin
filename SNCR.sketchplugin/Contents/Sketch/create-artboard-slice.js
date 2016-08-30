@@ -12,13 +12,13 @@ var onRun = function(context) {
 	var selection = context.selection;
 	var selectedCount = selection.count();
 
-	// Bound variables
-	var boundType = showBoundSettings();
+	// User	variables
+	var sliceSettings = showSliceSettings();
 	var pageBounds = doc.currentPage().contentBounds();
 
 	// Set variables per bound type
-	if (boundType >= 0) {
-		if (boundType == 1) {
+	if (sliceSettings.sliceType >= 0) {
+		if (sliceSettings.sliceType == 1) {
 			// Layout variables
 			var margin = 100;
 			var sliceX = pageBounds.origin.x - margin;
@@ -27,11 +27,11 @@ var onRun = function(context) {
 			var sliceHeight = pageBounds.size.height + (margin*2);
 
 			// Create slice
-			createSlice([page name],sliceWidth,sliceHeight,sliceX,sliceY,false,true);
+			createSlice([page name],sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,true);
 
 			// Feedback to user
 			doc.showMessage("Slice created around artboards!");
-		} else if (boundType == 2) {
+		} else if (sliceSettings.sliceType == 2) {
 			// Layout variables
 			var margin = 500;
 			var minWidth = 7900;
@@ -46,13 +46,13 @@ var onRun = function(context) {
 			sliceHeight = (sliceHeight < minHeight) ? minHeight : sliceHeight;
 
 			// Create slice
-			createSlice([page name],sliceWidth,sliceHeight,-sliceX,-sliceY,true,true);
+			createSlice([page name],sliceWidth,sliceHeight,-sliceX,-sliceY,sliceSettings,true,true);
 
 			// Feedback to user
 			doc.showMessage("Slice created around artboards!");
 		} else {
 			if (selectedCount < 2) {
-			  var app = NSApplication.sharedApplication();
+				var app = NSApplication.sharedApplication();
 				app.displayDialog_withTitle("Please select two or more artboards.","Create Slice Around Artboards")
 			} else {
 				// Get layout values of selections
@@ -66,7 +66,7 @@ var onRun = function(context) {
 				var sliceHeight = selectionSize.height + (margin*2);
 
 				// Create slice
-				createSlice('Selections',sliceWidth,sliceHeight,sliceX,sliceY,false,false);
+				createSlice('Selections',sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,false);
 
 				// Feedback to user
 				doc.showMessage("Slice created around selections!");
@@ -92,17 +92,22 @@ var onRun = function(context) {
 		}
 	}
 
-	function createSlice(name,sliceWidth,sliceHeight,sliceX,sliceY,isLocked,isUnique) {
+	function createSlice(name,sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,isLocked,isUnique) {
 		// Slice variables
+		var sliceLayer;
 		var sliceName = name;
 		var sliceColor = MSColor.colorWithSVGString('#EFEFEF');
-		var sliceLayer;
+		var exportScale = sliceSettings.exportScale;
+		var exportFormat = sliceSettings.exportFormat;
 
 		// If slice should be unique
 		if (isUnique) {
-			// Delete page slice if one already exists
-			if (findLayerByName(sliceName,layers)) {
-				sliceLayer.removeLayer();
+			// Find slice with provided name
+			sliceLayer = findLayerByName(sliceName,layers);
+
+			// Delete slice if one already exists
+			if (sliceLayer) {
+				sliceLayer.parentGroup().removeLayer(sliceLayer);
 			}
 		}
 
@@ -126,13 +131,20 @@ var onRun = function(context) {
 		sliceLayer.select_byExpandingSelection(true,false);
 		actionWithType("MSMoveToBackAction",context).moveToBack(null);
 
-		// Replace default slice export format with PDF
+		// Replace default slice export format
 		sliceLayer.exportOptions().removeAllExportFormats();
-		sliceLayer.exportOptions().addExportFormat().setFileFormat("pdf");
+
+		var format = sliceLayer.exportOptions().addExportFormat();
+		format.setScale(exportScale);
+		format.setFileFormat(exportFormat);
 	}
 
-	function showBoundSettings() {
-		var boundType;
+	function showSliceSettings() {
+		var sliceType;
+		var exportScales = ['1x','2x','3x'];
+		var exportScale = 0;
+		var exportFormats = ['JPG','PDF','PNG'];
+		var exportFormat = 1;
 
 		var settingsInput = COSAlertWindow.new();
 
@@ -140,63 +152,75 @@ var onRun = function(context) {
 
 		[settingsInput addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],1)];
 
+		[settingsInput addAccessoryView: helpers.createLabel("Slice export density:",NSMakeRect(0,85,300,20))];
+		[settingsInput addAccessoryView: helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25))];
+
+		[settingsInput addAccessoryView: helpers.createLabel("Slice export format:",NSMakeRect(0,85,300,20))];
+		[settingsInput addAccessoryView: helpers.createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25))];
+
 		[settingsInput addButtonWithTitle:@'Save'];
 		[settingsInput addButtonWithTitle:@'Cancel'];
 
 		var responseCode = settingsInput.runModal();
 
 		if (responseCode == 1000) {
-				boundType = [[[settingsInput viewAtIndex:0] selectedCell] tag];
+			sliceType = [[[settingsInput viewAtIndex:0] selectedCell] tag];
+			exportScale = exportScales[[[settingsInput viewAtIndex:2] indexOfSelectedItem]];
+			exportFormat = exportFormats[[[settingsInput viewAtIndex:4] indexOfSelectedItem]];
 		}
 
-		return boundType;
+		return {
+			sliceType: sliceType,
+			exportScale: exportScale.substring(0,1),
+			exportFormat: exportFormat
+		};
 	}
 
 	function createRadioButtons(options,selected) {
-    // Set number of rows and columns
-    var rows = options.length;
-    var columns = 1;
+		// Set number of rows and columns
+		var rows = options.length;
+		var columns = 1;
 
 		// Make a prototype cell
-    var buttonCell = [[NSButtonCell alloc] init];
-    [buttonCell setButtonType:NSRadioButton]
+		var buttonCell = [[NSButtonCell alloc] init];
+		[buttonCell setButtonType:NSRadioButton]
 
-    // Make a matrix to contain the radio cells
-    var buttonMatrix = [[NSMatrix alloc] initWithFrame: NSMakeRect(20,20,300,rows*25) mode:NSRadioModeMatrix prototype:buttonCell numberOfRows:rows numberOfColumns:columns];
-    [buttonMatrix setCellSize: NSMakeSize(300,20)];
+		// Make a matrix to contain the radio cells
+		var buttonMatrix = [[NSMatrix alloc] initWithFrame: NSMakeRect(20,20,300,rows*25) mode:NSRadioModeMatrix prototype:buttonCell numberOfRows:rows numberOfColumns:columns];
+		[buttonMatrix setCellSize: NSMakeSize(300,20)];
 
-    // Create a cell for each option
-    for (i = 0; i < options.length; i++) {
-      [[[buttonMatrix cells] objectAtIndex: i] setTitle: options[i]];
-      [[[buttonMatrix cells] objectAtIndex: i] setTag: i];
-    }
+		// Create a cell for each option
+		for (i = 0; i < options.length; i++) {
+			[[[buttonMatrix cells] objectAtIndex: i] setTitle: options[i]];
+			[[[buttonMatrix cells] objectAtIndex: i] setTag: i];
+		}
 
-    // Select the default cell
-    [buttonMatrix selectCellAtRow:selected column:0]
+		// Select the default cell
+		[buttonMatrix selectCellAtRow:selected column:0]
 
-    // Return the matrix
-    return buttonMatrix;
+		// Return the matrix
+		return buttonMatrix;
 	}
 
 	function getSelectionSize(selection) {
-	  var minX,minY,maxX,maxY;
-	  minX=minY=Number.MAX_VALUE;
-	  maxX=maxY=-0xFFFFFFFF;
+		var minX,minY,maxX,maxY;
+		minX=minY=Number.MAX_VALUE;
+		maxX=maxY=-0xFFFFFFFF;
 
-	  for (var i = 0; i < selection.count(); i++) {
+		for (var i = 0; i < selection.count(); i++) {
 			var frame = selection.objectAtIndex(i).frame();
 
 			minX = Math.min(minX,frame.minX());
 			minY = Math.min(minY,frame.minY());
 			maxX = Math.max(maxX,frame.maxX());
 			maxY = Math.max(maxY,frame.maxY());
-	  }
+		}
 
-	  return {
-	    width: maxX-minX,
-	    height: maxY-minY,
+		return {
+			width: maxX-minX,
+			height: maxY-minY,
 			minX: minX,
 			minY: minY
-	  };
+		};
 	}
 };

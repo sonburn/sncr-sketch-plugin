@@ -35,7 +35,7 @@ com.sncr = {
 
         [settingsInput setMessageText:@'Layout & Wireframe Settings'];
 
-        [settingsInput addAccessoryView: helpers.createSelect(densityScales, densityScale)];
+        [settingsInput addAccessoryView: helpers.createSelect(densityScales, densityScale,NSMakeRect(0,0,75,25))];
         [settingsInput addAccessoryView: helpers.createCheckbox({name:'Ask for prefix on export', value:'1'}, askForPrefix)];
 
         [settingsInput addAccessoryView: helpers.createLabel("Artboard horizontal padding:", NSMakeRect(0,85,300,20))];

@@ -81,9 +81,9 @@ var createCheckbox = function(item,flag) {
     return checkbox;
 }
 
-var createSelect = function(items,selectedItemIndex) {
+var createSelect = function(items,selectedItemIndex,frame) {
     selectedItemIndex = (selectedItemIndex > -1) ? selectedItemIndex : 0;
-    var comboBox = [[NSComboBox alloc] initWithFrame:NSMakeRect(0, 0, 300, 25)];
+    var comboBox = [[NSComboBox alloc] initWithFrame:frame];
     [comboBox addItemsWithObjectValues:items];
     [comboBox selectItemAtIndex:selectedItemIndex];
 
@@ -93,7 +93,7 @@ var createSelect = function(items,selectedItemIndex) {
 var createField = function(value) {
 	var field = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 100, 20)];
     [field setStringValue:value];
-	
+
 	return field;
 }
 
@@ -105,7 +105,7 @@ var createLabel = function(text,frame) {
     [label setDrawsBackground:false];
     [label setEditable:false];
     [label setSelectable:false];
-    
+
     return label;
 }
 
