@@ -69,9 +69,9 @@ var openInFinder = function(path) {
     [finderTask launch];
 }
 
-var createCheckbox = function(item,flag) {
+var createCheckbox = function(item,flag,frame) {
     flag = ( flag == false ) ? NSOffState : NSOnState;
-    var checkbox = [[NSButton alloc] initWithFrame: NSMakeRect(0, 0, 300, 25)];
+    var checkbox = [[NSButton alloc] initWithFrame:frame];
     [checkbox setButtonType: NSSwitchButton];
     [checkbox setBezelStyle: 0];
     [checkbox setTitle: item.name];
