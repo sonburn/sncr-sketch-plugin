@@ -113,20 +113,6 @@ var onRun = function(context) {
 		return layerGroup;
 	}
 
-	function findLayerByName(scope,layerName) {
-		var scope = scope.layers();
-
-		if (scope) {
-			for (var i = 0; i < scope.count(); i++) {
-				if (scope.objectAtIndex(i).name() == layerName) {
-					return scope.objectAtIndex(i);
-				}
-			}
-		}
-
-		return false;
-	}
-
 	function addTextLayer(output,layerName,layerValue,layerWidth,isLocked) {
 		var textLayer = MSTextLayer.new();
 		textLayer.setStringValue(layerValue);

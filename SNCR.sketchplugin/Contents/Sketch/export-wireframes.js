@@ -1,4 +1,4 @@
-@import 'lib/functions.js'
+@import 'lib/functions.js';
 
 var onRun = function(context) {
 	// Document variables
@@ -60,22 +60,6 @@ var onRun = function(context) {
 	} else {
 		// Feedback to user
 		doc.showMessage("No wireframes were found to export.");
-	}
-
-	function findLayerByName(scope,layerName,type) {
-		var scope = scope.layers();
-
-		if (scope) {
-			for (var i = 0; i < scope.count(); i++) {
-				var name = scope.objectAtIndex(i).name().trim();
-
-				if ((!type && name == layerName) || (type && name == layerName && scope.objectAtIndex(i) instanceof type)) {
-					return scope.objectAtIndex(i);
-				}
-			}
-		}
-
-		return false;
 	}
 };
 

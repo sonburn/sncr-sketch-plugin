@@ -32,14 +32,17 @@ var onRun = function(context) {
 			// Feedback to user
 			doc.showMessage("Slice created around artboards!");
 		} else if (sliceSettings.sliceType == 2) {
+			// Get layout values of selections
+			var selectionSize = getSelectionSize(artboards);
+
 			// Layout variables
 			var margin = 500;
-			var minWidth = 7900;
-			var minHeight = 4420;
 			var sliceX = 200;
 			var sliceY = 800;
-			var sliceWidth = pageBounds.size.width + sliceX + margin;
-			var sliceHeight = pageBounds.size.height + sliceY + margin;
+			var sliceWidth = selectionSize.width + sliceX + margin;
+			var sliceHeight = selectionSize.height + sliceY + margin;
+			var minWidth = 7900;
+			var minHeight = 4420;
 
 			// Override with minimum slice sizes if necessary
 			sliceWidth = (sliceWidth < minWidth) ? minWidth : sliceWidth;
@@ -74,13 +77,6 @@ var onRun = function(context) {
 		}
 	}
 
-	function findLayerByName(n,o) {
-		for (var i = 0; i < o.count(); i++) {
-			var layer = [o objectAtIndex: i];
-			if ([layer name] == n) return layer;
-		}
-	}
-
 	function createSlice(name,sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,isLocked,isUnique) {
 		// Slice variables
 		var sliceLayer;
@@ -92,7 +88,7 @@ var onRun = function(context) {
 		// If slice should be unique
 		if (isUnique) {
 			// Find slice with provided name
-			sliceLayer = findLayerByName(sliceName,layers);
+			sliceLayer = findLayerByName(page,sliceName,MSSliceLayer);
 
 			// Delete slice if one already exists
 			if (sliceLayer) {

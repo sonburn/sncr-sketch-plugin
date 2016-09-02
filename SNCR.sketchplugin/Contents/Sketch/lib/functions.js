@@ -160,3 +160,19 @@ function createRadioButtons(options,selected) {
 	// Return the matrix
 	return buttonMatrix;
 }
+
+function findLayerByName(scope,layerName,type) {
+	var scope = scope.layers();
+
+	if (scope) {
+		for (var i = 0; i < scope.count(); i++) {
+			var name = scope.objectAtIndex(i).name().trim();
+
+			if ((!type && name == layerName) || (type && name == layerName && scope.objectAtIndex(i) instanceof type)) {
+				return scope.objectAtIndex(i);
+			}
+		}
+	}
+
+	return false;
+}
