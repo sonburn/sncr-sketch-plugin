@@ -1,89 +1,79 @@
-@import 'lib/sandbox.js'
-@import 'lib/functions.js'
+@import 'lib/sandbox.js';
+@import 'lib/functions.js';
 
 var com = {};
 
 com.sncr = {
-    baseDensity: 0,
-    artboardPadX: 400,
-    artboardPadY: 300,
-    boundSliceWidth: 7900,
-    boundSliceHeight: 4420,
-    document: undefined,
-
 	showSettingsDialog: function() {
-        var folders = helpers.readPluginPath(),
-            settingsInput = COSAlertWindow.new(),
-            densityScales = ['@1x', '@2x', '@3x'],
-            densityScale,
-            askForPrefix,
-            artboardPadX,
-            artboardPadY,
-            boundSliceWidth,
-            boundSliceHeight,
-            settings
-        ;
+		var folders = helpers.readPluginPath();
+		var densityScales = ['1x','2x','3x'];
+		var densityScale;
+		var artboardPadX;
+		var artboardPadY;
+		var boundSliceWidth;
+		var boundSliceHeight;
 
-        // Load previous settings
-        settings = this.readConfig();
-        densityScale = [settings valueForKey:@"density-scale"];
-        askForPrefix = [settings valueForKey:@"ask-for-prefix"];
-        artboardPadX = [settings valueForKey:@"artboard-padding-x"];
-        artboardPadY = [settings valueForKey:@"artboard-padding-y"];
-        boundSliceWidth = [settings valueForKey:@"bound-slice-width"];;
-        boundSliceHeight = [settings valueForKey:@"bound-slice-height"];
+		// Load previous settings
+		var settings = this.readConfig();
+		densityScale = [settings valueForKey:@'density-scale'];
+		artboardPadX = [settings valueForKey:@'artboard-padding-x'];
+		artboardPadY = [settings valueForKey:@'artboard-padding-y'];
+		boundSliceWidth = [settings valueForKey:@'bound-slice-width'];;
+		boundSliceHeight = [settings valueForKey:@'bound-slice-height'];
 
-        [settingsInput setMessageText:@'Layout & Wireframe Settings'];
+		var alertWindow = COSAlertWindow.new();
 
-        [settingsInput addAccessoryView: helpers.createSelect(densityScales, densityScale,NSMakeRect(0,0,75,25))];
-        [settingsInput addAccessoryView: helpers.createCheckbox({name:'Ask for prefix on export', value:'1',NSMakeRect(0,0,300,25)}, askForPrefix)];
+		[alertWindow setMessageText:@'Layout & Wireframe Settings'];
 
-        [settingsInput addAccessoryView: helpers.createLabel("Artboard horizontal padding:", NSMakeRect(0,85,300,20))];
-        [settingsInput addAccessoryView: helpers.createField(artboardPadX)];
+		[alertWindow addTextLabelWithValue:@'Default slice density:'];
+		[alertWindow addAccessoryView: helpers.createSelect(densityScales,densityScale,NSMakeRect(0,0,75,25))];
 
-        [settingsInput addAccessoryView: helpers.createLabel("Artboard vertical padding:", NSMakeRect(0,85,300,20))];
-        [settingsInput addAccessoryView: helpers.createField(artboardPadY)];
+		[alertWindow addTextLabelWithValue:@'Artboard horizontal padding:'];
+		[alertWindow addAccessoryView: helpers.createField(artboardPadX)];
 
-        [settingsInput addAccessoryView: helpers.createLabel("Minimum bounds width:", NSMakeRect(0,85,300,20))];
-        [settingsInput addAccessoryView: helpers.createField(boundSliceWidth)];
+		[alertWindow addTextLabelWithValue:@'Artboard vertical padding:'];
+		[alertWindow addAccessoryView: helpers.createField(artboardPadY)];
 
-        [settingsInput addAccessoryView: helpers.createLabel("Minimum bounds height:", NSMakeRect(0,85,300,20))];
-        [settingsInput addAccessoryView: helpers.createField(boundSliceHeight)];
+		[alertWindow addTextLabelWithValue:@'Minimum bounds width:'];
+		[alertWindow addAccessoryView: helpers.createField(boundSliceWidth)];
 
-        //[settingsInput addButtonWithTitle:@'Save'];
-        [settingsInput addButtonWithTitle:@'Cancel'];
+		[alertWindow addTextLabelWithValue:@'Minimum bounds height:'];
+		[alertWindow addAccessoryView: helpers.createField(boundSliceHeight)];
 
-        var responseCode = settingsInput.runModal();
+		//[alertWindow addButtonWithTitle:@'Save'];
+		[alertWindow addButtonWithTitle:@'Cancel'];
 
-        if (1000 == responseCode) {
-            densityScale = [[settingsInput viewAtIndex:0] indexOfSelectedItem];
-            askForPrefix = [[settingsInput viewAtIndex:1] state];
-            artboardPadX = [[settingsInput viewAtIndex:3] stringValue];
-            artboardPadY = [[settingsInput viewAtIndex:5] stringValue];
-            boundSliceWidth = [[settingsInput viewAtIndex:7] stringValue];
-            boundSliceHeight = [[settingsInput viewAtIndex:9] stringValue];
+		var responseCode = alertWindow.runModal();
 
-            helpers.saveJsonToFile([NSDictionary dictionaryWithObjectsAndKeys:densityScale, @"density-scale", askForPrefix, @"ask-for-prefix", artboardPadX, @"artboard-padding-x", artboardPadY, @"artboard-padding-y", boundSliceWidth, @"bound-slice-width", boundSliceHeight, @"bound-slice-height", nil], folders.sketchPluginsPath + folders.pluginFolder + '/config.json');
-        }
+		if (1000 == responseCode) {
+			// densityScale = [[alertWindow viewAtIndex:0] indexOfSelectedItem];
+			// askForPrefix = [[alertWindow viewAtIndex:1] state];
+			// artboardPadX = [[alertWindow viewAtIndex:3] stringValue];
+			// artboardPadY = [[alertWindow viewAtIndex:5] stringValue];
+			// boundSliceWidth = [[alertWindow viewAtIndex:7] stringValue];
+			// boundSliceHeight = [[alertWindow viewAtIndex:9] stringValue];
+      //
+			// helpers.saveJsonToFile([NSDictionary dictionaryWithObjectsAndKeys:densityScale, @"density-scale", askForPrefix, @"ask-for-prefix", artboardPadX, @"artboard-padding-x", artboardPadY, @"artboard-padding-y", boundSliceWidth, @"bound-slice-width", boundSliceHeight, @"bound-slice-height", nil], folders.sketchPluginsPath + folders.pluginFolder + '/config.json');
+		}
 
-        return this.readConfig();
-    },
+		return this.readConfig();
+	},
 
-    readConfig: function() {
-        var folders = helpers.readPluginPath();
-        return helpers.jsonFromFile(folders.sketchPluginsPath + folders.pluginFolder + '/config.json', true);
-    }
+	readConfig: function() {
+		var folders = helpers.readPluginPath();
+		return helpers.jsonFromFile(folders.sketchPluginsPath + folders.pluginFolder + '/config.json', true);
+	}
 }
 
 var onRun = function(context) {
-    var document = context.document;
-    var selection = context.selection;
+	var doc = context.document;
+	var selection = context.selection;
 
-    var home_folder = "/Users/" + NSUserName();
+	var home = "/Users/" + NSUserName();
 
-    new AppSandbox().authorize(home_folder, function() {
-        com.sncr.context = context;
-        com.sncr.document = document;
-        com.sncr.showSettingsDialog();
-    });
+	new AppSandbox().authorize(home, function() {
+		com.sncr.context = context;
+		com.sncr.document = doc;
+		com.sncr.showSettingsDialog();
+	});
 };
