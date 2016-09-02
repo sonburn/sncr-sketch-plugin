@@ -1,3 +1,5 @@
+@import 'lib/functions.js';
+
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
@@ -5,50 +7,64 @@ var onRun = function(context) {
 	var artboards = [page artboards];
 	var layers = [page layers];
 
-	// Screen title variables
-	var titleGroupName = 'Titles';
+	// If artboards exist on the page...
+	if (artboards.length) {
+		// Screen title variables
+		var titleGroupName = 'Titles';
 
-	// Add screen title style, if it doesn't exist already
-	var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',16,48,0);
+		// Add screen title style, if it doesn't exist already
+		var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',16,48,0);
 
-	// Find screen titles group, if it exists already
-	var titleGroup = findLayerByName(page,titleGroupName);
+		// Find screen titles group, if it exists already
+		var titleGroup = findLayerByName(page,titleGroupName);
 
-	// Remove screen titles group, if it exists already
-	if (titleGroup) page.removeLayer(titleGroup);
+		// Remove screen titles group, if it exists already
+		if (titleGroup) page.removeLayer(titleGroup);
 
-	// Add new screen title group
-	titleGroup = addLayerGroup(page,titleGroupName,0,0,true);
+		// Add new screen title group
+		titleGroup = addLayerGroup(page,titleGroupName,0,0,true);
 
-	// Set clickThrough and lock title group
-	titleGroup.setIsLocked(true);
-	titleGroup.setHasClickThrough(true);
+		// Set clickThrough and lock title group
+		titleGroup.setIsLocked(true);
+		titleGroup.setHasClickThrough(true);
 
-	// Iterate through each artboard on the page
-	for (var i = 0; i < artboards.count(); i++) {
-		// Artboard variables
-		var artboard = artboards.objectAtIndex(i);
-		var artboardName = artboard.name();
-		var artboardFrame = artboard.frame();
+		// Iterate through each artboard on the page
+		for (var i = 0; i < artboards.count(); i++) {
+			// Artboard variables
+			var artboard = artboards.objectAtIndex(i);
+			var artboardName = artboard.name();
+			var artboardFrame = artboard.frame();
 
-		// Add screen title
-		var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,artboardFrame.width(),false);
+			// Add screen title
+			var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,artboardFrame.width(),false);
 
-		// Set screen title position
-		screenTitle.frame().setX(artboardFrame.x());
-		screenTitle.frame().setY(artboardFrame.y()-48);
+			// Set screen title position
+			screenTitle.frame().setX(artboardFrame.x());
+			screenTitle.frame().setY(artboardFrame.y()-48);
 
-		// Set screen title style
-		screenTitle.setStyle(screenTitleStyle.newInstance());
+			// Set screen title style
+			screenTitle.setStyle(screenTitleStyle.newInstance());
+		}
+
+		// Resize the screen titles group to ensure dimensions reflect contents
+		titleGroup.resizeToFitChildrenWithOption(0);
+
+		// Find annotations group if one exists
+		var noteGroup = findLayerByName(page,'Annotations');
+
+		if (noteGroup) {
+			// Move annotations group above title group
+			noteGroup.select_byExpandingSelection(true,false);
+			actionWithType("MSMoveToFrontAction",context).moveToFront(null);
+		}
+
+		// Feedback to user
+		doc.showMessage("Screen titles created!");
+	} else {
+		// Feedback to user
+		doc.showMessage("No artboards, no titles!");
 	}
 
-	// Resize the screen titles group to ensure dimensions reflect contents
-	titleGroup.resizeToFitChildrenWithOption(0);
-
-	// Feedback to user
-	doc.showMessage("Screen titles created!");
-
-	// Common functions
 	function addTextStyle(styleName,fontName,fontSize,fontLineHeight,textAlignment) {
 		if (!getTextStyleByName(styleName)) {
 			var sharedStyles = doc.documentData().layerTextStyles();

@@ -124,6 +124,17 @@ var helpers = {
 	createLabel: createLabel
 }
 
+function actionWithType(type,context) {
+	var doc = context.document;
+	var controller = doc.actionsController();
+
+	if (controller.actionWithName) {
+		return controller.actionWithName(type);
+	} else if (controller.actionWithID) {
+		return controller.actionWithID(type);
+	}
+}
+
 function createRadioButtons(options,selected) {
 	// Set number of rows and columns
 	var rows = options.length;

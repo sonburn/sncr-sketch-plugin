@@ -81,17 +81,6 @@ var onRun = function(context) {
 		}
 	}
 
-	function actionWithType(type,context) {
-		var doc = context.document;
-		var controller = doc.actionsController();
-
-		if (controller.actionWithName) {
-			return controller.actionWithName(type);
-		} else if (controller.actionWithID) {
-			return controller.actionWithID(type);
-		}
-	}
-
 	function createSlice(name,sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,isLocked,isUnique) {
 		// Slice variables
 		var sliceLayer;
