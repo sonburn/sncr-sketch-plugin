@@ -1,4 +1,4 @@
-@import 'lib/functions.js'
+@import 'lib/functions.js';
 
 var onRun = function(context) {
 	// Document variables
@@ -141,37 +141,37 @@ var onRun = function(context) {
 
 	function showSliceSettings() {
 		var sliceType;
-		var exportScales = ['1x','2x','3x'];
-		var exportScale = 0;
+		var exportScales = ['.5x','1x','2x','3x'];
+		var exportScale = 1;
 		var exportFormats = ['JPG','PDF','PNG'];
 		var exportFormat = 1;
 
-		var settingsInput = COSAlertWindow.new();
+		var alertWindow = COSAlertWindow.new();
 
-		[settingsInput setMessageText:@'Create Slice Around Artboards'];
+		[alertWindow setMessageText:@'Create Slice Around Artboards'];
 
-		[settingsInput addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],1)];
+		[alertWindow addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],1)];
 
-		[settingsInput addAccessoryView: helpers.createLabel("Slice export density:",NSMakeRect(0,85,300,20))];
-		[settingsInput addAccessoryView: helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25))];
+		[alertWindow addTextLabelWithValue:@'Slice export density:'];
+		[alertWindow addAccessoryView: helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25))];
 
-		[settingsInput addAccessoryView: helpers.createLabel("Slice export format:",NSMakeRect(0,85,300,20))];
-		[settingsInput addAccessoryView: helpers.createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25))];
+		[alertWindow addTextLabelWithValue:@'Slice export format:'];
+		[alertWindow addAccessoryView: helpers.createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25))];
 
-		[settingsInput addButtonWithTitle:@'Save'];
-		[settingsInput addButtonWithTitle:@'Cancel'];
+		[alertWindow addButtonWithTitle:@'Save'];
+		[alertWindow addButtonWithTitle:@'Cancel'];
 
-		var responseCode = settingsInput.runModal();
+		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
-			sliceType = [[[settingsInput viewAtIndex:0] selectedCell] tag];
-			exportScale = exportScales[[[settingsInput viewAtIndex:2] indexOfSelectedItem]];
-			exportFormat = exportFormats[[[settingsInput viewAtIndex:4] indexOfSelectedItem]];
+			sliceType = [[[alertWindow viewAtIndex:0] selectedCell] tag];
+			exportScale = exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]];
+			exportFormat = exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]];
 		}
 
 		return {
 			sliceType: sliceType,
-			exportScale: exportScale.substring(0,1),
+			exportScale: exportScale.substring(0,exportScale.length-1),
 			exportFormat: exportFormat
 		};
 	}
