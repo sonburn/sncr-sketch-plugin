@@ -3,7 +3,7 @@
 	"description": "Sketch plugins for Synchronoss",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.17,
+	"version": 0.18,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -14,7 +14,7 @@
 			"script": "layout-artboards-export.js"
 		},
 		{
-			"name": "Create Slice Around Artboards",
+			"name": "Create Slice Around Artboards…",
 			"identifier": "create-artboard-slice",
 			"script": "create-artboard-slice.js"
 		},
@@ -24,7 +24,7 @@
 			"script": "create-artboard-titles.js"
 		},
 		{
-			"name": "Export Wireframe Slices",
+			"name": "Export Wireframe Slices…",
 			"identifier": "export-wireframe-slices",
 			"script": "export-wireframe-slices.js"
 		},

@@ -123,3 +123,29 @@ var helpers = {
 	createField: createField,
 	createLabel: createLabel
 }
+
+function createRadioButtons(options,selected) {
+	// Set number of rows and columns
+	var rows = options.length;
+	var columns = 1;
+
+	// Make a prototype cell
+	var buttonCell = [[NSButtonCell alloc] init];
+	[buttonCell setButtonType:NSRadioButton]
+
+	// Make a matrix to contain the radio cells
+	var buttonMatrix = [[NSMatrix alloc] initWithFrame: NSMakeRect(20,20,300,rows*25) mode:NSRadioModeMatrix prototype:buttonCell numberOfRows:rows numberOfColumns:columns];
+	[buttonMatrix setCellSize: NSMakeSize(300,20)];
+
+	// Create a cell for each option
+	for (i = 0; i < options.length; i++) {
+		[[[buttonMatrix cells] objectAtIndex: i] setTitle: options[i]];
+		[[[buttonMatrix cells] objectAtIndex: i] setTag: i];
+	}
+
+	// Select the default cell
+	[buttonMatrix selectCellAtRow:selected column:0]
+
+	// Return the matrix
+	return buttonMatrix;
+}
