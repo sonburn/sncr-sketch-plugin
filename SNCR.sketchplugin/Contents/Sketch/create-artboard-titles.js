@@ -11,9 +11,10 @@ var onRun = function(context) {
 	if (artboards.length) {
 		// Screen title variables
 		var titleGroupName = 'Titles';
+		var screenTitleTextHeight = 48;
 
 		// Add screen title style, if it doesn't exist already
-		var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',16,48,0);
+		var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',16,screenTitleTextHeight,0);
 
 		// Find screen titles group, if it exists already
 		var titleGroup = findLayerByName(page,titleGroupName);
@@ -40,7 +41,7 @@ var onRun = function(context) {
 
 			// Set screen title position
 			screenTitle.frame().setX(artboardFrame.x());
-			screenTitle.frame().setY(artboardFrame.y()-48);
+			screenTitle.frame().setY(artboardFrame.y()-screenTitleTextHeight);
 
 			// Set screen title style
 			screenTitle.setStyle(screenTitleStyle.newInstance());
@@ -56,10 +57,11 @@ var onRun = function(context) {
 			// Move annotations group above title group
 			noteGroup.select_byExpandingSelection(true,false);
 			actionWithType("MSMoveToFrontAction",context).moveToFront(null);
+			noteGroup.select_byExpandingSelection(false,false);
 		}
 
 		// Feedback to user
-		doc.showMessage("Screen titles created!");
+		doc.showMessage(artboards.count() + " screen titles created!");
 	} else {
 		// Feedback to user
 		doc.showMessage("No artboards, no titles!");
@@ -121,7 +123,7 @@ var onRun = function(context) {
 
 		if (layerWidth > 0) {
 			textLayer.setTextBehaviour(1);
-			textLayer.frame().setWidth(360);
+			textLayer.frame().setWidth(layerWidth);
 		}
 
 		output.addLayers([textLayer]);
