@@ -14,7 +14,7 @@ var onRun = function(context) {
 		var screenTitleTextHeight = 48;
 
 		// Add screen title style, if it doesn't exist already
-		var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',16,screenTitleTextHeight,0);
+		var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',14,screenTitleTextHeight,0);
 
 		// Find screen titles group, if it exists already
 		var titleGroup = findLayerByName(page,titleGroupName);
