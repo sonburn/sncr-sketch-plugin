@@ -19,18 +19,21 @@ var onRun = function(context) {
 	// Set variables per bound type
 	if (sliceSettings.sliceType >= 0) {
 		if (sliceSettings.sliceType == 1) {
+			// Get layout values of selections
+			var selectionSize = getSelectionSize(selection);
+
 			// Layout variables
 			var margin = 100;
-			var sliceX = pageBounds.origin.x - margin;
-			var sliceY = pageBounds.origin.y - margin;
-			var sliceWidth = pageBounds.size.width + (margin*2);
-			var sliceHeight = pageBounds.size.height + (margin*2);
+			var sliceX = selectionSize.minX - margin;
+			var sliceY = selectionSize.minY - margin;
+			var sliceWidth = selectionSize.width + (margin*2);
+			var sliceHeight = selectionSize.height + (margin*2);
 
 			// Create slice
-			createSlice([page name],sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,true);
+			createSlice('Artboards',sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,false);
 
 			// Feedback to user
-			doc.showMessage("Slice created around artboards!");
+			doc.showMessage("Slice created around selections!");
 		} else if (sliceSettings.sliceType == 2) {
 			// Get layout values of selections
 			var selectionSize = getSelectionSize(artboards);
@@ -83,7 +86,7 @@ var onRun = function(context) {
 		var sliceName = name;
 		var sliceColor = MSColor.colorWithSVGString('#EFEFEF');
 		var exportScale = sliceSettings.exportScale;
-		var exportFormat = sliceSettings.exportFormat;
+		var exportFormat = sliceSettings.exportFormat.toLowerCase();
 
 		// If slice should be unique
 		if (isUnique) {
