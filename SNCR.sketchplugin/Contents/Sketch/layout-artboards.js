@@ -63,7 +63,9 @@ var onRun = function(context) {
 			// If starting a new group, reset x and calculate the y position of the next row
 			if (groupLayout[i]['group'] != groupCount) {
 				var nextGroupTotal = groupCounter(groupCount+1,groupLayout);
-				var rowSpace = rowCount - 1 - (xCount+1);
+				var rowSpace = rowCount - (xCount+1);
+
+				log('rowSpace = ' + rowSpace + ' and nextGroupTotal = ' + nextGroupTotal);
 
 				if (rowDensity == 1 || rowSpace < nextGroupTotal) {
 					x = 0;
@@ -122,7 +124,7 @@ var onRun = function(context) {
 	}
 
 	function getLayoutSettings() {
-		var artboardsPerRow = ['6','8','10','12','14'];
+		var artboardsPerRow = ['6','8','10','12','14','100'];
 		var artboardsPerRowDefault = 2;
 
 		var alertWindow = COSAlertWindow.new();
