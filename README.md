@@ -27,6 +27,8 @@ Scans entire document for slices with a name that matches the page name (assumed
 ## Find All Instances of Selected Symbol
 Displays the location of all symbol instances of the selected symbol in an alert window.
 
+![Find All Instances of Selected Symbol](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Find%20All%20Instances%20of%20Selected%20Symbol.png)
+
 ## Select All Symbol Instances on Current Page
 Selects all symbol instances on the current page, especially useful in conjunction with "Rename Selected Instance(s) to Symbol Name".
 
