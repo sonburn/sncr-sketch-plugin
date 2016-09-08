@@ -65,8 +65,6 @@ var onRun = function(context) {
 				var nextGroupTotal = groupCounter(groupCount+1,groupLayout);
 				var rowSpace = rowCount - (xCount+1);
 
-				log('rowSpace = ' + rowSpace + ' and nextGroupTotal = ' + nextGroupTotal);
-
 				if (rowDensity == 1 || rowSpace < nextGroupTotal) {
 					x = 0;
 					y += rowHeight + yPad*2;
@@ -74,6 +72,7 @@ var onRun = function(context) {
 					xCount = 0;
 				} else {
 					x += [artboardFrame width] + xPad;
+					xCount++;
 				}
 
 				groupCount++;
