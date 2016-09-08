@@ -20,7 +20,7 @@ var onRun = function(context) {
 	if (sliceSettings.sliceType >= 0) {
 		if (sliceSettings.sliceType == 1) {
 			// Get layout values of selections
-			var selectionSize = getSelectionSize(selection);
+			var selectionSize = getSelectionSize(artboards);
 
 			// Layout variables
 			var margin = 100;
