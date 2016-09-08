@@ -12,7 +12,7 @@ Orients all artboards on current page into a groupings, determined by artboard n
 ## Create Slice Around Artboards…
 Creates a slice around your selected artboards, all artboards on the page, or all artboards with additional padding for the intent of exporting as a wireframe. Additional options include the ability to set a slice density (.5x, 1x, 2x, 3x) and export format (JPG, PDF, PNG).
 
-![Create Slice Around Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Create%20Slice%20Around%20Artbords.png)
+![Create Slice Around Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Create%20Slice%20Around%20Artboards.png)
 
 ## Create Titles Above Artboards
 Creates a text title above each artboard, with the value of each artboard name. All titles are contained in a group at the top of the layers panel called Titles. Any time you change the name of an artboard, run this action again and all titles will be quickly re-generated to reflect changes.
