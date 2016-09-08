@@ -20,6 +20,8 @@ Creates a text title above each artboard, with the value of each artboard name. 
 ## Export Wireframes…
 Scans entire document for slices with a name that matches the page name (assumed a wireframe slice) and displays all matches in alert window with the ability to quickly export them all, and the ability to select individual wireframes to export. Especially useful in conjunction with the "wireframe slice" option of "Create Slice Around Artboards…".
 
+![Export Wireframes](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Export%20Wireframes.png)
+
 # Symbol Tools
 
 ## Find All Instances of Selected Symbol
