@@ -23,6 +23,7 @@ Scans entire document for slices with a name that matches the page name (assumed
 ![Export Wireframes](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Export%20Wireframes.png)
 
 # Symbol Tools
+This plugin contains a variety of symbol management actions, such as the ability to view the location of all instances of a symbol, quickly select instances on the current page, and update their names.
 
 ## Find All Instances of Selected Symbol
 Displays the location of all symbol instances of the selected symbol in an alert window.
