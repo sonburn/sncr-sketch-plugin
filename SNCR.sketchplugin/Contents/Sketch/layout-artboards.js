@@ -147,7 +147,7 @@ var onRun = function(context) {
 		[alertWindow setMessageText:@'Layout Artboards for Export'];
 
 		[alertWindow addTextLabelWithValue:@'How many artboards per row?'];
-		[alertWindow addAccessoryView: helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,35))];
+		[alertWindow addAccessoryView: helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,25))];
 
 		[alertWindow addTextLabelWithValue:@'Choose a layout type:'];
 		[alertWindow addAccessoryView: createRadioButtons(['Dense layout','Loose layout'],0)];
