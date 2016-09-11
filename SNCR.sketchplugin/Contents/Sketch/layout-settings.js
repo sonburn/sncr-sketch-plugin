@@ -52,7 +52,7 @@ com.sncr = {
 			// artboardPadY = [[alertWindow viewAtIndex:5] stringValue];
 			// boundSliceWidth = [[alertWindow viewAtIndex:7] stringValue];
 			// boundSliceHeight = [[alertWindow viewAtIndex:9] stringValue];
-      //
+			//
 			// helpers.saveJsonToFile([NSDictionary dictionaryWithObjectsAndKeys:densityScale, @"density-scale", askForPrefix, @"ask-for-prefix", artboardPadX, @"artboard-padding-x", artboardPadY, @"artboard-padding-y", boundSliceWidth, @"bound-slice-width", boundSliceHeight, @"bound-slice-height", nil], folders.sketchPluginsPath + folders.pluginFolder + '/config.json');
 		}
 

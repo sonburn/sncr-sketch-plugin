@@ -123,7 +123,8 @@ var onRun = function(context) {
 		}
 	} else {
 		// Feedback to user
-		doc.showMessage("No artboards for layout.");
+		var app = NSApplication.sharedApplication();
+		app.displayDialog_withTitle("No artboards for layout.","Layout Artboards");
 	}
 
 	function groupCounter(group,obj) {
@@ -144,7 +145,7 @@ var onRun = function(context) {
 
 		var alertWindow = COSAlertWindow.new();
 
-		[alertWindow setMessageText:@'Layout Artboards for Export'];
+		[alertWindow setMessageText:@'Layout Artboards'];
 
 		[alertWindow addTextLabelWithValue:@'How many artboards per row?'];
 		[alertWindow addAccessoryView: helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,25))];

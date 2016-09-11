@@ -64,7 +64,8 @@ var onRun = function(context) {
 		doc.showMessage(artboards.count() + " screen titles created!");
 	} else {
 		// Feedback to user
-		doc.showMessage("No artboards, no titles!");
+		var app = NSApplication.sharedApplication();
+		app.displayDialog_withTitle("No artboards, no titles!","Create Titles Above Artboards");
 	}
 
 	function addTextStyle(styleName,fontName,fontSize,fontLineHeight,textAlignment) {

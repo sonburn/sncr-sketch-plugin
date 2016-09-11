@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.30,
+	"version": 0.31,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -27,11 +27,6 @@
 			"name": "Export Wireframes…",
 			"identifier": "export-wireframes",
 			"script": "export-wireframes.js"
-		},
-		{
-			"name": "Settings…",
-			"identifier": "layout-settings",
-			"script": "layout-settings.js"
 		},
 		{
 			"name": "Find All Instances of Selected Symbol",
@@ -63,8 +58,7 @@
 					"layout-artboards",
 					"create-artboard-slice",
 					"create-artboard-titles",
-					"export-wireframes",
-					"layout-settings"
+					"export-wireframes"
 				]
 			},
 			{

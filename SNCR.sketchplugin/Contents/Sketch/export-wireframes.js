@@ -55,11 +55,13 @@ var onRun = function(context) {
 			doc.showMessage(sliceList.length + " wireframes were exported to your downloads directory!");
 		} else {
 			// Feedback to user
-			doc.showMessage("No wireframes were selected to export.");
+			var app = NSApplication.sharedApplication();
+			app.displayDialog_withTitle("No wireframes were selected to export.","Export Wireframes");
 		}
 	} else {
 		// Feedback to user
-		doc.showMessage("No wireframes were found to export.");
+		var app = NSApplication.sharedApplication();
+		app.displayDialog_withTitle("No wireframes were found to export.","Export Wireframes");
 	}
 };
 
@@ -68,7 +70,7 @@ function confirmSliceList(sliceList) {
 
 	var alertWindow = COSAlertWindow.new();
 
-	[alertWindow setMessageText:@'Export Wireframe Slices'];
+	[alertWindow setMessageText:@'Export Wireframes'];
 	[alertWindow addTextLabelWithValue:@'Select which wireframes to export...'];
 
 	//[alertWindow addAccessoryView: helpers.createCheckbox({name:"All/None",value:i},1,NSMakeRect(0,0,300,30))];
