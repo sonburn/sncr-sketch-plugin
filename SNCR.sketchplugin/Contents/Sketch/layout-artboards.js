@@ -62,8 +62,8 @@ var onRun = function(context) {
 			var rowHeight = 0;
 			var x = 0;
 			var y = 0;
-			var xPad = 400;
-			var yPad = 300;
+			var xPad = parseInt(layoutSettings.xPad);
+			var yPad = parseInt(layoutSettings.yPad);
 			var xCount = 0;
 
 			var groupCount = 1;
@@ -79,7 +79,7 @@ var onRun = function(context) {
 
 					if (rowDensity == 1 || rowSpace < nextGroupTotal) {
 						x = 0;
-						y += rowHeight + yPad*2;
+						y += rowHeight + yPad;
 						rowHeight = 0;
 						xCount = 0;
 					} else {
@@ -92,7 +92,7 @@ var onRun = function(context) {
 
 				// If new line is detected but is continuation of group, give smaller vertical padding
 				if (x == 0 && xCount != 0) {
-					y += yPad;
+					y += yPad/2;
 				}
 
 				// Position current artboard
@@ -156,6 +156,14 @@ var onRun = function(context) {
 		[alertWindow addTextLabelWithValue:@'Choose a sort type:'];
 		[alertWindow addAccessoryView: createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],0)];
 
+		[alertWindow addAccessoryView: helpers.createLabel('Advanced Settings',NSMakeRect(0,0,80,25))];
+
+		[alertWindow addTextLabelWithValue:@'Horizontal spacing:'];
+		[alertWindow addAccessoryView: helpers.createField('400')];
+
+		[alertWindow addTextLabelWithValue:@'Vertical spacing:'];
+		[alertWindow addAccessoryView: helpers.createField('600')];
+
 		[alertWindow addButtonWithTitle:@'OK'];
 		[alertWindow addButtonWithTitle:@'Cancel'];
 
@@ -165,7 +173,9 @@ var onRun = function(context) {
 			return {
 				rowCount : artboardsPerRow[[[alertWindow viewAtIndex:1] indexOfSelectedItem]],
 				rowDensity : [[[alertWindow viewAtIndex:3] selectedCell] tag],
-				sortOrder : [[[alertWindow viewAtIndex:5] selectedCell] tag]
+				sortOrder : [[[alertWindow viewAtIndex:5] selectedCell] tag],
+				xPad : [[alertWindow viewAtIndex:8] stringValue],
+				yPad : [[alertWindow viewAtIndex:10] stringValue]
 			}
 		} else return false;
 	}
