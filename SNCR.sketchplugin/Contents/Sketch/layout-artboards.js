@@ -113,8 +113,6 @@ var onRun = function(context) {
 					x += [artboardFrame width] + xPad;
 				}
 
-				lastBoardPrefix = thisBoardPrefix;
-
 				xCount++;
 			}
 
@@ -156,7 +154,7 @@ var onRun = function(context) {
 		[alertWindow addTextLabelWithValue:@'Choose a sort type:'];
 		[alertWindow addAccessoryView: createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],0)];
 
-		[alertWindow addAccessoryView: helpers.createLabel('Advanced Settings',NSMakeRect(0,0,80,25))];
+		[alertWindow addAccessoryView: helpers.createLabel('Advanced Settings',NSMakeRect(0,0,160,25))];
 
 		[alertWindow addTextLabelWithValue:@'Horizontal spacing:'];
 		[alertWindow addAccessoryView: helpers.createField('400')];

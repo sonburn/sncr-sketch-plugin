@@ -176,3 +176,8 @@ function findLayerByName(scope,layerName,type) {
 
 	return false;
 }
+
+function displayDialog(title,body) {
+	var app = NSApplication.sharedApplication();
+	app.displayDialog_withTitle(body,title);
+}

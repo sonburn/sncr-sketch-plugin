@@ -152,16 +152,12 @@ var onRun = function(context) {
 		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
-			sliceType = [[[alertWindow viewAtIndex:0] selectedCell] tag];
-			exportScale = exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]];
-			exportFormat = exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]];
-		}
-
-		return {
-			sliceType: sliceType,
-			exportScale: exportScale.substring(0,exportScale.length-1),
-			exportFormat: exportFormat
-		};
+			return {
+				sliceType: [[[alertWindow viewAtIndex:0] selectedCell] tag],
+				exportScale: exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]].slice(0,-1),
+				exportFormat: exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]]
+			}
+		} else return false;
 	}
 
 	function getSelectionSize(selection) {

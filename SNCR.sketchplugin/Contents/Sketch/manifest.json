@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.32,
+	"version": 0.33,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -47,10 +47,15 @@
 			"name": "Remove Unused Symbols in Document",
 			"identifier": "remove-unused-symbols",
 			"script": "remove-unused-symbols.js"
+		},
+		{
+			"name": "Organize Symbols…",
+			"identifier": "organize-symbols",
+			"script": "organize-symbols.js"
 		}
 	],
 	"menu": {
-    	"isRoot": true,
+		"isRoot": true,
 		"items": [
 			{
 				"title": "SNCR - Layout & Wireframes",
@@ -67,7 +72,8 @@
 					"find-symbol-instances",
 					"select-symbol-instances",
 					"match-instance-name",
-					"remove-unused-symbols"
+					"remove-unused-symbols",
+					"organize-symbols"
 				]
 			}
 		]
