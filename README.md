@@ -5,7 +5,7 @@ A plugin of Sketch actions which are useful in the workflows of the designers at
 At times, a deliverable of wireframes is unavoidable. The following is a series of actions which are meant to coerce wireframes out of Sketch, without negatively impacting your day-to-day workflow and use of Sketch with 3rd party services. Many of these actions also provide usefulness outside the intention of delivering wireframes.
 
 ## Layout Artboards…
-Lays out all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "1.0.0 Splash Screen"). Options include the ability to choose number of artboards displayed per row, and if the groupings should be dense (multiple groups on a row when space allows for it) or loose (treat each group as a new row), as well as the ability to sort the layer list and artboards alphabetically.
+Lays out all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "1.0.0 Splash Screen"). Options include the ability to choose number of artboards displayed per row, and if the groupings should be dense (multiple groups on a row when space allows for it) or loose (treat each group as a new row), as well as the ability to sort the layer list and artboards alphabetically. Lastly, you can also control the spacing between your artboards and artboard groups.
 
 ![Layout Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Layout%20Artboards.png)
 
