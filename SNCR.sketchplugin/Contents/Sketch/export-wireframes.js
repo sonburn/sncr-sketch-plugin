@@ -32,9 +32,9 @@ var onRun = function(context) {
 
 			// Add to sliceList array
 			sliceList.push({
-					name: fileName,
-					source: slice,
-					path: filePath
+				name: fileName,
+				source: slice,
+				path: filePath
 			});
 		}
 	}

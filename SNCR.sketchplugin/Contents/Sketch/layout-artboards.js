@@ -3,10 +3,11 @@
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
-	var page = [doc currentPage];
-	var pages = [doc pages];
-	var artboards = [page artboards];
-	var artboardCount = [artboards count];
+	var command = context.command;
+	var page = doc.currentPage();
+	var pages = doc.pages();
+	var artboards = doc.artboards();
+	var artboardCount = artboards.count();
 
 	// Run only if there are artboards
 	if (artboardCount) {
@@ -30,8 +31,8 @@ var onRun = function(context) {
 				sortLayerList(layoutLayers);
 			}
 
-			var firstBoard = [layoutArtboards objectAtIndex: 0];
-			var lastBoard = [layoutArtboards objectAtIndex: artboardCount-1];
+			var firstBoard = layoutArtboards.objectAtIndex(0);
+			var lastBoard = layoutArtboards.objectAtIndex(artboardCount-1);
 			var lastBoardPrefix = 0;
 
 			var groupType = parseInt(firstBoard.name()) == parseInt(lastBoard.name()) ? 0 : 1;
@@ -39,8 +40,8 @@ var onRun = function(context) {
 			var groupLayout = [];
 
 			for (var i = 0; i < artboardCount; i++) {
-				var artboard = [layoutArtboards objectAtIndex: i];
-				var artboardName = [artboard name];
+				var artboard = layoutArtboards.objectAtIndex(i);
+				var artboardName = artboard.name();
 
 				var thisBoardPrefix = (groupType == 0) ? parseFloat(artboardName) : parseInt(artboardName);
 
@@ -69,8 +70,8 @@ var onRun = function(context) {
 			var groupCount = 1;
 
 			for (var i = 0; i < groupLayout.length; i++) {
-				var artboard = [layoutArtboards objectAtIndex: i];
-				var artboardFrame = [artboard frame];
+				var artboard = layoutArtboards.objectAtIndex(i);
+				var artboardFrame = artboard.frame();
 
 				// If starting a new group, reset x and calculate the y position of the next row
 				if (groupLayout[i]['group'] != groupCount) {
@@ -83,7 +84,7 @@ var onRun = function(context) {
 						rowHeight = 0;
 						xCount = 0;
 					} else {
-						x += [artboardFrame width] + xPad;
+						x += artboardFrame.width() + xPad;
 						xCount++;
 					}
 
@@ -100,8 +101,8 @@ var onRun = function(context) {
 				artboardFrame.y = y;
 
 				// Keep track if this artboard is taller than previous artboards in row
-				if ([artboardFrame height] > rowHeight) {
-					rowHeight = [artboardFrame height];
+				if (artboardFrame.height() > rowHeight) {
+					rowHeight = artboardFrame.height();
 				}
 
 				// Determine if this is the last artboard the row, reset x and calculate the y position of the next row
@@ -110,7 +111,7 @@ var onRun = function(context) {
 					y += rowHeight;
 					rowHeight = 0;
 				} else {
-					x += [artboardFrame width] + xPad;
+					x += artboardFrame.width() + xPad;
 				}
 
 				xCount++;
@@ -121,8 +122,7 @@ var onRun = function(context) {
 		}
 	} else {
 		// Feedback to user
-		var app = NSApplication.sharedApplication();
-		app.displayDialog_withTitle("No artboards for layout.","Layout Artboards");
+		displayDialog("Layout Artboards","No artboards for layout.");
 	}
 
 	function groupCounter(group,obj) {
@@ -140,6 +140,36 @@ var onRun = function(context) {
 	function getLayoutSettings() {
 		var artboardsPerRow = ['6','8','10','12','14','100'];
 		var artboardsPerRowDefault = 2;
+		var rowDensity = 0;
+		var sortOrder = 0;
+		var xPad = '400';
+		var yPad = '600';
+
+		// Get cached settings
+		try {
+			if ([command valueForKey:"artboardsPerRowDefault" onLayer:page]) {
+				artboardsPerRowDefault = [command valueForKey:"artboardsPerRowDefault" onLayer:page];
+			}
+
+			if ([command valueForKey:"rowDensity" onLayer:page]) {
+				rowDensity = [command valueForKey:"rowDensity" onLayer:page];
+			}
+
+			if ([command valueForKey:"sortOrder" onLayer:page]) {
+				sortOrder = [command valueForKey:"sortOrder" onLayer:page];
+			}
+
+			if ([command valueForKey:"xPad" onLayer:page]) {
+				xPad = [command valueForKey:"xPad" onLayer:page];
+			}
+
+			if ([command valueForKey:"yPad" onLayer:page]) {
+				yPad = [command valueForKey:"yPad" onLayer:page];
+			}
+		}
+		catch(err) {
+			log("Unable to fetch settings.");
+		}
 
 		var alertWindow = COSAlertWindow.new();
 
@@ -149,18 +179,18 @@ var onRun = function(context) {
 		[alertWindow addAccessoryView: helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,25))];
 
 		[alertWindow addTextLabelWithValue:@'Choose a layout type:'];
-		[alertWindow addAccessoryView: createRadioButtons(['Dense layout','Loose layout'],0)];
+		[alertWindow addAccessoryView: createRadioButtons(['Dense layout','Loose layout'],rowDensity)];
 
 		[alertWindow addTextLabelWithValue:@'Choose a sort type:'];
-		[alertWindow addAccessoryView: createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],0)];
+		[alertWindow addAccessoryView: createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],sortOrder)];
 
 		[alertWindow addAccessoryView: helpers.createLabel('Advanced Settings',NSMakeRect(0,0,160,25))];
 
 		[alertWindow addTextLabelWithValue:@'Horizontal spacing:'];
-		[alertWindow addAccessoryView: helpers.createField('400')];
+		[alertWindow addAccessoryView: helpers.createField(xPad)];
 
 		[alertWindow addTextLabelWithValue:@'Vertical spacing:'];
-		[alertWindow addAccessoryView: helpers.createField('600')];
+		[alertWindow addAccessoryView: helpers.createField(yPad)];
 
 		[alertWindow addButtonWithTitle:@'OK'];
 		[alertWindow addButtonWithTitle:@'Cancel'];
@@ -168,6 +198,17 @@ var onRun = function(context) {
 		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
+			try {
+				[command setValue:[[alertWindow viewAtIndex:1] indexOfSelectedItem] forKey:"artboardsPerRowDefault" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"rowDensity" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:5] selectedCell] tag] forKey:"sortOrder" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:8] stringValue] forKey:"xPad" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:10] stringValue] forKey:"yPad" onLayer:page];
+			}
+			catch(err) {
+				log("Unable to save settings.");
+			}
+
 			return {
 				rowCount : artboardsPerRow[[[alertWindow viewAtIndex:1] indexOfSelectedItem]],
 				rowDensity : [[[alertWindow viewAtIndex:3] selectedCell] tag],

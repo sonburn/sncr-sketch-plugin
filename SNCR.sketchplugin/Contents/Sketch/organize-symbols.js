@@ -3,6 +3,7 @@
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
+	var command = context.command;
 	var page = doc.currentPage();
 	var symbols = page.artboards();
 	var symbolCount = symbols.count();
@@ -151,21 +152,49 @@ var onRun = function(context) {
 	}
 
 	function getLayoutSettings() {
+		// Setting variables
+		var sortOrder = 1;
+		var sortDirection = 1;
+		var xPad = '100';
+		var yPad = '100';
+
+		// Get cached settings
+		try {
+			if ([command valueForKey:"sortOrder" onLayer:page]) {
+				sortOrder = [command valueForKey:"sortOrder" onLayer:page];
+			}
+
+			if ([command valueForKey:"sortDirection" onLayer:page]) {
+				sortDirection = [command valueForKey:"sortDirection" onLayer:page];
+			}
+
+			if ([command valueForKey:"xPad" onLayer:page]) {
+				xPad = [command valueForKey:"xPad" onLayer:page];
+			}
+
+			if ([command valueForKey:"yPad" onLayer:page]) {
+				yPad = [command valueForKey:"yPad" onLayer:page];
+			}
+		}
+		catch(err) {
+			log("Unable to fetch settings.");
+		}
+
 		var alertWindow = COSAlertWindow.new();
 
 		[alertWindow setMessageText:@'Organize Symbols'];
 
 		[alertWindow addTextLabelWithValue:@'Sort order:'];
-		[alertWindow addAccessoryView: createRadioButtons(['A-Z','Z-A'],1)];
+		[alertWindow addAccessoryView: createRadioButtons(['A-Z','Z-A'],sortOrder)];
 
 		[alertWindow addTextLabelWithValue:@'Sort direction:'];
-		[alertWindow addAccessoryView: createRadioButtons(['Horizontal','Vertical'],1)];
+		[alertWindow addAccessoryView: createRadioButtons(['Horizontal','Vertical'],sortDirection)];
 
 		[alertWindow addTextLabelWithValue:@'Horizontal spacing:'];
-		[alertWindow addAccessoryView: helpers.createField('100')];
+		[alertWindow addAccessoryView: createField(xPad)];
 
 		[alertWindow addTextLabelWithValue:@'Vertical spacing:'];
-		[alertWindow addAccessoryView: helpers.createField('100')];
+		[alertWindow addAccessoryView: createField(yPad)];
 
 		[alertWindow addButtonWithTitle:@'OK'];
 		[alertWindow addButtonWithTitle:@'Cancel'];
@@ -173,6 +202,16 @@ var onRun = function(context) {
 		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
+			try {
+				[command setValue:[[[alertWindow viewAtIndex:1] selectedCell] tag] forKey:"sortOrder" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"sortDirection" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:5] stringValue] forKey:"xPad" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:7] stringValue] forKey:"yPad" onLayer:page];
+			}
+			catch(err) {
+				log("Unable to save settings.");
+			}
+
 			return {
 				sortOrder : [[[alertWindow viewAtIndex:1] selectedCell] tag],
 				sortDirection : [[[alertWindow viewAtIndex:3] selectedCell] tag],

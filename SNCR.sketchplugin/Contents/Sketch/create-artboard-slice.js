@@ -3,10 +3,11 @@
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
-	var page = [doc currentPage];
-	var pages = [doc pages];
-	var artboards = [page artboards];
-	var layers = [page layers];
+	var command = context.command;
+	var page = doc.currentPage();
+	var pages = doc.pages();
+	var artboards = page.artboards();
+	var layers = page.layers();
 
 	// Selection variables
 	var selection = context.selection;
@@ -128,17 +129,35 @@ var onRun = function(context) {
 	}
 
 	function showSliceSettings() {
-		var sliceType;
+		var sliceType = 1;
 		var exportScales = ['.5x','1x','2x','3x'];
 		var exportScale = 1;
 		var exportFormats = ['JPG','PDF','PNG'];
 		var exportFormat = 1;
 
+		// Get cached settings
+		try {
+			if ([command valueForKey:"sliceType" onLayer:page]) {
+				sliceType = [command valueForKey:"sliceType" onLayer:page];
+			}
+
+			if ([command valueForKey:"exportScale" onLayer:page]) {
+				exportScale = [command valueForKey:"exportScale" onLayer:page];
+			}
+
+			if ([command valueForKey:"exportFormat" onLayer:page]) {
+				exportFormat = [command valueForKey:"exportFormat" onLayer:page];
+			}
+		}
+		catch(err) {
+			log("Unable to fetch settings.");
+		}
+
 		var alertWindow = COSAlertWindow.new();
 
 		[alertWindow setMessageText:@'Create Slice Around Artboards'];
 
-		[alertWindow addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],1)];
+		[alertWindow addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],sliceType)];
 
 		[alertWindow addTextLabelWithValue:@'Slice export density:'];
 		[alertWindow addAccessoryView: helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25))];
@@ -152,10 +171,19 @@ var onRun = function(context) {
 		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
+			try {
+				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"sliceType" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:2] indexOfSelectedItem] forKey:"exportScale" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:4] indexOfSelectedItem] forKey:"exportFormat" onLayer:page];
+			}
+			catch(err) {
+				log("Unable to save settings.");
+			}
+
 			return {
-				sliceType: [[[alertWindow viewAtIndex:0] selectedCell] tag],
-				exportScale: exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]].slice(0,-1),
-				exportFormat: exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]]
+				sliceType : [[[alertWindow viewAtIndex:0] selectedCell] tag],
+				exportScale : exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]].slice(0,-1),
+				exportFormat : exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]]
 			}
 		} else return false;
 	}
