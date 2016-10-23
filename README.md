@@ -40,6 +40,6 @@ Updates the name of all selected symbol instances to match the name of the maste
 This is the Remove Unused Symbols plugin from Bomberstudios (https://github.com/sketchplugins/remove-unused-symbols), but with feedback.
 
 ## Organize Symbols
-Organize your symbols page and layer list, based on the symbol names. Also provides the ability to layout symbols horizontally or vertically, and reverse the alphabetical sort order of the layer list.
+Organize your symbols page alphabetically (including layer list) and into groupings determined by your symbol names. Also provides the ability to choose the depth of the groups, reverse the layer list sort direction, and to layout symbols horizontally or vertically.
 
 ![Organize Symbols](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Organize%20Symbols.png)

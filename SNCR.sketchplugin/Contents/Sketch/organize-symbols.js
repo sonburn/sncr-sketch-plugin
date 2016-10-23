@@ -56,7 +56,7 @@ var onRun = function(context) {
 					var symbolName = symbol.name();
 
 					// Determine a break point in the symbol name
-					var breakPoint = getCharPosition(symbolName,"/",2);
+					var breakPoint = getCharPosition(symbolName,"/",layoutSettings.groupDepth+1);
 
 					// Set a prefix for current group
 					var thisGroupPrefix = (breakPoint > 0) ? symbolName.slice(0,breakPoint) : symbolName.slice(0,symbolName.indexOf("/"));
@@ -153,6 +153,7 @@ var onRun = function(context) {
 
 	function getLayoutSettings() {
 		// Setting variables
+		var groupDepth = 1;
 		var sortOrder = 1;
 		var sortDirection = 1;
 		var xPad = '100';
@@ -160,6 +161,10 @@ var onRun = function(context) {
 
 		// Get cached settings
 		try {
+			if ([command valueForKey:"groupDepth" onLayer:page]) {
+				groupDepth = [command valueForKey:"groupDepth" onLayer:page];
+			}
+
 			if ([command valueForKey:"sortOrder" onLayer:page]) {
 				sortOrder = [command valueForKey:"sortOrder" onLayer:page];
 			}
@@ -184,6 +189,9 @@ var onRun = function(context) {
 
 		[alertWindow setMessageText:@'Organize Symbols'];
 
+		[alertWindow addTextLabelWithValue:@'Group depth:'];
+		[alertWindow addAccessoryView: createRadioButtons(['Level 1/','Level 1/Level 2/','Level 1/Level 2/Level 3/'],groupDepth)];
+
 		[alertWindow addTextLabelWithValue:@'Sort order:'];
 		[alertWindow addAccessoryView: createRadioButtons(['A-Z','Z-A'],sortOrder)];
 
@@ -203,20 +211,22 @@ var onRun = function(context) {
 
 		if (responseCode == 1000) {
 			try {
-				[command setValue:[[[alertWindow viewAtIndex:1] selectedCell] tag] forKey:"sortOrder" onLayer:page];
-				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"sortDirection" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:5] stringValue] forKey:"xPad" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:7] stringValue] forKey:"yPad" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:1] selectedCell] tag] forKey:"groupDepth" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"sortOrder" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:5] selectedCell] tag] forKey:"sortDirection" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:7] stringValue] forKey:"xPad" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:9] stringValue] forKey:"yPad" onLayer:page];
 			}
 			catch(err) {
 				log("Unable to save settings.");
 			}
 
 			return {
-				sortOrder : [[[alertWindow viewAtIndex:1] selectedCell] tag],
-				sortDirection : [[[alertWindow viewAtIndex:3] selectedCell] tag],
-				xPad : [[alertWindow viewAtIndex:5] stringValue],
-				yPad : [[alertWindow viewAtIndex:7] stringValue]
+				groupDepth : [[[alertWindow viewAtIndex:1] selectedCell] tag],
+				sortOrder : [[[alertWindow viewAtIndex:3] selectedCell] tag],
+				sortDirection : [[[alertWindow viewAtIndex:5] selectedCell] tag],
+				xPad : [[alertWindow viewAtIndex:7] stringValue],
+				yPad : [[alertWindow viewAtIndex:9] stringValue]
 			}
 		} else return false;
 	}
