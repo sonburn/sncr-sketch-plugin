@@ -60,7 +60,7 @@ var onRun = function(context) {
 		} else {
 			if (selectedCount < 2) {
 				var app = NSApplication.sharedApplication();
-				app.displayDialog_withTitle("Please select two or more artboards.","Create Slice Around Artboards")
+				app.displayDialog_withTitle("Please select two or more artboards.","Create Artboard Slice")
 			} else {
 				// Get layout values of selections
 				var selectionSize = getSelectionSize(selection);
@@ -155,7 +155,7 @@ var onRun = function(context) {
 
 		var alertWindow = COSAlertWindow.new();
 
-		[alertWindow setMessageText:@'Create Slice Around Artboards'];
+		[alertWindow setMessageText:@'Create Artboard Slice'];
 
 		[alertWindow addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],sliceType)];
 
