@@ -25,16 +25,16 @@ var SNCR = {
 		if(command){
 			switch(command){
 				case "layout-artboards":
-					this.topGuide();
+					this.layoutArtboards();
 					break;
 				case "create-artboard-titles":
-					this.rightGuide();
+					this.createTitles();
 					break;
 				case "create-artboard-slice":
-					this.bottomGuide();
+					this.createSlice();
 					break;
 				case "export-wireframes":
-					this.leftGuide();
+					this.exportWireframes();
 					break;
 			}
 		}
@@ -49,24 +49,16 @@ var SNCR = {
 };
 
 SNCR.extend({
-	updateContext: function(){
-		this.context.document = NSDocumentController.sharedDocumentController().currentDocument();
-		this.context.selection = this.context.document.selectedLayers();
-		return this.context;
-	},
-});
-
-SNCR.extend({
-	topGuide: function(){
+	layoutArtboards: function(){
 		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('layout-artboards',this.pluginURL);
 	},
-	rightGuide: function(){
+	createTitles: function(){
 		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('create-artboard-titles',this.pluginURL);
 	},
-	bottomGuide: function(){
+	createSlice: function(){
 		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('create-artboard-slice',this.pluginURL);
 	},
-	leftGuide: function(){
+	exportWireframes: function(){
 		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('export-wireframes',this.pluginURL);
 	}
 });
@@ -80,7 +72,7 @@ SNCR.extend({
 		if(!LayoutBar){
 			LayoutBar = NSPanel.alloc().init();
 			LayoutBar.setStyleMask(NSTitledWindowMask + NSFullSizeContentViewWindowMask);
-			LayoutBar.setBackgroundColor(NSColor.colorWithRed_green_blue_alpha(0.99, 0.99, 0.99, 1));
+			LayoutBar.setBackgroundColor(NSColor.colorWithRed_green_blue_alpha(0, 0, 0, 1));
 			LayoutBar.setTitleVisibility(NSWindowTitleHidden);
 			LayoutBar.setTitlebarAppearsTransparent(true);
 			LayoutBar.setFrame_display(NSMakeRect(0, 0, 300, 50), false);
@@ -114,39 +106,35 @@ SNCR.extend({
 					return view;
 				},
 
-				closeButton = addButton( NSMakeRect(250, 10, 30, 30), "close-control",
+				closeButton = addButton( NSMakeRect(20, 10, 30, 30), "close-control",
 					function(sender){
 						coscript.setShouldKeepAround(false);
 						threadDictionary.removeObjectForKey(identifier);
 						LayoutBar.close();
 				}),
-				topGuideB = addButton( NSMakeRect(20, 10, 30, 30), "layout-artboards",
+				layoutArtboardsButton = addButton( NSMakeRect(100, 10, 30, 30), "layout-artboards",
 					function(sender){
-						self.updateContext();
 						self.init(self.context, "layout-artboards");
 				}),
-				rightGuideB = addButton( NSMakeRect(70, 10,30,30), "create-artboard-titles",
+				createTitlesButton = addButton( NSMakeRect(150, 10,30,30), "create-artboard-titles",
 					function(sender){
-						self.updateContext();
 						self.init(self.context, "create-artboard-titles");
 				}),
-				bottomGuideB = addButton( NSMakeRect(120, 10,30,30), "create-artboard-slice",
+				createSliceButton = addButton( NSMakeRect(200, 10,30,30), "create-artboard-slice",
 					function(sender){
-						self.updateContext();
 						self.init(self.context, "create-artboard-slice");
 				}),
-				leftGuideB = addButton( NSMakeRect(170, 10,30,30), "export-wireframes",
+				exportWireframesButton = addButton( NSMakeRect(250, 10,30,30), "export-wireframes",
 					function(sender){
-						self.updateContext();
 						self.init(self.context, "export-wireframes");
 				}),
-				separate1 = addImage( NSMakeRect(220, 10, 10, 30), "separate");
+				separater = addImage( NSMakeRect(70, 10, 10, 30), "separate");
 			contentView.addSubview(closeButton);
-			contentView.addSubview(separate1);
-			contentView.addSubview(topGuideB);
-			contentView.addSubview(rightGuideB);
-			contentView.addSubview(bottomGuideB);
-			contentView.addSubview(leftGuideB);
+			contentView.addSubview(separater);
+			contentView.addSubview(layoutArtboardsButton);
+			contentView.addSubview(createTitlesButton);
+			contentView.addSubview(createSliceButton);
+			contentView.addSubview(exportWireframesButton);
 			threadDictionary[identifier] = LayoutBar;
 			LayoutBar.center();
 			LayoutBar.makeKeyAndOrderFront(nil);
