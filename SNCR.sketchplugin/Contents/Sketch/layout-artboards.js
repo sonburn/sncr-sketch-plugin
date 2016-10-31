@@ -173,27 +173,39 @@ var onRun = function(context) {
 
 		var alertWindow = COSAlertWindow.new();
 
-		[alertWindow setMessageText:@'Layout Artboards'];
+		alertWindow.setMessageText('Layout Artboards');
 
-		[alertWindow addTextLabelWithValue:@'How many artboards per row?'];
-		[alertWindow addAccessoryView: helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,25))];
+		alertWindow.addTextLabelWithValue('How many artboards per row?');
+		alertWindow.addAccessoryView(helpers.createSelect(artboardsPerRow,artboardsPerRowDefault,NSMakeRect(0,0,80,25)));
+		var fieldOne = alertWindow.viewAtIndex(1);
 
-		[alertWindow addTextLabelWithValue:@'Choose a layout type:'];
-		[alertWindow addAccessoryView: createRadioButtons(['Dense layout','Loose layout'],rowDensity)];
+		alertWindow.addTextLabelWithValue('Choose a layout type:');
+		alertWindow.addAccessoryView(createRadioButtons(['Dense layout','Loose layout'],rowDensity));
+		var fieldTwo = alertWindow.viewAtIndex(3);
 
-		[alertWindow addTextLabelWithValue:@'Choose a sort type:'];
-		[alertWindow addAccessoryView: createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],sortOrder)];
+		alertWindow.addTextLabelWithValue('Choose a sort type:');
+		alertWindow.addAccessoryView(createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],sortOrder));
+		var fieldThree = alertWindow.viewAtIndex(5);
 
-		[alertWindow addAccessoryView: helpers.createLabel('Advanced Settings',NSMakeRect(0,0,160,25))];
+		alertWindow.addAccessoryView(helpers.createLabel('Advanced Settings',NSMakeRect(0,0,160,25)));
 
-		[alertWindow addTextLabelWithValue:@'Horizontal spacing:'];
-		[alertWindow addAccessoryView: helpers.createField(xPad)];
+		alertWindow.addTextLabelWithValue('Horizontal spacing:');
+		alertWindow.addAccessoryView(helpers.createField(xPad));
+		var fieldFour = alertWindow.viewAtIndex(8);
 
-		[alertWindow addTextLabelWithValue:@'Vertical spacing:'];
-		[alertWindow addAccessoryView: helpers.createField(yPad)];
+		alertWindow.addTextLabelWithValue('Vertical spacing:');
+		alertWindow.addAccessoryView(helpers.createField(yPad));
+		var fieldFive = alertWindow.viewAtIndex(10);
 
-		[alertWindow addButtonWithTitle:@'OK'];
-		[alertWindow addButtonWithTitle:@'Cancel'];
+		alertWindow.addButtonWithTitle('OK');
+		alertWindow.addButtonWithTitle('Cancel');
+
+		// Set first responder and key order
+		alertWindow.alert().window().setInitialFirstResponder(fieldOne);
+		fieldOne.setNextKeyView(fieldTwo);
+		fieldTwo.setNextKeyView(fieldThree);
+		fieldThree.setNextKeyView(fieldFour);
+		fieldFour.setNextKeyView(fieldFive);
 
 		var responseCode = alertWindow.runModal();
 

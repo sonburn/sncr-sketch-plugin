@@ -70,19 +70,19 @@ function confirmSliceList(sliceList) {
 
 	var alertWindow = COSAlertWindow.new();
 
-	[alertWindow setMessageText:@'Export Wireframes'];
-	[alertWindow addTextLabelWithValue:@'Select which wireframes to export...'];
+	alertWindow.setMessageText('Export Wireframes');
+	alertWindow.addTextLabelWithValue('Select which wireframes to export...');
 
-	//[alertWindow addAccessoryView: helpers.createCheckbox({name:"All/None",value:i},1,NSMakeRect(0,0,300,30))];
+	//alertWindow.addAccessoryView(helpers.createCheckbox({name:"All/None",value:i},1,NSMakeRect(0,0,300,30)));
 
 	for (var i = 0; i < exportList.length; i++) {
-		[alertWindow addAccessoryView: helpers.createCheckbox({name:exportList[i]['name'],value:i},1,NSMakeRect(0,0,300,15))];
+		alertWindow.addAccessoryView(helpers.createCheckbox({name:exportList[i]['name'],value:i},1,NSMakeRect(0,0,300,15)));
 	}
 
-	[alertWindow addTextLabelWithValue:@'The export process may take some time, be patient.'];
+	alertWindow.addTextLabelWithValue('The export process may take some time, be patient.');
 
-	[alertWindow addButtonWithTitle:@'Save'];
-	[alertWindow addButtonWithTitle:@'Cancel'];
+	alertWindow.addButtonWithTitle('OK');
+	alertWindow.addButtonWithTitle('Cancel');
 
 	var responseCode = alertWindow.runModal();
 

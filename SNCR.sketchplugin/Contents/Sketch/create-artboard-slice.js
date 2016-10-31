@@ -155,18 +155,26 @@ var onRun = function(context) {
 
 		var alertWindow = COSAlertWindow.new();
 
-		[alertWindow setMessageText:@'Create Artboard Slice'];
+		alertWindow.setMessageText('Create Artboard Slice');
 
-		[alertWindow addAccessoryView: createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],sliceType)];
+		alertWindow.addAccessoryView(createRadioButtons(["Create slice around selections","Create slice around all artboards","Create wireframe slice around all artboards"],sliceType));
+		var fieldOne = alertWindow.viewAtIndex(0);
 
-		[alertWindow addTextLabelWithValue:@'Slice export density:'];
-		[alertWindow addAccessoryView: helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25))];
+		alertWindow.addTextLabelWithValue('Slice export density:');
+		alertWindow.addAccessoryView(helpers.createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25)));
+		var fieldTwo = alertWindow.viewAtIndex(2);
 
-		[alertWindow addTextLabelWithValue:@'Slice export format:'];
-		[alertWindow addAccessoryView: helpers.createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25))];
+		alertWindow.addTextLabelWithValue('Slice export format:');
+		alertWindow.addAccessoryView(helpers.createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25)));
+		var fieldThree = alertWindow.viewAtIndex(4);
 
-		[alertWindow addButtonWithTitle:@'Save'];
-		[alertWindow addButtonWithTitle:@'Cancel'];
+		alertWindow.addButtonWithTitle('OK');
+		alertWindow.addButtonWithTitle('Cancel');
+
+		// Set first responder and key order
+		alertWindow.alert().window().setInitialFirstResponder(fieldOne);
+		fieldOne.setNextKeyView(fieldTwo);
+		fieldTwo.setNextKeyView(fieldThree);
 
 		var responseCode = alertWindow.runModal();
 

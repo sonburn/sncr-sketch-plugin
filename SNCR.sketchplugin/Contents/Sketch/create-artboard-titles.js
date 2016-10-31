@@ -102,15 +102,21 @@ var onRun = function(context) {
 
 		var alertWindow = COSAlertWindow.new();
 
-		[alertWindow setMessageText:@'Create Artboard Titles'];
+		alertWindow.setMessageText('Create Artboard Titles');
 
-		[alertWindow addAccessoryView: createRadioButtons(["Above artboards","Below artboards"],titleType)];
+		alertWindow.addAccessoryView(createRadioButtons(["Above artboards","Below artboards"],titleType));
+		var fieldOne = alertWindow.viewAtIndex(0);
 
-		[alertWindow addTextLabelWithValue:@'Vertical offset:'];
-		[alertWindow addAccessoryView: helpers.createField(titleOffset)];
+		alertWindow.addTextLabelWithValue('Vertical offset:');
+		alertWindow.addAccessoryView(helpers.createField(titleOffset));
+		var fieldTwo = alertWindow.viewAtIndex(2);
 
-		[alertWindow addButtonWithTitle:@'Save'];
-		[alertWindow addButtonWithTitle:@'Cancel'];
+		alertWindow.addButtonWithTitle('OK');
+		alertWindow.addButtonWithTitle('Cancel');
+
+		// Set first responder and key order
+		alertWindow.alert().window().setInitialFirstResponder(fieldOne);
+		fieldOne.setNextKeyView(fieldTwo);
 
 		var responseCode = alertWindow.runModal();
 
