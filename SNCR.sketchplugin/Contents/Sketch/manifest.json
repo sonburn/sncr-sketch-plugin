@@ -3,15 +3,15 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.40,
+	"version": 0.41,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
 	"commands": [
 		{
-			"name": "Toggle Layout Bar",
+			"name": "Toggle Toolbar",
 			"shortcut": "cmd option l",
-			"identifier": "layout-bar",
+			"identifier": "layout-toolbar",
 			"handler": "layoutBar",
 			"script": "layout-bar.js"
 		},
@@ -41,24 +41,9 @@
 			"script": "find-symbol-instances.js"
 		},
 		{
-			"name": "Select All Symbol Instances on Current Page",
-			"identifier": "select-symbol-instances",
-			"script": "select-symbol-instances.js"
-		},
-		{
-			"name": "Rename Selected Instance(s) to Symbol Name",
-			"identifier": "match-instance-name",
-			"script": "match-instance-name.js"
-		},
-		{
 			"name": "Remove Unused Symbols in Document",
 			"identifier": "remove-unused-symbols",
 			"script": "remove-unused-symbols.js"
-		},
-		{
-			"name": "Organize Symbols…",
-			"identifier": "organize-symbols",
-			"script": "organize-symbols.js"
 		}
 	],
 	"menu": {
@@ -67,7 +52,7 @@
 			{
 				"title": "SNCR - Layout & Wireframes",
 				"items": [
-					"layout-bar",
+					"layout-toolbar",
 					"-",
 					"layout-artboards",
 					"create-artboard-titles",
@@ -79,10 +64,7 @@
 				"title": "SNCR - Symbol Tools",
 				"items": [
 					"find-symbol-instances",
-					"select-symbol-instances",
-					"match-instance-name",
-					"remove-unused-symbols",
-					"organize-symbols"
+					"remove-unused-symbols"
 				]
 			}
 		]
