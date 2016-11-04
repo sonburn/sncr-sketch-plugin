@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.41,
+	"version": 0.42,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -13,7 +13,7 @@
 			"shortcut": "cmd option l",
 			"identifier": "layout-toolbar",
 			"handler": "layoutBar",
-			"script": "layout-bar.js"
+			"script": "layout-toolbar.js"
 		},
 		{
 			"name": "Layout Artboards…",
