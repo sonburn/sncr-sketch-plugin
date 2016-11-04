@@ -32,16 +32,5 @@ Displays the location of all symbol instances of the selected symbol in an alert
 
 ![Find All Instances of Selected Symbol](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Find%20All%20Instances%20of%20Selected%20Symbol.png)
 
-## Select All Symbol Instances on Current Page
-Selects all symbol instances on the current page, especially useful in conjunction with "Rename Selected Instance(s) to Symbol Name".
-
-## Rename Selected Instance(s) to Symbol Name
-Updates the name of all selected symbol instances to match the name of the master, especially useful in conjunction with "Select All Symbol Instances on Current Page".
-
 ## Remove Unused Symbols in Document
 This is the Remove Unused Symbols plugin from Bomberstudios (https://github.com/sketchplugins/remove-unused-symbols), but with feedback.
-
-## Organize Symbols
-Organize your symbols page alphabetically (including layer list) and into groupings determined by your symbol names. Also provides the ability to choose the depth of the groups, reverse the layer list sort direction, and to layout symbols horizontally or vertically.
-
-![Organize Symbols](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Organize%20Symbols.png)
