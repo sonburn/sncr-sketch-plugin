@@ -85,7 +85,7 @@ var onRun = function(context) {
 		// Slice variables
 		var sliceLayer;
 		var sliceName = name;
-		var sliceColor = MSColor.colorWithSVGString('#EFEFEF');
+		var sliceColor = MSColor.colorWithRed_green_blue_alpha(239/255,239/255,239/255,1.0);
 		var exportScale = sliceSettings.exportScale;
 		var exportFormat = sliceSettings.exportFormat.toLowerCase();
 
