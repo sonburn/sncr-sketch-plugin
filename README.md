@@ -31,6 +31,3 @@ This plugin contains a variety of symbol management actions, such as the ability
 Displays the location of all symbol instances of the selected symbol in an alert window.
 
 ![Find All Instances of Selected Symbol](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Find%20All%20Instances%20of%20Selected%20Symbol.png)
-
-## Remove Unused Symbols in Document
-This is the Remove Unused Symbols plugin from Bomberstudios (https://github.com/sketchplugins/remove-unused-symbols), but with feedback.
