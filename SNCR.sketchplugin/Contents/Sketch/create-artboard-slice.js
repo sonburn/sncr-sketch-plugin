@@ -131,22 +131,22 @@ var onRun = function(context) {
 	function showSliceSettings() {
 		var sliceType = 1;
 		var exportScales = ['.5x','1x','2x','3x'];
-		var exportScale = 1;
+		var exportScale = 0;
 		var exportFormats = ['JPG','PDF','PNG'];
 		var exportFormat = 1;
 
 		// Get cached settings
 		try {
-			if ([command valueForKey:"sliceType" onLayer:page]) {
-				sliceType = [command valueForKey:"sliceType" onLayer:page];
+			if ([command valueForKey:"sliceType" onDocument:context.document.documentData()]) {
+				sliceType = [command valueForKey:"sliceType" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"exportScale" onLayer:page]) {
-				exportScale = [command valueForKey:"exportScale" onLayer:page];
+			if ([command valueForKey:"exportScale" onDocument:context.document.documentData()]) {
+				exportScale = [command valueForKey:"exportScale" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"exportFormat" onLayer:page]) {
-				exportFormat = [command valueForKey:"exportFormat" onLayer:page];
+			if ([command valueForKey:"exportFormat" onDocument:context.document.documentData()]) {
+				exportFormat = [command valueForKey:"exportFormat" onDocument:context.document.documentData()];
 			}
 		}
 		catch(err) {
@@ -180,9 +180,9 @@ var onRun = function(context) {
 
 		if (responseCode == 1000) {
 			try {
-				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"sliceType" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:2] indexOfSelectedItem] forKey:"exportScale" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:4] indexOfSelectedItem] forKey:"exportFormat" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"sliceType" onDocument:context.document.documentData()];
+				[command setValue:[[alertWindow viewAtIndex:2] indexOfSelectedItem] forKey:"exportScale" onDocument:context.document.documentData()];
+				[command setValue:[[alertWindow viewAtIndex:4] indexOfSelectedItem] forKey:"exportFormat" onDocument:context.document.documentData()];
 			}
 			catch(err) {
 				log("Unable to save settings.");

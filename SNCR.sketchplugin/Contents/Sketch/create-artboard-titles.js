@@ -88,12 +88,12 @@ var onRun = function(context) {
 
 		// Get cached settings
 		try {
-			if ([command valueForKey:"titleType" onLayer:page]) {
-				titleType = [command valueForKey:"titleType" onLayer:page];
+			if ([command valueForKey:"titleType" onDocument:context.document.documentData()]) {
+				titleType = [command valueForKey:"titleType" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"titleOffset" onLayer:page]) {
-				titleOffset = [command valueForKey:"titleOffset" onLayer:page];
+			if ([command valueForKey:"titleOffset" onDocument:context.document.documentData()]) {
+				titleOffset = [command valueForKey:"titleOffset" onDocument:context.document.documentData()];
 			}
 		}
 		catch(err) {
@@ -122,8 +122,8 @@ var onRun = function(context) {
 
 		if (responseCode == 1000) {
 			try {
-				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"titleType" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:2] stringValue] forKey:"titleOffset" onLayer:page];
+				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"titleType" onDocument:context.document.documentData()];
+				[command setValue:[[alertWindow viewAtIndex:2] stringValue] forKey:"titleOffset" onDocument:context.document.documentData()];
 			}
 			catch(err) {
 				log("Unable to save settings.");

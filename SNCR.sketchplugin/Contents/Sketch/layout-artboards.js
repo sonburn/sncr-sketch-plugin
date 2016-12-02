@@ -147,24 +147,24 @@ var onRun = function(context) {
 
 		// Get cached settings
 		try {
-			if ([command valueForKey:"artboardsPerRowDefault" onLayer:page]) {
-				artboardsPerRowDefault = [command valueForKey:"artboardsPerRowDefault" onLayer:page];
+			if ([command valueForKey:"artboardsPerRowDefault" onDocument:context.document.documentData()]) {
+				artboardsPerRowDefault = [command valueForKey:"artboardsPerRowDefault" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"rowDensity" onLayer:page]) {
-				rowDensity = [command valueForKey:"rowDensity" onLayer:page];
+			if ([command valueForKey:"rowDensity" onDocument:context.document.documentData()]) {
+				rowDensity = [command valueForKey:"rowDensity" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"sortOrder" onLayer:page]) {
-				sortOrder = [command valueForKey:"sortOrder" onLayer:page];
+			if ([command valueForKey:"sortOrder" onDocument:context.document.documentData()]) {
+				sortOrder = [command valueForKey:"sortOrder" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"xPad" onLayer:page]) {
-				xPad = [command valueForKey:"xPad" onLayer:page];
+			if ([command valueForKey:"xPad" onDocument:context.document.documentData()]) {
+				xPad = [command valueForKey:"xPad" onDocument:context.document.documentData()];
 			}
 
-			if ([command valueForKey:"yPad" onLayer:page]) {
-				yPad = [command valueForKey:"yPad" onLayer:page];
+			if ([command valueForKey:"yPad" onDocument:context.document.documentData()]) {
+				yPad = [command valueForKey:"yPad" onDocument:context.document.documentData()];
 			}
 		}
 		catch(err) {
@@ -211,11 +211,11 @@ var onRun = function(context) {
 
 		if (responseCode == 1000) {
 			try {
-				[command setValue:[[alertWindow viewAtIndex:1] indexOfSelectedItem] forKey:"artboardsPerRowDefault" onLayer:page];
-				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"rowDensity" onLayer:page];
-				[command setValue:[[[alertWindow viewAtIndex:5] selectedCell] tag] forKey:"sortOrder" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:8] stringValue] forKey:"xPad" onLayer:page];
-				[command setValue:[[alertWindow viewAtIndex:10] stringValue] forKey:"yPad" onLayer:page];
+				[command setValue:[[alertWindow viewAtIndex:1] indexOfSelectedItem] forKey:"artboardsPerRowDefault" onDocument:context.document.documentData()];
+				[command setValue:[[[alertWindow viewAtIndex:3] selectedCell] tag] forKey:"rowDensity" onDocument:context.document.documentData()];
+				[command setValue:[[[alertWindow viewAtIndex:5] selectedCell] tag] forKey:"sortOrder" onDocument:context.document.documentData()];
+				[command setValue:[[alertWindow viewAtIndex:8] stringValue] forKey:"xPad" onDocument:context.document.documentData()];
+				[command setValue:[[alertWindow viewAtIndex:10] stringValue] forKey:"yPad" onDocument:context.document.documentData()];
 			}
 			catch(err) {
 				log("Unable to save settings.");
