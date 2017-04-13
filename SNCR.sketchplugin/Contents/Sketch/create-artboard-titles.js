@@ -69,7 +69,7 @@ var onRun = function(context) {
 			if (noteGroup) {
 				// Move annotations group above title group
 				noteGroup.select_byExpandingSelection(true,false);
-				actionWithType("MSMoveToFrontAction",context).moveToFront(null);
+				actionWithType("MSMoveToFrontAction",context).doPerformAction(nil);
 				noteGroup.select_byExpandingSelection(false,false);
 			}
 

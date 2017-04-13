@@ -118,7 +118,7 @@ var onRun = function(context) {
 
 		// Select the slice and move it to the bottom of the layer list
 		sliceLayer.select_byExpandingSelection(true,false);
-		actionWithType("MSMoveToBackAction",context).moveToBack(null);
+		actionWithType("MSMoveToBackAction",context).doPerformAction(nil);
 
 		// Replace default slice export format
 		sliceLayer.exportOptions().removeAllExportFormats();

@@ -132,6 +132,8 @@ function actionWithType(type,context) {
 		return controller.actionWithName(type);
 	} else if (controller.actionWithID) {
 		return controller.actionWithID(type);
+	} else {
+		return controller.actionForID(type);
 	}
 }
 
