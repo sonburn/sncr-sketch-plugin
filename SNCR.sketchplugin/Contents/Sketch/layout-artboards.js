@@ -8,6 +8,13 @@ var onRun = function(context) {
 	var pages = doc.pages();
 	var artboards = doc.artboards();
 	var artboardCount = artboards.count();
+	var selection = context.selection;
+	var selectionCount = selection.count();
+
+	if (selectionCount > 0) {
+		artboards = selection;
+		artboardCount = selectionCount;
+	}
 
 	// Run only if there are artboards
 	if (artboardCount) {

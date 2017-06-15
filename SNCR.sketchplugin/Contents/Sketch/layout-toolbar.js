@@ -50,16 +50,16 @@ var SNCR = {
 
 SNCR.extend({
 	layoutArtboards: function(){
-		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('layout-artboards',this.pluginURL);
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('layout-artboards',this.pluginURL,null);
 	},
 	createTitles: function(){
-		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('create-artboard-titles',this.pluginURL);
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('create-artboard-titles',this.pluginURL,null);
 	},
 	createSlice: function(){
-		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('create-artboard-slice',this.pluginURL);
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('create-artboard-slice',this.pluginURL,null);
 	},
 	exportWireframes: function(){
-		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL('export-wireframes',this.pluginURL);
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('export-wireframes',this.pluginURL,null);
 	}
 });
 

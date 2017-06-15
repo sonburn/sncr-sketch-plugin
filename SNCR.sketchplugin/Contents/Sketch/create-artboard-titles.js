@@ -44,7 +44,8 @@ var onRun = function(context) {
 				var artboardFrame = artboard.frame();
 
 				// Add screen title
-				var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,artboardFrame.width(),false);
+				// var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,artboardFrame.width(),false);
+				var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,0,false);
 
 				// Set screen title horizontal position
 				screenTitle.frame().setX(artboardFrame.x());
