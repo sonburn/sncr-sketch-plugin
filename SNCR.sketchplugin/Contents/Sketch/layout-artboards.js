@@ -5,19 +5,22 @@ var onRun = function(context) {
 	var doc = context.document;
 	var command = context.command;
 	var page = doc.currentPage();
-	var pages = doc.pages();
 	var artboards = doc.artboards();
-	var artboardCount = artboards.count();
-	var selection = context.selection;
-	var selectionCount = selection.count();
 
-	if (selectionCount > 0) {
-		artboards = selection;
-		artboardCount = selectionCount;
+	// Run for selections, otherwise for all artboards on page
+	if (context.selection.count() > 0) {
+		// Filter selections to only select artboards
+		filterSelections(context.selection);
+
+		layoutArtboards = doc.selectedLayers().layers();
+		layoutArtboardCount = doc.selectedLayers().layers().count();
+	} else {
+		layoutArtboards = artboards;
+		layoutArtboardCount = artboards.count();
 	}
 
 	// Run only if there are artboards
-	if (artboardCount) {
+	if (layoutArtboardCount) {
 		// Reset page origin
 		var pageOrigin = CGPointMake(0,0);
 		page.setRulerBase(pageOrigin);
@@ -27,8 +30,6 @@ var onRun = function(context) {
 
 		// Layout the artboards
 		if (layoutSettings) {
-			var layoutArtboards = artboards;
-
 			if (layoutSettings.sortOrder != 0) {
 				var sortByName = [NSSortDescriptor sortDescriptorWithKey:"name" ascending:1];
 				layoutArtboards = [layoutArtboards sortedArrayUsingDescriptors:[sortByName]];
@@ -39,14 +40,14 @@ var onRun = function(context) {
 			}
 
 			var firstBoard = layoutArtboards.objectAtIndex(0);
-			var lastBoard = layoutArtboards.objectAtIndex(artboardCount-1);
+			var lastBoard = layoutArtboards.objectAtIndex(layoutArtboardCount-1);
 			var lastBoardPrefix = 0;
 
 			var groupType = parseInt(firstBoard.name()) == parseInt(lastBoard.name()) ? 0 : 1;
 			var groupCount = 1;
 			var groupLayout = [];
 
-			for (var i = 0; i < artboardCount; i++) {
+			for (var i = 0; i < layoutArtboardCount; i++) {
 				var artboard = layoutArtboards.objectAtIndex(i);
 				var artboardName = artboard.name();
 
@@ -261,5 +262,13 @@ var onRun = function(context) {
 		}
 
 		artboards = [page artboards];
+	}
+
+	function filterSelections(selections) {
+		for (var i = 0; i < selections.count(); i++) {
+			if (selections[i].class() != "MSArtboardGroup") {
+				selections[i].select_byExpandingSelection(false,true);
+			}
+		}
 	}
 };
