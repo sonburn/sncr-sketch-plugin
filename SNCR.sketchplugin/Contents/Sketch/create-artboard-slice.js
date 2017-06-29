@@ -40,13 +40,13 @@ var onRun = function(context) {
 			var selectionSize = getSelectionSize(artboards);
 
 			// Layout variables
-			var margin = 500;
-			var sliceX = 200;
-			var sliceY = 800;
+			var margin = 400;
+			var sliceX = 400;
+			var sliceY = 1000;
 			var sliceWidth = selectionSize.width + sliceX + margin;
 			var sliceHeight = selectionSize.height + sliceY + margin;
-			var minWidth = 7900;
-			var minHeight = 4420;
+			var minWidth = 6680;
+			var minHeight = 4520;
 
 			// Override with minimum slice sizes if necessary
 			sliceWidth = (sliceWidth < minWidth) ? minWidth : sliceWidth;
