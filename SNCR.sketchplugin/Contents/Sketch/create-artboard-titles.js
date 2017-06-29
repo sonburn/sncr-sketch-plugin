@@ -29,10 +29,11 @@ var onRun = function(context) {
 			// Remove screen titles group, if it exists already
 			if (titleGroup) page.removeLayer(titleGroup);
 
-			// Add new screen title group
-			titleGroup = addLayerGroup(page,titleGroupName,0,0,true);
-
-			// Set clickThrough and lock title group
+			// Create new screen title group
+			titleGroup = MSLayerGroup.new();
+			titleGroup.setName(titleGroupName);
+			titleGroup.frame().setX(0);
+			titleGroup.frame().setY(0);
 			titleGroup.setIsLocked(true);
 			titleGroup.setHasClickThrough(true);
 
@@ -40,29 +41,31 @@ var onRun = function(context) {
 			for (var i = 0; i < artboards.count(); i++) {
 				// Artboard variables
 				var artboard = artboards.objectAtIndex(i);
-				var artboardName = artboard.name();
-				var artboardFrame = artboard.frame();
 
 				// Add screen title
-				// var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,artboardFrame.width(),false);
-				var screenTitle = addTextLayer(titleGroup,artboardName,artboardName,0,false);
+				var screenTitle = MSTextLayer.new();
+				screenTitle.setStringValue(artboard.name());
+				screenTitle.setName(artboard.name());
+				screenTitle.setStyle(screenTitleStyle.newInstance());
+				//screenTitle.setTextBehaviour(1);
+				//screenTitle.frame().setWidth(layerWidth);
 
 				// Set screen title horizontal position
-				screenTitle.frame().setX(artboardFrame.x());
+				screenTitle.frame().setX(artboard.frame().x());
 
 				// Set screen title vertical position per user setting
 				if (titleSettings.titleType == 0) {
-					screenTitle.frame().setY(artboardFrame.y()-(screenTitleTextHeight+screenTitleOffset));
+					screenTitle.frame().setY(artboard.frame().y()-(screenTitleTextHeight+screenTitleOffset));
 				} else {
-					screenTitle.frame().setY(artboardFrame.y()+artboardFrame.height()+screenTitleOffset);
+					screenTitle.frame().setY(artboard.frame().y()+artboard.frame().height()+screenTitleOffset);
 				}
 
-				// Set screen title style
-				screenTitle.setStyle(screenTitleStyle.newInstance());
+				// Add screen title to title group
+				titleGroup.addLayers([screenTitle]);
 			}
 
-			// Resize the screen titles group to ensure dimensions reflect contents
-			titleGroup.resizeToFitChildrenWithOption(0);
+			// Add title group to page
+			page.addLayers([titleGroup]);
 
 			// Find annotations group if one exists
 			var noteGroup = findLayerByName(page,'Annotations');
@@ -165,39 +168,5 @@ var onRun = function(context) {
 		}
 
 		return false;
-	}
-
-	function addLayerGroup(output,layerName,x,y,isUnique) {
-		var layerGroup = findLayerByName(output,layerName);
-
-		if (isUnique && layerGroup) {
-			layerGroup.frame().setX(x);
-			layerGroup.frame().setY(y);
-		} else {
-			layerGroup = MSLayerGroup.new();
-			layerGroup.setName(layerName);
-			layerGroup.frame().setX(x);
-			layerGroup.frame().setY(y);
-
-			output.addLayers([layerGroup]);
-		}
-
-		return layerGroup;
-	}
-
-	function addTextLayer(output,layerName,layerValue,layerWidth,isLocked) {
-		var textLayer = MSTextLayer.new();
-		textLayer.setStringValue(layerValue);
-		textLayer.setName(layerName);
-		textLayer.setIsLocked(isLocked);
-
-		if (layerWidth > 0) {
-			textLayer.setTextBehaviour(1);
-			textLayer.frame().setWidth(layerWidth);
-		}
-
-		output.addLayers([textLayer]);
-
-		return textLayer;
 	}
 };
