@@ -23,3 +23,24 @@ Creates a slice around your selected artboards, all artboards on the page, or al
 Scans entire document for slices with a name that matches the page name (assumed a wireframe slice) and displays all matches in alert window with the ability to quickly export all wireframes, or select individual wireframes to export. Especially useful in conjunction with the "wireframe slice" option of "Create Slice Around Artboards…".
 
 ![Export Wireframes](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Export%20Wireframes.png)
+
+# Section Titles
+
+## Add/Insert Section Title
+Adds an instance of the designated section title^1^ to the page, or inserts one above an artboard when one is selected. Once section title is added/inserted, apply override to augment section title name, and run Update All Section Titles.
+
+^1.^ Will eventually be designated within the settings for this group of functions. Currently set to "Wireframe/Section".
+
+## Link Section Title and Artboard
+Links a selected section title and an artboard together. Meant to be used in conjunction with Update All Section Titles, which will re-orient section titles to their linked artboards, in the case the artboards have been moved.
+
+Any link created between a section title and artboard will replace any previous link if one existed.
+
+## Unlink Selected Section Titles
+Removes links for selected section titles, to break their relationships to any artboards.
+
+## Select Section Titles on Page
+Selects all section titles on the current page, facilitating the ability to run another process against multiple section titles at once.
+
+## Update All Section Titles
+Updates all the section titles within document; updates the layer name to match the override name, re-orients to a linked artboard if link is present, locks layer to prevent accidental augmentation.
