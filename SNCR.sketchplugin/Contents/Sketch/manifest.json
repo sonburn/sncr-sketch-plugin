@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.52,
+	"version": 0.53,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -34,20 +34,63 @@
 			"name": "Export Wireframes…",
 			"identifier": "export-wireframes",
 			"script": "export-wireframes.js"
+		},
+		{
+			"name": "Add/Insert Section Title",
+			"identifier": "add-section-title",
+			"script": "section-titles.js",
+			"handler": "add"
+		},
+		{
+			"name": "Link Section Title and Artboard",
+			"identifier": "link-section-title",
+			"script": "section-titles.js",
+			"handler": "link"
+		},
+		{
+			"name": "Unlink Selected Section Titles",
+			"identifier": "unlink-section-title",
+			"script": "section-titles.js",
+			"handler": "unlink"
+		},
+		{
+			"name": "Select Section Titles on Page",
+			"identifier": "select-section-titles",
+			"script": "section-titles.js",
+			"handler": "select"
+		},
+		{
+			"name": "Update All Section Titles",
+			"identifier": "update-section-titles",
+			"script": "section-titles.js",
+			"handler": "update"
+		},
+		{
+			"name": "Settings…",
+			"identifier": "section-title-settings",
+			"script": "section-titles.js",
+			"handler": "settings"
 		}
 	],
 	"menu": {
 		"isRoot": true,
 		"items": [
 			{
-				"title": "SNCR - Layout & Wireframes",
+				"title": "SNCR",
 				"items": [
 					"layout-toolbar",
 					"-",
 					"layout-artboards",
 					"create-artboard-titles",
 					"create-artboard-slice",
-					"export-wireframes"
+					"export-wireframes",
+					"-",
+					"add-section-title",
+					"link-section-title",
+					"unlink-section-title",
+					"select-section-titles",
+					"update-section-titles",
+					"section-title-settings"
 				]
 			}
 		]

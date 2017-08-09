@@ -36,6 +36,21 @@ var SNCR = {
 				case "export-wireframes":
 					this.exportWireframes();
 					break;
+				case "add-section-title":
+					this.addSectionTitle();
+					break;
+				case "link-section-title":
+					this.linkSectionTitle();
+					break;
+				case "unlink-section-title":
+					this.unlinkSectionTitle();
+					break;
+				case "select-section-titles":
+					this.selectSectionTitles();
+					break;
+				case "update-section-titles":
+					this.updateSectionTitles();
+					break;
 			}
 		}
 	},
@@ -60,6 +75,21 @@ SNCR.extend({
 	},
 	exportWireframes: function(){
 		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('export-wireframes',this.pluginURL,null);
+	},
+	addSectionTitle: function(){
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('add-section-title',this.pluginURL,null);
+	},
+	linkSectionTitle: function(){
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('link-section-title',this.pluginURL,null);
+	},
+	unlinkSectionTitle: function(){
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('unlink-section-title',this.pluginURL,null);
+	},
+	selectSectionTitles: function(){
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('select-section-titles',this.pluginURL,null);
+	},
+	updateSectionTitles: function(){
+		this.sketchApp.delegate().runPluginCommandWithIdentifier_fromBundleAtURL_context('update-section-titles',this.pluginURL,null);
 	}
 });
 
@@ -75,7 +105,7 @@ SNCR.extend({
 			LayoutBar.setBackgroundColor(NSColor.colorWithRed_green_blue_alpha(0, 0, 0, 1));
 			LayoutBar.setTitleVisibility(NSWindowTitleHidden);
 			LayoutBar.setTitlebarAppearsTransparent(true);
-			LayoutBar.setFrame_display(NSMakeRect(0, 0, 300, 50), false);
+			LayoutBar.setFrame_display(NSMakeRect(0, 0, 580, 50), false);
 			LayoutBar.setMovableByWindowBackground(true);
 			LayoutBar.setHasShadow(true);
 			LayoutBar.setLevel(NSFloatingWindowLevel);
@@ -128,13 +158,40 @@ SNCR.extend({
 					function(sender){
 						self.init(self.context, "export-wireframes");
 				}),
-				separater = addImage( NSMakeRect(70, 10, 10, 30), "separate");
+				addSectionTitleButton = addButton( NSMakeRect(330, 10,30,30), "add-section-title",
+					function(sender){
+						self.init(self.context, "add-section-title");
+				}),
+				linkSectionTitleButton = addButton( NSMakeRect(380, 10,30,30), "link-section-title",
+					function(sender){
+						self.init(self.context, "link-section-title");
+				}),
+				unlinkSectionTitleButton = addButton( NSMakeRect(430, 10,30,30), "unlink-section-title",
+					function(sender){
+						self.init(self.context, "unlink-section-title");
+				}),
+				selectSectionTitlesButton = addButton( NSMakeRect(480, 10,30,30), "select-section-titles",
+					function(sender){
+						self.init(self.context, "select-section-titles");
+				}),
+				updateSectionTitlesButton = addButton( NSMakeRect(530, 10,30,30), "update-section-titles",
+					function(sender){
+						self.init(self.context, "update-section-titles");
+				}),
+				separator1 = addImage( NSMakeRect(70, 10, 10, 30), "separate"),
+				separator2 = addImage( NSMakeRect(300, 10, 10, 30), "separate");
 			contentView.addSubview(closeButton);
-			contentView.addSubview(separater);
+			contentView.addSubview(separator1);
 			contentView.addSubview(layoutArtboardsButton);
 			contentView.addSubview(createTitlesButton);
 			contentView.addSubview(createSliceButton);
 			contentView.addSubview(exportWireframesButton);
+			contentView.addSubview(separator2);
+			contentView.addSubview(addSectionTitleButton);
+			contentView.addSubview(linkSectionTitleButton);
+			contentView.addSubview(unlinkSectionTitleButton);
+			contentView.addSubview(selectSectionTitlesButton);
+			contentView.addSubview(updateSectionTitlesButton);
 			threadDictionary[identifier] = LayoutBar;
 			LayoutBar.center();
 			LayoutBar.makeKeyAndOrderFront(nil);

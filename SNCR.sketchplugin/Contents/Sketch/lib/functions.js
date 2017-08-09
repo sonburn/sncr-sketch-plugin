@@ -163,6 +163,22 @@ function createRadioButtons(options,selected) {
 	return buttonMatrix;
 }
 
+function findLayerByID(scope,layerID,type) {
+	var scope = scope.layers();
+
+	if (scope) {
+		for (var i = 0; i < scope.count(); i++) {
+			var layer = scope.objectAtIndex(i);
+
+			if ((!type && layer.objectID() == layerID) || (type && layer.objectID() == layerID && layer instanceof type)) {
+				return layer;
+			}
+		}
+	}
+
+	return false;
+}
+
 function findLayerByName(scope,layerName,type) {
 	var scope = scope.layers();
 
@@ -182,4 +198,26 @@ function findLayerByName(scope,layerName,type) {
 function displayDialog(title,body) {
 	var app = NSApplication.sharedApplication();
 	app.displayDialog_withTitle(body,title);
+}
+
+function getLayerIndex(layer) {
+	var layers = layer.parentGroup().layers();
+
+	for (var i = 0; i < layers.count(); i++) {
+		if (layers.objectAtIndex(i) == layer) return i;
+	}
+
+	return false;
+}
+
+function updateLayerName(layer,isLinked) {
+	var layerName = layer.overrides().allValues()[0];
+
+	if (isLinked) {
+		layerName = "🔗 " + layerName;
+	}
+
+	layer.setName(layerName);
+
+	return layerName;
 }
