@@ -6,11 +6,11 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.54</title>
+			<title>Version 0.56</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added new functions around managing section titles: Add/Insert Section Title, Link Section Title and Artboard, Unlink Selected Section Titles, Select Section Titles on Page, Update All Section Titles.</li>
+				<li>Added ability to insert more than one section title at a time. Updated Y offset to account for actual height from symbolMaster, to allow for future flexibility.</li>
 				</ul>
 				]]>
 			</description>
