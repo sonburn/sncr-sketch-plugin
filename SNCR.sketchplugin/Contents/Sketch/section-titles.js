@@ -11,6 +11,7 @@ var strSectionTitleLinkOverride = "First add an override to the selected screen 
 var strSectionTitleLinkPluginName = "Link Section Title";
 var strSectionTitleLinkProblem = "Select one section title and one artboard to link.";
 var strSectionTitleUnlinked = " screen title is no longer linked to ";
+var strSectionTitlesAdded = " section title(s) added.";
 var strSectionTitlesSelected = " section titles selected.";
 var strSectionTitlesUnlinked = " section title(s) unlinked.";
 var strSectionTitlesUpdated = "Section titles updated.";
@@ -25,39 +26,53 @@ var add = function(context) {
 	// Context variables
 	var doc = context.document;
 	var selection = context.selection;
+	var page = doc.currentPage();
 
 	// Get the symbol master
 	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
 
 	// If the symbol master exists...
 	if (symbolMaster) {
-		// Create a symbol instance
-		var symbolInstance = symbolMaster.newSymbolInstance();
+		// If there are selections...
+		if (selection.count() > 0) {
+			// Set a counter
+			count = 0;
 
-		// If one item is selected...
-		if (selection.count() == 1) {
-			// Set layer x/y in relation to artboard, with offsets
-			symbolInstance.frame().setX(selection[0].frame().x() + sectionTitleXOffset);
-			symbolInstance.frame().setY(selection[0].frame().y() + sectionTitleYOffset);
+			// Iterate through selections...
+			for (var i = 0; i < selection.count(); i++) {
+				// Create a symbol instance
+				var symbolInstance = symbolMaster.newSymbolInstance();
 
-			// Insert the symbol instance below the selection
-			selection[0].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(selection[0]));
+				// Set layer x/y in relation to artboard, with offsets
+				symbolInstance.frame().setX(selection[i].frame().x() + sectionTitleXOffset);
+				symbolInstance.frame().setY(selection[i].frame().y() + sectionTitleYOffset);
 
-			// Select the symbol instance, and maintain other selection
-			symbolInstance.select_byExpandingSelection(true,true);
+				// Insert the symbol instance below the selection
+				selection[i].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(selection[i]));
+
+				// If more than one item selected...
+				if (selection.count() > 1) {
+					// Deselect the selection
+					selection[i].select_byExpandingSelection(false,true);
+				}
+
+				// Select the symbol instance, and maintain other selections
+				symbolInstance.select_byExpandingSelection(true,true);
+
+				// Iterate the counter
+				count++;
+			}
 
 			// Display feedback
-			doc.showMessage(strSectionTitleAdded);
-		}
-		// If more than one item is selected...
-		else if (selection.count() > 1) {
-			// Display feedback
-			displayDialog(strSectionTitleAddPluginName,strSectionTitleAddProblem);
+			doc.showMessage(count + strSectionTitlesAdded);
 		}
 		// If nothing is selected...
 		else {
+			// Create a symbol instance
+			var symbolInstance = symbolMaster.newSymbolInstance();
+
 			// Add the symbol instance to page
-			doc.currentPage().addLayers([symbolInstance]);
+			page.addLayers([symbolInstance]);
 
 			// Select the symbol instance
 			symbolInstance.select_byExpandingSelection(true,false);
