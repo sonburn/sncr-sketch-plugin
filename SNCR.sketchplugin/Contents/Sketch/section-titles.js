@@ -25,58 +25,49 @@ var add = function(context) {
 	// Context variables
 	var doc = context.document;
 	var selection = context.selection;
-	var page = doc.currentPage();
-	var symbols = doc.documentData().allSymbols();
 
-	// Initiate symbol loop
-	var symbolLoop = symbols.objectEnumerator();
-	var symbol, symbolInstance;
+	// Get the symbol master
+	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
 
-	// Iterate through symbols, if no symbol instance has been set...
-	while (symbol = symbolLoop.nextObject()) {
-		// If symbol name matches the provided name
-		if (symbol.name().trim() == strSymbolMasterName) {
-			// Set symbol instance
-			symbolInstance = symbol.newSymbolInstance();
+	// If the symbol master exists...
+	if (symbolMaster) {
+		// Create a symbol instance
+		var symbolInstance = symbolMaster.newSymbolInstance();
 
-			// If something is selected...
-			if (selection.count() > 0) {
-				// If only one item is selected...
-				if (selection.count() == 1) {
-					// Set layer x/y in relation to artboard, with offsets
-					symbolInstance.frame().setX(selection[0].frame().x() + sectionTitleXOffset);
-					symbolInstance.frame().setY(selection[0].frame().y() + sectionTitleYOffset);
+		// If one item is selected...
+		if (selection.count() == 1) {
+			// Set layer x/y in relation to artboard, with offsets
+			symbolInstance.frame().setX(selection[0].frame().x() + sectionTitleXOffset);
+			symbolInstance.frame().setY(selection[0].frame().y() + sectionTitleYOffset);
 
-					// Insert the symbol instance below the selection
-					selection[0].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(selection[0]));
+			// Insert the symbol instance below the selection
+			selection[0].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(selection[0]));
 
-					// Select the symbol instance, and maintain other selection
-					symbolInstance.select_byExpandingSelection(true,true);
+			// Select the symbol instance, and maintain other selection
+			symbolInstance.select_byExpandingSelection(true,true);
 
-					// Display feedback
-					doc.showMessage(strSectionTitleAdded);
-				}
-				// If more than one item is selected...
-				else {
-					// Display feedback
-					doc.showMessage(strSectionTitleAddProblem);
-				}
-			}
-			// If nothing is selected...
-			else {
-				// Add the symbol instance to page
-				page.addLayers([symbolInstance]);
+			// Display feedback
+			doc.showMessage(strSectionTitleAdded);
+		}
+		// If more than one item is selected...
+		else if (selection.count() > 1) {
+			// Display feedback
+			displayDialog(strSectionTitleAddPluginName,strSectionTitleAddProblem);
+		}
+		// If nothing is selected...
+		else {
+			// Add the symbol instance to page
+			doc.currentPage().addLayers([symbolInstance]);
 
-				// Select the symbol instance
-				symbolInstance.select_byExpandingSelection(true,false);
+			// Select the symbol instance
+			symbolInstance.select_byExpandingSelection(true,false);
 
-				// Display feedback
-				doc.showMessage(strSectionTitleAdded);
-			}
+			// Display feedback
+			doc.showMessage(strSectionTitleAdded);
 		}
 	}
-
-	if (!symbolInstance) {
+	// If the symbol master does not exist...
+	else {
 		// Display feedback
 		displayDialog(strSectionTitleAddPluginName,strSectionTitleAddSymbol);
 	}
@@ -150,23 +141,24 @@ var select = function(context) {
 	// Context variables
 	var doc = context.document;
 	var page = doc.currentPage();
-	var layers = page.layers();
+
+	// Deselect everything in the current page
+	page.changeSelectionBySelectingLayers(nil);
 
 	// Set a counter
-	var count = 0;
+	count = 0;
 
-	// Iterate through layers...
-	for (var i = 0; i < layers.count(); i++) {
-		// Current layer
-		var layer = layers.objectAtIndex(i);
+	// Get the symbol master instances, and construct a loop
+	var sectionTitles = getSymbolByName(context,strSymbolMasterName).allInstances();
+	var sectionTitlesLoop = sectionTitles.objectEnumerator();
+	var sectionTitle;
 
-		// Deselect current layer
-		layer.select_byExpandingSelection(false,true);
-
-		// If the layer is a symbol instance, and symbol master name matches the provided name
-		if (layer instanceof MSSymbolInstance && layer.symbolMaster().name().trim() == strSymbolMasterName) {
-			// Select current layer, while maintaining other selections
-			layer.select_byExpandingSelection(true,true);
+	// Iterate through symbol instances...
+	while (sectionTitle = sectionTitlesLoop.nextObject()) {
+		// If the symbol instance is on current page...
+		if (sectionTitle.parentPage() == page) {
+			// Select the symbol instance while maintaining other selections
+			sectionTitle.select_byExpandingSelection(true,true);
 
 			// Iterate the counter
 			count++;
@@ -232,57 +224,49 @@ var unlink = function(context) {
 var update = function(context) {
 	// Context variables
 	var doc = context.document;
-	var pages = doc.pages();
 
-	// Iterate through pages...
-	for (var i = 0; i < pages.count(); i++) {
-		// Get all layers for current page
-		var layers = pages.objectAtIndex(i).layers();
+	// Get the symbol master instances, and construct a loop
+	var sectionTitles = getSymbolByName(context,strSymbolMasterName).allInstances();
+	var sectionTitlesLoop = sectionTitles.objectEnumerator();
+	var sectionTitle;
 
-		// Iterate through the layers...
-		for (var j = 0; j < layers.count(); j++) {
-			// Current layer
-			var layer = layers.objectAtIndex(j);
+	// Iterate through symbol instances...
+	while (sectionTitle = sectionTitlesLoop.nextObject()) {
+		// Assume symbol instance is not linked
+		var isLinked = false;
 
-			// If layer is a symbol instance, and symbol master name matches the provided name
-			if (layer instanceof MSSymbolInstance && layer.symbolMaster().name().trim() == strSymbolMasterName) {
-				// Assume layer is not linked
-				var isLinked = false;
+		// Get stored value for linked artboard
+		var linkedArtboard = context.command.valueForKey_onLayer("sncrScreenTitleLinkedTo",sectionTitle);
 
-				// Get stored value for linked artboard
-				var linkedArtboard = context.command.valueForKey_onLayer("sncrScreenTitleLinkedTo",layer);
+		// If symbol instance is linked to an artboard...
+		if (linkedArtboard) {
+			// Get linked artboard object, if it resides on the symbol instance page
+			var artboard = findLayerByID(sectionTitle.parentPage(),linkedArtboard);
 
-				// If layer is linked to an artboard...
-				if (linkedArtboard) {
-					// Get linked artboard object, if it resides on the layer page
-					var artboard = findLayerByID(pages.objectAtIndex(i),linkedArtboard);
+			// If artboard object exists...
+			if (artboard) {
+				// Set symbol instance x/y in relation to artboard, with offsets
+				sectionTitle.frame().setX(artboard.frame().x() + sectionTitleXOffset);
+				sectionTitle.frame().setY(artboard.frame().y() + sectionTitleYOffset);
 
-					// If artboard object exists...
-					if (artboard) {
-						// Set layer x/y in relation to artboard, with offsets
-						layer.frame().setX(artboard.frame().x() + sectionTitleXOffset);
-						layer.frame().setY(artboard.frame().y() + sectionTitleYOffset);
+				// Set isLinked to true
+				isLinked = true;
+			}
+			// If artboard object does not exist...
+			else {
+				// Remove stored value for linked artboard
+				context.command.setValue_forKey_onLayer(nil,"sncrScreenTitleLinkedTo",sectionTitle);
 
-						// Set isLinked to true
-						isLinked = true;
-					}
-					// If artboard object does not exist...
-					else {
-						// Remove stored value for linked artboard
-						context.command.setValue_forKey_onLayer(nil,"sncrScreenTitleLinkedTo",layer);
-
-						// Create a log event
-						log(layer.name() + strSectionTitleUnlinked + linkedArtboard + ".");
-					}
-				}
-
-				// Update the layer name, and indicate if linked
-				updateLayerName(layer,isLinked);
-
-				// Lock the layer
-				layer.setIsLocked(1);
+				// Create a log event
+				log(sectionTitle.name() + strSectionTitleUnlinked + linkedArtboard + ".");
 			}
 		}
+
+		// Update the symbol instance name, and indicate if linked
+		updateLayerName(sectionTitle,isLinked);
+
+		// Lock the symbol instance
+		sectionTitle.setIsLocked(1);
 	}
 
 	// Display feedback

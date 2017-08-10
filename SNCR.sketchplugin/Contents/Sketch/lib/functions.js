@@ -221,3 +221,27 @@ function updateLayerName(layer,isLinked) {
 
 	return layerName;
 }
+
+function getSymbolByName(context,name) { // Need to address duplicate symbols
+	var symbols = context.document.documentData().allSymbols();
+	var symbolLoop = symbols.objectEnumerator();
+	var symbol;
+
+	while (symbol = symbolLoop.nextObject()) {
+		if (symbol.name() == name) return symbol;
+	}
+
+	return false;
+}
+
+function deselectEverything(context) {
+	var pages = context.document.pages();
+	var pagesLoop = pages.objectEnumerator();
+	var page;
+
+	while (page = pagesLoop.nextObject()) {
+		page.changeSelectionBySelectingLayers(nil);
+	}
+	
+	return true;
+}
