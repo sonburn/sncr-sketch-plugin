@@ -19,7 +19,7 @@ var strSectionTitleUnlinkProblem = "Select a section title to unlink.";
 
 // Configuration variables
 var sectionTitleXOffset = 0;
-var sectionTitleYOffset = -280; // Would be better to programmatically get symbol height (currently 172), and add to desired spacing (108)
+var sectionTitleYOffset = -108;
 
 // Function to add a screen title
 var add = function(context) {
@@ -45,7 +45,7 @@ var add = function(context) {
 
 				// Set layer x/y in relation to artboard, with offsets
 				symbolInstance.frame().setX(selection[i].frame().x() + sectionTitleXOffset);
-				symbolInstance.frame().setY(selection[i].frame().y() + sectionTitleYOffset);
+				symbolInstance.frame().setY(selection[i].frame().y() + sectionTitleYOffset - symbolMaster.frame().height());
 
 				// Insert the symbol instance below the selection
 				selection[i].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(selection[i]));
@@ -163,8 +163,11 @@ var select = function(context) {
 	// Set a counter
 	count = 0;
 
+	// Get the symbol master
+	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
+
 	// Get the symbol master instances, and construct a loop
-	var sectionTitles = getSymbolByName(context,strSymbolMasterName).allInstances();
+	var sectionTitles = symbolMaster.allInstances();
 	var sectionTitlesLoop = sectionTitles.objectEnumerator();
 	var sectionTitle;
 
@@ -240,8 +243,11 @@ var update = function(context) {
 	// Context variables
 	var doc = context.document;
 
+	// Get the symbol master
+	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
+
 	// Get the symbol master instances, and construct a loop
-	var sectionTitles = getSymbolByName(context,strSymbolMasterName).allInstances();
+	var sectionTitles = symbolMaster.allInstances();
 	var sectionTitlesLoop = sectionTitles.objectEnumerator();
 	var sectionTitle;
 
@@ -262,7 +268,7 @@ var update = function(context) {
 			if (artboard) {
 				// Set symbol instance x/y in relation to artboard, with offsets
 				sectionTitle.frame().setX(artboard.frame().x() + sectionTitleXOffset);
-				sectionTitle.frame().setY(artboard.frame().y() + sectionTitleYOffset);
+				sectionTitle.frame().setY(artboard.frame().y() + sectionTitleYOffset - symbolMaster.frame().height());
 
 				// Set isLinked to true
 				isLinked = true;
