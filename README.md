@@ -27,7 +27,7 @@ Scans entire document for slices with a name that matches the page name (assumed
 # Section Titles
 
 ## Add/Insert Section Title
-Adds an instance of the designated section title¹ to the page, or inserts one above an artboard when one is selected. Once section title is added/inserted, apply override to augment section title name, and run Update All Section Titles.
+Adds an instance of the designated section title¹ to the page, or inserts one above selected artboard(s). Once section title is added/inserted, user should apply override to set the section title name, link to an artboard, and then run Update All Section Titles.
 
 ¹Will eventually be designated within the settings for this group of functions. Currently set to "Wireframe/Section".
 
