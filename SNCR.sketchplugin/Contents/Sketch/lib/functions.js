@@ -242,6 +242,43 @@ function deselectEverything(context) {
 	while (page = pagesLoop.nextObject()) {
 		page.changeSelectionBySelectingLayers(nil);
 	}
-	
+
 	return true;
+}
+
+function getObjectByName(haystack,needle) {
+	for (var i = 0; i < haystack.count(); i++) {
+		var objectName = haystack.objectAtIndex(i).name();
+
+		if (objectName && objectName.isEqualToString(needle)) {
+			return haystack.objectAtIndex(i);
+		}
+	}
+
+	return false;
+}
+
+function addTextStyle(context,styleName,styleData) {
+	var layerTextStyles = context.document.documentData().layerTextStyles();
+
+	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
+
+	if (!textStyle) {
+		var textLayer = MSTextLayer.alloc().initWithFrame(nil);
+		textLayer.setFontSize(styleData.fontSize);
+		textLayer.setLineHeight(styleData.lineHeight);
+		textLayer.setTextAlignment(styleData.textAlignment);
+		textLayer.setFontPostscriptName(styleData.fontFace);
+
+		textStyle = layerTextStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
+	}
+
+	return textStyle;
+}
+
+function deleteTextStyle(context,styleName) {
+	var layerTextStyles = context.document.documentData().layerTextStyles();
+	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
+
+	if (textStyle) layerTextStyles.removeSharedStyle(textStyle);
 }

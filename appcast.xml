@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.56</title>
+			<title>Version 0.58</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added ability to insert more than one section title at a time. Updated Y offset to account for actual height from symbolMaster, to allow for future flexibility.</li>
+				<li>Cleaned up Create Artboard Titles code, moved embedded functions to functions.js for broader use, implemented new SNCR parent group.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.56" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.58" />
 		</item>
 	</channel>
 </rss>

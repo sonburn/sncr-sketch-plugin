@@ -1,5 +1,24 @@
 @import 'lib/functions.js';
 
+// String variables
+var strCreateTitlesPluginName = "Create Artboard Titles";
+var strCreateTitlesCreatedTitles = " screen title(s) created!";
+var strCreateTitlesNoArtboards = "There are no artboards on the current page, therefore no titles to create.";
+var strCreateTitlesNoSettings = "There was a problem retrieving the settings required to create titles.";
+
+// Group variables
+var parentGroupName = "SNCR";
+var titleGroupName = "Titles";
+
+// Screen title style
+var screenTitleStyleName = "Wireframe/Screen Title";
+var screenTitleStyleData = {
+	fontFace : "Neue Haas Grotesk Text Std 75 Bold",
+	fontSize : 18,
+	lineHeight : 48,
+	textAlignment : 0
+}
+
 var onRun = function(context) {
 	// Document variables
 	var doc = context.document;
@@ -9,81 +28,98 @@ var onRun = function(context) {
 	var layers = page.layers();
 
 	// If artboards exist on the page...
-	if (artboards.length) {
-		// User	variables
+	if (artboards.count() > 0) {
+		// Get user settings
 		var titleSettings = showTitleSettings();
 
-		// Generate the titles
+		// If user settings were retrieved...
 		if (titleSettings) {
-			// Screen title variables
-			var titleGroupName = 'Titles';
-			var screenTitleTextHeight = 48;
+			// Screen title settings
 			var screenTitleOffset = parseInt(titleSettings.titleOffset);
 
-			// Add screen title style, if it doesn't exist already
-			var screenTitleStyle = addTextStyle('Layout/Screen Title','Helvetica Neue Medium Italic',14,screenTitleTextHeight,0);
+			// Remove screen title style (the old style)
+			deleteTextStyle(context,'Layout/Screen Title');
 
-			// Find screen titles group, if it exists already
-			var titleGroup = findLayerByName(page,titleGroupName);
+			// Get screen title style, or add style if it doesn't exist (the new style)
+			var screenTitleStyle = addTextStyle(context,screenTitleStyleName,screenTitleStyleData);
 
-			// Remove screen titles group, if it exists already
-			if (titleGroup) page.removeLayer(titleGroup);
+			// Set parent group
+			var parentGroup = findLayerByName(page,parentGroupName);
+
+			// If parent group does not exist...
+			if (!parentGroup) {
+				// Create parent group
+				var parentGroup = MSLayerGroup.new();
+				parentGroup.setName(parentGroupName);
+
+				// Add parent group to page
+				page.addLayers([parentGroup]);
+			}
+
+			// Set/reset parent group values
+			parentGroup.frame().setX(0);
+			parentGroup.frame().setY(0);
+			parentGroup.setIsLocked(true);
+			parentGroup.setHasClickThrough(true);
+
+			// Find and remove screen titles group if it exists on the page (the old location)
+			page.removeLayer(findLayerByName(page,titleGroupName));
+
+			// Find and remove screen titles group if it exists in the parent group (the new location)
+			parentGroup.removeLayer(findLayerByName(parentGroup,titleGroupName));
 
 			// Create new screen title group
-			titleGroup = MSLayerGroup.new();
+			var titleGroup = MSLayerGroup.new();
 			titleGroup.setName(titleGroupName);
 			titleGroup.frame().setX(0);
 			titleGroup.frame().setY(0);
 			titleGroup.setIsLocked(true);
 			titleGroup.setHasClickThrough(true);
 
-			// Iterate through each artboard on the page
+			// Iterate through the artboards...
 			for (var i = 0; i < artboards.count(); i++) {
-				// Artboard variables
+				// Current artboard
 				var artboard = artboards.objectAtIndex(i);
 
-				// Add screen title
+				// Create a screen title
 				var screenTitle = MSTextLayer.new();
 				screenTitle.setStringValue(artboard.name());
 				screenTitle.setName(artboard.name());
 				screenTitle.setStyle(screenTitleStyle.newInstance());
-				//screenTitle.setTextBehaviour(1);
-				//screenTitle.frame().setWidth(layerWidth);
 
-				// Set screen title horizontal position
+				// Set screen title x/y position
 				screenTitle.frame().setX(artboard.frame().x());
+				screenTitle.frame().setY(artboard.frame().y() + artboard.frame().height() + screenTitleOffset);
 
-				// Set screen title vertical position per user setting
+				// If user wants screen title below artboards...
 				if (titleSettings.titleType == 0) {
-					screenTitle.frame().setY(artboard.frame().y()-(screenTitleTextHeight+screenTitleOffset));
-				} else {
-					screenTitle.frame().setY(artboard.frame().y()+artboard.frame().height()+screenTitleOffset);
+					// Adjust screen title y position
+					screenTitle.frame().setY(artboard.frame().y() - (screenTitleStyleData.lineHeight + screenTitleOffset));
 				}
 
 				// Add screen title to title group
 				titleGroup.addLayers([screenTitle]);
 			}
 
-			// Add title group to page
-			page.addLayers([titleGroup]);
+			// Add title group to parent group
+			parentGroup.addLayers([titleGroup]);
 
-			// Find annotations group if one exists
-			var noteGroup = findLayerByName(page,'Annotations');
+			// Resize title group to account for children
+			titleGroup.resizeToFitChildrenWithOption(0);
 
-			if (noteGroup) {
-				// Move annotations group above title group
-				noteGroup.select_byExpandingSelection(true,false);
-				actionWithType("MSMoveToFrontAction",context).doPerformAction(nil);
-				noteGroup.select_byExpandingSelection(false,false);
-			}
-
-			// Feedback to user
-			doc.showMessage(artboards.count() + " screen titles created!");
+			// Display feedback
+			doc.showMessage(artboards.count() + strCreateTitlesCreatedTitles);
 		}
-	} else {
-		// Feedback to user
-		var app = NSApplication.sharedApplication();
-		app.displayDialog_withTitle("No artboards, no titles!","Create Artboard Titles");
+		// If user settings were not retrieved...
+		else {
+			// Display feedback
+			displayDialog(strCreateTitlesPluginName,strCreateTitlesNoSettings);
+		}
+	}
+	// If no artboards exist on the page...
+	else {
+		// Display feedback
+		displayDialog(strCreateTitlesPluginName,strCreateTitlesNoArtboards);
 	}
 
 	function showTitleSettings() {
@@ -138,35 +174,5 @@ var onRun = function(context) {
 				titleOffset : [[alertWindow viewAtIndex:2] stringValue]
 			}
 		} else return false;
-	}
-
-	function addTextStyle(styleName,fontName,fontSize,fontLineHeight,textAlignment) {
-		if (!getTextStyleByName(styleName)) {
-			var sharedStyles = doc.documentData().layerTextStyles();
-
-			var textLayer = [[MSTextLayer alloc] initWithFrame:nil];
-			textLayer.setFontSize(fontSize);
-			textLayer.setLineHeight(fontLineHeight);
-			textLayer.setTextAlignment(textAlignment);
-			textLayer.setFontPostscriptName(fontName);
-
-			sharedStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
-		}
-
-		return getTextStyleByName(styleName);
-	}
-
-	function getTextStyleByName(styleName) {
-		var textStyles = doc.documentData().layerTextStyles().objects();
-
-		if (textStyles) {
-			for (var i = 0; i < textStyles.count(); i++) {
-				if (textStyles.objectAtIndex(i).name() == styleName) {
-					return textStyles.objectAtIndex(i);
-				}
-			}
-		}
-
-		return false;
 	}
 };
