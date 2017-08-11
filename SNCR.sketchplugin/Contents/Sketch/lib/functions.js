@@ -258,7 +258,7 @@ function getObjectByName(haystack,needle) {
 	return false;
 }
 
-function addTextStyle(context,styleName,styleData) {
+function getTextStyle(context,styleName,styleData) {
 	var layerTextStyles = context.document.documentData().layerTextStyles();
 
 	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);

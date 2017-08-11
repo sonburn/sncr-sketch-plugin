@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.58,
+	"version": 0.59,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -24,7 +24,8 @@
 		{
 			"name": "Create Artboard Titles…",
 			"identifier": "create-artboard-titles",
-			"script": "create-artboard-titles.js"
+			"script": "artboard-titles.js",
+			"handler": "create"
 		},
 		{
 			"name": "Create Artboard Slice…",
@@ -37,31 +38,31 @@
 			"script": "export-wireframes.js"
 		},
 		{
-			"name": "Add/Insert Section Title",
+			"name": "Add/Insert",
 			"identifier": "add-section-title",
 			"script": "section-titles.js",
 			"handler": "add"
 		},
 		{
-			"name": "Link Section Title and Artboard",
+			"name": "Link Selected",
 			"identifier": "link-section-title",
 			"script": "section-titles.js",
 			"handler": "link"
 		},
 		{
-			"name": "Unlink Selected Section Titles",
+			"name": "Unlink Selected",
 			"identifier": "unlink-section-title",
 			"script": "section-titles.js",
 			"handler": "unlink"
 		},
 		{
-			"name": "Select Section Titles on Page",
+			"name": "Select All on Page",
 			"identifier": "select-section-titles",
 			"script": "section-titles.js",
 			"handler": "select"
 		},
 		{
-			"name": "Update All Section Titles",
+			"name": "Update All in Document",
 			"identifier": "update-section-titles",
 			"script": "section-titles.js",
 			"handler": "update"
@@ -71,27 +72,55 @@
 			"identifier": "section-title-settings",
 			"script": "section-titles.js",
 			"handler": "settings"
+		},
+		{
+			"name": "Link Selected",
+			"identifier": "link-artboard-desc",
+			"script": "artboard-descriptions.js",
+			"handler": "link"
+		},
+		{
+			"name": "Select All on Page",
+			"identifier": "select-artboard-descs",
+			"script": "artboard-descriptions.js",
+			"handler": "select"
+		},
+		{
+			"name": "Update All on Page",
+			"identifier": "update-artboard-descs",
+			"script": "artboard-descriptions.js",
+			"handler": "update"
 		}
 	],
 	"menu": {
-		"isRoot": true,
 		"items": [
+			"layout-toolbar",
 			{
-				"title": "SNCR",
+				"title": "Layout & Wireframes",
 				"items": [
-					"layout-toolbar",
-					"-",
 					"layout-artboards",
 					"create-artboard-titles",
 					"create-artboard-slice",
 					"export-wireframes",
-					"-",
+				]
+			},
+			{
+				"title": "Section Titles",
+				"items": [
 					"add-section-title",
 					"link-section-title",
 					"unlink-section-title",
 					"select-section-titles",
 					"update-section-titles",
-					"section-title-settings"
+					"section-title-settings",
+				]
+			},
+			{
+				"title": "Artboard Descriptions",
+				"items": [
+					"link-artboard-desc",
+					"select-artboard-descs",
+					"update-artboard-descs"
 				]
 			}
 		]

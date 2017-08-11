@@ -26,21 +26,32 @@ Scans entire document for slices with a name that matches the page name (assumed
 
 # Section Titles
 
-## Add/Insert Section Title
-Adds an instance of the designated section title¹ to the page, or inserts one above selected artboard(s). Once section title is added/inserted, user should apply override to set the section title name, link to an artboard, and then run Update All Section Titles.
+## Add/Insert
+Adds an instance of the designated section title¹ symbol to the page, or inserts one above selected artboard(s). Once section title is added/inserted, user should apply override to set the section title name, link to an artboard, and then run "Update All in Document".
 
 ¹Will eventually be designated within the settings for this group of functions. Currently set to "Wireframe/Section".
 
-## Link Section Title and Artboard
-Links a selected section title and an artboard together. Meant to be used in conjunction with Update All Section Titles, which will re-orient section titles to their linked artboards, in the case the artboards have been moved.
+## Link Selected
+Links the selected section title and artboard together. Meant to be used in conjunction with "Update All in Document", which will re-orient section titles to their linked artboards, in the case the artboards have been moved.
 
 Any link created between a section title and artboard will replace any previous link if one existed.
 
-## Unlink Selected Section Titles
+## Unlink Selected
 Removes links for selected section titles, to break their relationships to any artboards.
 
-## Select Section Titles on Page
-Selects all section titles on the current page, facilitating the ability to run another process against multiple section titles at once.
+## Select All on Page
+Selects all section titles on the current page, facilitating the ability to run another process against all selected section titles at once.
 
-## Update All Section Titles
+## Update All in Document
 Updates all the section titles within document; updates the layer name to match the override name, re-orients to a linked artboard if link is present, locks layer to prevent accidental augmentation.
+
+# Artboard Descriptions
+
+## Link Selected
+Links the selected artboard description and artboard together. Any link created between an artboard description and artboard will replace any previous link, if one existed.
+
+## Select All on Page
+Selects all artboard descriptions on the current page, facilitating the ability to run another process against all selected artboard descriptions at once.
+
+## Update All on Page
+Updates all linked artboard descriptions on the current page; updates the layer name to match the linked artboard name, moves the artboard description to the SNCR > Descriptions directory, and re-orients the position in the case the artboards have been moved.

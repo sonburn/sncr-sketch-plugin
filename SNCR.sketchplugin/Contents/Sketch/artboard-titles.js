@@ -19,7 +19,8 @@ var screenTitleStyleData = {
 	textAlignment : 0
 }
 
-var onRun = function(context) {
+// Function to create artboard titles
+var create = function(context) {
 	// Document variables
 	var doc = context.document;
 	var command = context.command;
@@ -40,8 +41,8 @@ var onRun = function(context) {
 			// Remove screen title style (the old style)
 			deleteTextStyle(context,'Layout/Screen Title');
 
-			// Get screen title style, or add style if it doesn't exist (the new style)
-			var screenTitleStyle = addTextStyle(context,screenTitleStyleName,screenTitleStyleData);
+			// Get screen title style (will add style if it doesn't exist) (the new style)
+			var screenTitleStyle = getTextStyle(context,screenTitleStyleName,screenTitleStyleData);
 
 			// Set parent group
 			var parentGroup = findLayerByName(page,parentGroupName);
@@ -51,14 +52,14 @@ var onRun = function(context) {
 				// Create parent group
 				var parentGroup = MSLayerGroup.new();
 				parentGroup.setName(parentGroupName);
+				parentGroup.frame().setX(0);
+				parentGroup.frame().setY(0);
 
 				// Add parent group to page
 				page.addLayers([parentGroup]);
 			}
 
 			// Set/reset parent group values
-			parentGroup.frame().setX(0);
-			parentGroup.frame().setY(0);
 			parentGroup.setIsLocked(true);
 			parentGroup.setHasClickThrough(true);
 
@@ -71,8 +72,8 @@ var onRun = function(context) {
 			// Create new screen title group
 			var titleGroup = MSLayerGroup.new();
 			titleGroup.setName(titleGroupName);
-			titleGroup.frame().setX(0);
-			titleGroup.frame().setY(0);
+			titleGroup.frame().setX(0 - parentGroup.frame().x());
+			titleGroup.frame().setY(0 - parentGroup.frame().y());
 			titleGroup.setIsLocked(true);
 			titleGroup.setHasClickThrough(true);
 
