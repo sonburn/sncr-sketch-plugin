@@ -39,19 +39,19 @@ Any link created between a section title and artboard will replace any previous 
 ## Unlink Selected
 Removes links for selected section titles, to break their relationships to any artboards.
 
-## Select All on Page
-Selects all section titles on the current page, facilitating the ability to run another process against all selected section titles at once.
+## Select All Linked on Page
+Selects all linked section titles on the current page, facilitating the ability to run another process against all selected section titles at once.
 
-## Update All in Document
-Updates all the section titles within document; updates the layer name to match the override name, re-orients to a linked artboard if link is present, locks layer to prevent accidental augmentation.
+## Update All Linked on Page
+Updates all linked section titles on the current page; updates the layer name to match the override name, re-orients to a linked artboard if link is present, locks layer to prevent accidental augmentation.
 
 # Artboard Descriptions
 
 ## Link Selected
 Links the selected artboard description and artboard together. Any link created between an artboard description and artboard will replace any previous link, if one existed.
 
-## Select All on Page
-Selects all artboard descriptions on the current page, facilitating the ability to run another process against all selected artboard descriptions at once.
+## Select All Linked on Page
+Selects all linked artboard descriptions on the current page, facilitating the ability to run another process against all selected artboard descriptions at once.
 
-## Update All on Page
+## Update All Linked on Page
 Updates all linked artboard descriptions on the current page; updates the layer name to match the linked artboard name, moves the artboard description to the SNCR > Descriptions directory, and re-orients the position in the case the artboards have been moved.

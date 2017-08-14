@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.60,
+	"version": 0.61,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -93,10 +93,18 @@
 		}
 	],
 	"menu": {
+		"isRoot": true,
 		"items": [
-			"layout-toolbar",
 			{
-				"title": "Layout & Wireframes",
+				"title": "SNCR - Artboard Descriptions",
+				"items": [
+					"link-artboard-desc",
+					"select-artboard-descs",
+					"update-artboard-descs"
+				]
+			},
+			{
+				"title": "SNCR - Layout & Wireframes",
 				"items": [
 					"layout-artboards",
 					"create-artboard-titles",
@@ -105,7 +113,7 @@
 				]
 			},
 			{
-				"title": "Section Titles",
+				"title": "SNCR - Section Titles",
 				"items": [
 					"add-section-title",
 					"link-section-title",
@@ -116,11 +124,9 @@
 				]
 			},
 			{
-				"title": "Artboard Descriptions",
-				"items": [
-					"link-artboard-desc",
-					"select-artboard-descs",
-					"update-artboard-descs"
+				"title": "SNCR - Toolbar",
+				"items" : [
+					"layout-toolbar"
 				]
 			}
 		]
