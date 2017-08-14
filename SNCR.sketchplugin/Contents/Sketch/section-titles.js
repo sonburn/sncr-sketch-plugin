@@ -1,35 +1,39 @@
 @import 'lib/functions.js';
 
-// String variables
-var strSymbolMasterName = "Wireframe/Section";
-var strSectionTitleAdded = "Section title added.";
-var strSectionTitleAddPluginName = "Add/Insert Section Title";
-var strSectionTitleAddProblem = "Select only one layer location, or none, to add a section title.";
-var strSectionTitleAddSymbol = "No symbol with the name \"" + strSymbolMasterName + "\" was found.";
-var strSectionTitleLinked = " section title is now linked to ";
-var strSectionTitleLinkOverride = "First add an override to the selected screen title.";
-var strSectionTitleLinkPluginName = "Link Section Title";
-var strSectionTitleLinkProblem = "Select one section title and one artboard to link.";
-var strSectionTitleUnlinked = " screen title is no longer linked to ";
-var strSectionTitlesAdded = " section title(s) added.";
-var strSectionTitlesSelected = " section titles selected.";
-var strSectionTitlesUnlinked = " section title(s) unlinked.";
-var strSectionTitlesUpdated = "Section titles updated.";
-var strSectionTitleUnlinkProblem = "Select a section title to unlink.";
-
-// Configuration variables
+// Plugin variables
+var pluginDomain = "com.sncr.sketch";
+var sectionTitleSymbolMasterName = "Wireframe/Section";
 var sectionTitleXOffset = 0;
 var sectionTitleYOffset = -108;
+var sectionTitleLinkKey = "sncrScreenTitleLinkedTo";
+var sectionTitleLinkKeyQuery = "userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sectionTitleLinkKey + " != nil";
+var sectionTitleLinkPrefix = "🔗 ";
 
-// Function to add a screen title
+// String variables
+var strSectionTitleAdded = "Section title added";
+var strSectionTitleAddPluginName = "Add/Insert Section Title";
+var strSectionTitleAddSymbol = "No symbol with the name \"" + sectionTitleSymbolMasterName + "\" was found.";
+var strSectionTitleLinked = " section title is now linked to ";
+var strSectionTitleLinkPluginName = "Link Section Title";
+var strSectionTitleLinkProblem = "Select one section title and one artboard to link.";
+var strSectionTitleUnlinked = " section title is no longer linked to ";
+var strSectionTitleUnlinkProblem = "Select a section title to unlink.";
+var strSectionTitlesAdded = " section title(s) added";
+var strSectionTitlesSelected = " section titles selected";
+var strSectionTitlesUnlinked = " section title(s) unlinked";
+var strSectionTitlesUpdated = " section title(s) updated";
+var strSectionTitlesUpdateUnlinked = " section title(s) were unlinked due to missing artboards";
+
+// Function to add a section title
 var add = function(context) {
 	// Context variables
 	var doc = context.document;
 	var selection = context.selection;
 	var page = doc.currentPage();
+	var symbols = doc.documentData().allSymbols();
 
 	// Get the symbol master
-	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
+	var symbolMaster = getObjectByName(symbols,sectionTitleSymbolMasterName);
 
 	// If the symbol master exists...
 	if (symbolMaster) {
@@ -88,7 +92,7 @@ var add = function(context) {
 	}
 }
 
-// Function to link a screen title and artboard
+// Function to link a section title and artboard
 var link = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -104,11 +108,11 @@ var link = function(context) {
 			var secondItem = selection[1];
 
 			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard
-			if ((firstItem instanceof MSSymbolInstance && firstItem.symbolMaster().name().trim() == strSymbolMasterName) && secondItem instanceof MSArtboardGroup) {
+			if ((firstItem instanceof MSSymbolInstance && firstItem.symbolMaster().name().trim() == sectionTitleSymbolMasterName) && secondItem instanceof MSArtboardGroup) {
 				linkTitle(firstItem,secondItem);
 			}
 			// If the first item is an artboard, and the second item is a symbol instance and symbol master name matches the provided name
-			else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSSymbolInstance && secondItem.symbolMaster().name().trim() == strSymbolMasterName)) {
+			else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSSymbolInstance && secondItem.symbolMaster().name().trim() == sectionTitleSymbolMasterName)) {
 				linkTitle(secondItem,firstItem);
 			}
 			// If the selections do not contain a section title symbol instance and artboard
@@ -124,34 +128,26 @@ var link = function(context) {
 			displayDialog(strSectionTitleLinkPluginName,strSectionTitleLinkProblem);
 	}
 
-	// Function to link a screen title to an artboard
+	// Function to link a section title to an artboard
 	function linkTitle(title,artboard) {
-		// If screen title has an override...
-		if (title.overrides()) {
-			// Set stored value for linked artboard
-			context.command.setValue_forKey_onLayer(artboard.objectID(),"sncrScreenTitleLinkedTo",title);
+		// Set stored value for linked artboard
+		context.command.setValue_forKey_onLayer(artboard.objectID(),sectionTitleLinkKey,title);
 
-			// Set name of screen title before altering
-			var titleName = title.name();
+		// Set the title name
+		var titleName = (title.overrides()) ? sectionTitleLinkPrefix + title.overrides().allValues()[0] : sectionTitleLinkPrefix + title.name();
 
-			// Update the layer name, and indicate if linked
-			updateLayerName(title,true);
+		// Update the title name
+		title.setName(titleName);
 
-			// Create a log event
-			log(titleName + strSectionTitleLinked + artboard.name() + ".");
+		// Create a log event
+		log(titleName + strSectionTitleLinked + artboard.name());
 
-			// Display feedback
-			doc.showMessage(titleName + strSectionTitleLinked + artboard.name() + ".");
-		}
-		// If screen title does not have an override...
-		else {
-			// Display feedback
-			displayDialog(strSectionTitleLinkPluginName,strSectionTitleLinkOverride);
-		}
+		// Display feedback
+		doc.showMessage(titleName + strSectionTitleLinked + artboard.name());
 	}
 }
 
-// Function to select all screen titles
+// Function to select all linked section titles on page
 var select = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -163,31 +159,24 @@ var select = function(context) {
 	// Set a counter
 	count = 0;
 
-	// Get the symbol master
-	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
+	// Get the section titles and construct a loop
+	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(sectionTitleLinkKeyQuery,pluginDomain));
+	var loop = layers.objectEnumerator(), layer;
 
-	// Get the symbol master instances, and construct a loop
-	var sectionTitles = symbolMaster.allInstances();
-	var sectionTitlesLoop = sectionTitles.objectEnumerator();
-	var sectionTitle;
+	// Iterate through section titles...
+	while (layer = loop.nextObject()) {
+		// Select the section title while maintaining other selections
+		layer.select_byExpandingSelection(true,true);
 
-	// Iterate through symbol instances...
-	while (sectionTitle = sectionTitlesLoop.nextObject()) {
-		// If the symbol instance is on current page...
-		if (sectionTitle.parentPage() == page) {
-			// Select the symbol instance while maintaining other selections
-			sectionTitle.select_byExpandingSelection(true,true);
-
-			// Iterate the counter
-			count++;
-		}
+		// Iterate the counter
+		count++;
 	}
 
 	// Display feedback
 	doc.showMessage(count + strSectionTitlesSelected);
 }
 
-// Function to unlink a screen title
+// Function to unlink section title(s)
 var unlink = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -201,24 +190,27 @@ var unlink = function(context) {
 		// Iterate through selections...
 		for (var i = 0; i < selection.count(); i++) {
 			// Get stored value for linked artboard
-			var linkedArtboard = context.command.valueForKey_onLayer("sncrScreenTitleLinkedTo",selection[i]);
+			var linkedArtboard = context.command.valueForKey_onLayer(sectionTitleLinkKey,selection[i]);
 
 			// If selection is linked to an artboard...
 			if (linkedArtboard) {
 				// Set linked artboard value to nil
-				context.command.setValue_forKey_onLayer(nil,"sncrScreenTitleLinkedTo",selection[i]);
+				context.command.setValue_forKey_onLayer(nil,sectionTitleLinkKey,selection[i]);
 
-				// Update the layer name, and indicate if linked
-				updateLayerName(selection[i],false);
+				// Set the title name
+				var titleName = selection[i].name().replace(sectionTitleLinkPrefix,""));
 
-				// Get linked artboard object
+				// Update the title name
+				selection[i].setName(titleName);
+
+				// For logging purposes, get linked artboard object
 				var artboard = findLayerByID(selection[i].parentGroup(),linkedArtboard);
 
 				// If artboard exists, use artboard name for name, otherwise use artboard ID
 				artboardName = (artboard) ? artboard.name() : linkedArtboard;
 
 				// Create a log event
-				log(selection[i].name() + strSectionTitleUnlinked + artboardName + ".");
+				log(titleName + strSectionTitleUnlinked + artboardName + ".");
 
 				// Iterate the counter
 				count++;
@@ -238,60 +230,77 @@ var unlink = function(context) {
 	}
 }
 
-// Function to update all screen titles
+// Function to update all section titles on page
 var update = function(context) {
 	// Context variables
 	var doc = context.document;
+	var page = doc.currentPage();
 
-	// Get the symbol master
-	var symbolMaster = getSymbolByName(context,strSymbolMasterName);
+	// Set counters
+	var updateCount = 0;
+	var removeCount = 0;
 
-	// Get the symbol master instances, and construct a loop
-	var sectionTitles = symbolMaster.allInstances();
-	var sectionTitlesLoop = sectionTitles.objectEnumerator();
-	var sectionTitle;
+	// Get the section titles and construct a loop
+	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(sectionTitleLinkKeyQuery,pluginDomain));
+	var loop = layers.objectEnumerator(), layer;
 
-	// Iterate through symbol instances...
-	while (sectionTitle = sectionTitlesLoop.nextObject()) {
-		// Assume symbol instance is not linked
-		var isLinked = false;
-
+	// Iterate through section titles...
+	while (layer = loop.nextObject()) {
 		// Get stored value for linked artboard
-		var linkedArtboard = context.command.valueForKey_onLayer("sncrScreenTitleLinkedTo",sectionTitle);
+		var linkedArtboard = context.command.valueForKey_onLayer(sectionTitleLinkKey,layer);
 
-		// If symbol instance is linked to an artboard...
-		if (linkedArtboard) {
-			// Get linked artboard object, if it resides on the symbol instance page
-			var artboard = findLayerByID(sectionTitle.parentPage(),linkedArtboard);
+		// Get linked artboard object, if it resides on the artboard description page
+		var artboard = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("objectID == %@",linkedArtboard,pluginDomain)).firstObject();
 
-			// If artboard object exists...
-			if (artboard) {
-				// Set symbol instance x/y in relation to artboard, with offsets
-				sectionTitle.frame().setX(artboard.frame().x() + sectionTitleXOffset);
-				sectionTitle.frame().setY(artboard.frame().y() + sectionTitleYOffset - symbolMaster.frame().height());
+		// If artboard object exists...
+		if (artboard) {
+			// Set screen title x/y in relation to artboard, with offsets
+			layer.frame().setX(artboard.frame().x() + sectionTitleXOffset);
+			layer.frame().setY(artboard.frame().y() + sectionTitleYOffset - layer.frame().height());
 
-				// Set isLinked to true
-				isLinked = true;
-			}
-			// If artboard object does not exist...
-			else {
-				// Remove stored value for linked artboard
-				context.command.setValue_forKey_onLayer(nil,"sncrScreenTitleLinkedTo",sectionTitle);
+			// Set layer name
+			var layerName = (layer.overrides()) ? sectionTitleLinkPrefix + layer.overrides().allValues()[0] : sectionTitleLinkPrefix + artboard.name();
 
-				// Create a log event
-				log(sectionTitle.name() + strSectionTitleUnlinked + linkedArtboard + ".");
-			}
+			// Update the layer name
+			layer.setName(layerName);
+
+			// Lock the section title
+			layer.setIsLocked(1);
+
+			// Iterate counter
+			updateCount++;
 		}
+		// If artboard object does not exist...
+		else {
+			// Remove stored value for linked artboard
+			context.command.setValue_forKey_onLayer(nil,sectionTitleLinkKey,layer);
 
-		// Update the symbol instance name, and indicate if linked
-		updateLayerName(sectionTitle,isLinked);
+			// Set layer name
+			var layerName = (layer.overrides()) ? layer.overrides().allValues()[0] : layer.name().replace(sectionTitleLinkPrefix,"");
 
-		// Lock the symbol instance
-		sectionTitle.setIsLocked(1);
+			// Update the layer name
+			layer.setName(layerName);
+
+			// Unlock the section title
+			layer.setIsLocked(0);
+
+			// Create a log event
+			log(layer.name() + strSectionTitleUnlinked + linkedArtboard);
+
+			// Iterate counters
+			updateCount++;
+			removeCount++;
+		}
 	}
 
-	// Display feedback
-	doc.showMessage(strSectionTitlesUpdated);
+	// If any artboard links were removed
+	if (removeCount > 0) {
+		// Display feedback
+		doc.showMessage(updateCount + strSectionTitlesUpdated + ", " + removeCount + strSectionTitlesUpdateUnlinked);
+	} else {
+		// Display feedback
+		doc.showMessage(updateCount + strSectionTitlesUpdated);
+	}
 };
 
 // Function to manage section title settings

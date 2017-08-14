@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.59,
+	"version": 0.60,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -56,13 +56,13 @@
 			"handler": "unlink"
 		},
 		{
-			"name": "Select All on Page",
+			"name": "Select All Linked on Page",
 			"identifier": "select-section-titles",
 			"script": "section-titles.js",
 			"handler": "select"
 		},
 		{
-			"name": "Update All in Document",
+			"name": "Update All Linked on Page",
 			"identifier": "update-section-titles",
 			"script": "section-titles.js",
 			"handler": "update"
@@ -80,13 +80,13 @@
 			"handler": "link"
 		},
 		{
-			"name": "Select All on Page",
+			"name": "Select All Linked on Page",
 			"identifier": "select-artboard-descs",
 			"script": "artboard-descriptions.js",
 			"handler": "select"
 		},
 		{
-			"name": "Update All on Page",
+			"name": "Update All Linked on Page",
 			"identifier": "update-artboard-descs",
 			"script": "artboard-descriptions.js",
 			"handler": "update"

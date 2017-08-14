@@ -210,42 +210,6 @@ function getLayerIndex(layer) {
 	return false;
 }
 
-function updateLayerName(layer,isLinked) {
-	var layerName = layer.overrides().allValues()[0];
-
-	if (isLinked) {
-		layerName = "🔗 " + layerName;
-	}
-
-	layer.setName(layerName);
-
-	return layerName;
-}
-
-function getSymbolByName(context,name) { // Need to address duplicate symbols
-	var symbols = context.document.documentData().allSymbols();
-	var symbolLoop = symbols.objectEnumerator();
-	var symbol;
-
-	while (symbol = symbolLoop.nextObject()) {
-		if (symbol.name() == name) return symbol;
-	}
-
-	return false;
-}
-
-function deselectEverything(context) {
-	var pages = context.document.pages();
-	var pagesLoop = pages.objectEnumerator();
-	var page;
-
-	while (page = pagesLoop.nextObject()) {
-		page.changeSelectionBySelectingLayers(nil);
-	}
-
-	return true;
-}
-
 function getObjectByName(haystack,needle) {
 	for (var i = 0; i < haystack.count(); i++) {
 		var objectName = haystack.objectAtIndex(i).name();

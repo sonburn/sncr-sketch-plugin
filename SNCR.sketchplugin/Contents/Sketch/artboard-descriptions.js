@@ -18,7 +18,7 @@ var strArtboardDescLinked = " is now linked to ";
 var strArtboardDescUnlinked = " artboard description is no longer linked to ";
 var strArtboardDescsSelected = " artboard descriptions selected";
 var strArtboardDescsUpdated = " artboard description(s) updated";
-var strArtboardDescsUnlinked = " description(s) were unlinked due to missing artboards";
+var strArtboardDescsUpdateUnlinked = " artboard description(s) were unlinked due to missing artboards";
 
 // Function to link a artboard description and artboard
 var link = function(context) {
@@ -133,7 +133,7 @@ var link = function(context) {
 	}
 }
 
-// Function to select all artboard descriptions
+// Function to select all linked artboard descriptions on page
 var select = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -145,7 +145,7 @@ var select = function(context) {
 	// Set a counter
 	var count = 0;
 
-	// Get the artboard description text layers, and construct a loop
+	// Get the artboard descriptions and construct a loop
 	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(artboardDescLinkKeyQuery,pluginDomain));
 	var loop = layers.objectEnumerator(), layer;
 
@@ -162,7 +162,7 @@ var select = function(context) {
 	doc.showMessage(count + strArtboardDescsSelected);
 }
 
-// Function to update all artboard descriptions
+// Function to update all artboard descriptions on page
 var update = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -210,7 +210,7 @@ var update = function(context) {
 	noteGroup.setIsLocked(true);
 	noteGroup.setHasClickThrough(true);
 
-	// Get the artboard descriptions, and construct a loop
+	// Get the artboard descriptions and construct a loop
 	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(artboardDescLinkKeyQuery,pluginDomain));
 	var loop = layers.objectEnumerator(), layer;
 
@@ -286,7 +286,7 @@ var update = function(context) {
 	// If any artboard links were removed
 	if (removeCount > 0) {
 		// Display feedback
-		doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUnlinked);
+		doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUpdateUnlinked);
 	} else {
 		// Display feedback
 		doc.showMessage(updateCount + strArtboardDescsUpdated);
