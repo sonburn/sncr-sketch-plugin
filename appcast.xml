@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.61</title>
+			<title>Version 0.62</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Section titles can now be linked even if the override is not set yet. Also optimized code for section titles, removed unnecessary functions, corrected verbiage in comments and strings.</li>
+				<li>Added ability to unlink artboard description(s), fix for artboard description changing x/y position when being linked.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.61" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.62" />
 		</item>
 	</channel>
 </rss>

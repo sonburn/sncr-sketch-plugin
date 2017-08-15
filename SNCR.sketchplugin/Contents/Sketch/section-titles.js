@@ -10,17 +10,22 @@ var sectionTitleLinkKeyQuery = "userInfo != nil && function(userInfo,'valueForKe
 var sectionTitleLinkPrefix = "🔗 ";
 
 // String variables
-var strSectionTitleAdded = "Section title added";
 var strSectionTitleAddPluginName = "Add/Insert Section Title";
-var strSectionTitleAddSymbol = "No symbol with the name \"" + sectionTitleSymbolMasterName + "\" was found.";
-var strSectionTitleLinked = " section title is now linked to ";
+var strSectionTitleAddSymbolProblem = "No symbol with the name \"" + sectionTitleSymbolMasterName + "\" was found.";
+var strSectionTitleAdded = "Section title added";
+var strSectionTitlesAdded = " section title(s) added";
+
 var strSectionTitleLinkPluginName = "Link Section Title";
 var strSectionTitleLinkProblem = "Select one section title and one artboard to link.";
-var strSectionTitleUnlinked = " section title is no longer linked to ";
+var strSectionTitleLinked = " section title is now linked to ";
+
+var strSectionTitleUnlinkPluginName = "Unlink Section Title";
 var strSectionTitleUnlinkProblem = "Select a section title to unlink.";
-var strSectionTitlesAdded = " section title(s) added";
-var strSectionTitlesSelected = " section titles selected";
+var strSectionTitleUnlinked = " section title is no longer linked to ";
 var strSectionTitlesUnlinked = " section title(s) unlinked";
+
+var strSectionTitlesSelected = " section title(s) selected";
+
 var strSectionTitlesUpdated = " section title(s) updated";
 var strSectionTitlesUpdateUnlinked = " section title(s) were unlinked due to missing artboards";
 
@@ -88,7 +93,7 @@ var add = function(context) {
 	// If the symbol master does not exist...
 	else {
 		// Display feedback
-		displayDialog(strSectionTitleAddPluginName,strSectionTitleAddSymbol);
+		displayDialog(strSectionTitleAddPluginName,strSectionTitleAddSymbolProblem);
 	}
 }
 
@@ -210,7 +215,7 @@ var unlink = function(context) {
 				artboardName = (artboard) ? artboard.name() : linkedArtboard;
 
 				// Create a log event
-				log(titleName + strSectionTitleUnlinked + artboardName + ".");
+				log(titleName + strSectionTitleUnlinked + artboardName);
 
 				// Iterate the counter
 				count++;
@@ -226,7 +231,7 @@ var unlink = function(context) {
 	// If there are no selections...
 	else {
 		// Display feedback
-		doc.showMessage(strSectionTitleUnlinkProblem);
+		displayDialog(strSectionTitleUnlinkPluginName,strSectionTitleUnlinkProblem);
 	}
 }
 
@@ -285,7 +290,7 @@ var update = function(context) {
 			layer.setIsLocked(0);
 
 			// Create a log event
-			log(layer.name() + strSectionTitleUnlinked + linkedArtboard);
+			log(layerName + strSectionTitleUnlinked + linkedArtboard);
 
 			// Iterate counters
 			updateCount++;

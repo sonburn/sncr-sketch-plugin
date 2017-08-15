@@ -50,6 +50,9 @@ Updates all linked section titles on the current page; updates the layer name to
 ## Link Selected
 Links the selected artboard description and artboard together. Any link created between an artboard description and artboard will replace any previous link, if one existed.
 
+## Unlink Selected
+Removes links for selected artboard descriptions, to break their relationships to any artboards.
+
 ## Select All Linked on Page
 Selects all linked artboard descriptions on the current page, facilitating the ability to run another process against all selected artboard descriptions at once.
 

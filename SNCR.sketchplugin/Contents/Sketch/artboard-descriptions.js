@@ -15,8 +15,14 @@ var artboardDescLinkPrefix = "🔗 ";
 var strArtboardDescLinkPluginName = "Link Artboard Description";
 var strArtboardDescLinkProblem = "Select one artboard description and one artboard to link.";
 var strArtboardDescLinked = " is now linked to ";
+
+var strArtboardDescUnlinkPluginName = "Unlink Artboard Description";
+var strArtboardDescUnlinkProblem = "Select an artboard description to unlink.";
 var strArtboardDescUnlinked = " artboard description is no longer linked to ";
-var strArtboardDescsSelected = " artboard descriptions selected";
+var strArtboardDescsUnlinked = " artboard description(s) unlinked";
+
+var strArtboardDescsSelected = " artboard description(s) selected";
+
 var strArtboardDescsUpdated = " artboard description(s) updated";
 var strArtboardDescsUpdateUnlinked = " artboard description(s) were unlinked due to missing artboards";
 
@@ -100,8 +106,8 @@ var link = function(context) {
 		noteGroup.setHasClickThrough(true);
 
 		// Set artboard description x/y in relation to artboard, with offsets
-		layer.frame().setX(artboard.frame().x() + artboardDescXOffset);
-		layer.frame().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
+		layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
+		layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
 
 		// Set artboard description width
 		layer.frame().setWidth(artboard.frame().width());
@@ -110,10 +116,10 @@ var link = function(context) {
 		if (layer.parentGroup() != noteGroup) {
 			// Move the artboard description to the note group
 			layer.moveToLayer_beforeLayer(noteGroup,nil);
-
-			// Deselect the artboard description (for some reason moveToLayer_beforeLayer selects it)
-			layer.select_byExpandingSelection(false,true);
 		}
+
+		// Deselect the artboard
+		artboard.select_byExpandingSelection(false,true);
 
 		// Resize note and parent groups to account for children
 		noteGroup.resizeToFitChildrenWithOption(0);
@@ -160,6 +166,60 @@ var select = function(context) {
 
 	// Display feedback
 	doc.showMessage(count + strArtboardDescsSelected);
+}
+
+// Function to unlink artboard description(s)
+var unlink = function(context) {
+	// Context variables
+	var doc = context.document;
+	var selection = context.selection;
+
+	// If there are selections...
+	if (selection.count() > 0) {
+		// Set a counter
+		var count = 0;
+
+		// Iterate through selections...
+		for (var i = 0; i < selection.count(); i++) {
+			// Get stored value for linked artboard
+			var linkedArtboard = context.command.valueForKey_onLayer(artboardDescLinkKey,selection[i]);
+
+			// If selection is linked to an artboard...
+			if (linkedArtboard) {
+				// Set linked artboard value to nil
+				context.command.setValue_forKey_onLayer(nil,artboardDescLinkKey,selection[i]);
+
+				// Set the layer name
+				var layerName = selection[i].name().replace(artboardDescLinkPrefix,""));
+
+				// Update the title name
+				selection[i].setName(layerName);
+
+				// For logging purposes, get linked artboard object
+				var artboard = findLayerByID(selection[i].parentGroup(),linkedArtboard);
+
+				// If artboard exists, use artboard name for name, otherwise use artboard ID
+				artboardName = (artboard) ? artboard.name() : linkedArtboard;
+
+				// Create a log event
+				log(layerName + strArtboardDescUnlinked + artboardName);
+
+				// Iterate the counter
+				count++;
+			}
+
+			// Deselect current selection
+			selection[i].select_byExpandingSelection(false,true);
+		}
+
+		// Display feedback
+		doc.showMessage(count + strArtboardDescsUnlinked);
+	}
+	// If there are no selections...
+	else {
+		// Display feedback
+		displayDialog(strArtboardDescUnlinkPluginName,strArtboardDescUnlinkProblem);
+	}
 }
 
 // Function to update all artboard descriptions on page
@@ -261,7 +321,7 @@ var update = function(context) {
 			layer.setName(layerName);
 
 			// Create a log event
-			log(layer.name() + strArtboardDescUnlinked + linkedArtboard);
+			log(layerName + strArtboardDescUnlinked + linkedArtboard);
 
 			// Iterate counters
 			updateCount++;
