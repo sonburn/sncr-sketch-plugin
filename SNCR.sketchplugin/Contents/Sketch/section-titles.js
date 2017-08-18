@@ -11,7 +11,7 @@ var sectionTitleLinkPrefix = "🔗 ";
 
 // String variables
 var strSectionTitleAddPluginName = "Add/Insert Section Title";
-var strSectionTitleAddSymbolProblem = "No symbol with the name \"" + sectionTitleSymbolMasterName + "\" was found.";
+var strSectionTitleAddSymbolProblem = "A symbol with the name \"" + sectionTitleSymbolMasterName + "\" is required.";
 var strSectionTitleAdded = "Section title added";
 var strSectionTitlesAdded = " section title(s) added";
 

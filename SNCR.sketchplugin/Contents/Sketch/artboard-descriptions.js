@@ -4,16 +4,22 @@
 var pluginDomain = "com.sncr.sketch";
 var parentGroupName = "SNCR";
 var artboardDescGroupName = "Descriptions";
-var artboardDescStyleName = "Wireframe/Artboard Description";
 var artboardDescXOffset = 0;
 var artboardDescYOffset = 24;
 var artboardDescLinkKey = "linkedToArtboard";
 var artboardDescLinkKeyQuery = "userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardDescLinkKey + " != nil";
 var artboardDescLinkPrefix = "🔗 ";
+var artboardDescStyleName = "Wireframe/Artboard Description";
+var artboardDescStyleData = {
+	fontFace : "Neue Haas Grotesk Text Std 55 Roman",
+	fontSize : 14,
+	lineHeight : 18,
+	textAlignment : 0
+}
 
 // String variables
 var strArtboardDescLinkPluginName = "Link Artboard Description";
-var strArtboardDescLinkProblem = "Select one artboard description and one artboard to link.";
+var strArtboardDescLinkProblem = "Select one artboard description (a text layer with \"" + artboardDescStyleName + "\" style applied) and one artboard to link.";
 var strArtboardDescLinked = " is now linked to ";
 
 var strArtboardDescUnlinkPluginName = "Unlink Artboard Description";
@@ -22,6 +28,11 @@ var strArtboardDescUnlinked = " artboard description is no longer linked to ";
 var strArtboardDescsUnlinked = " artboard description(s) unlinked";
 
 var strArtboardDescsSelected = " artboard description(s) selected";
+
+var strArtboardDescSetPluginName = "Add/Edit Artboard Description";
+var strArtboardDescSetProblem = "Select one artboard to add/edit a description.";
+var strArtboardDescAdded = "Artboard description added";
+var strArtboardDescUpdated = "Artboard description updated";
 
 var strArtboardDescsUpdated = " artboard description(s) updated";
 var strArtboardDescsUpdateUnlinked = " artboard description(s) were unlinked due to missing artboards";
@@ -68,42 +79,10 @@ var link = function(context) {
 		context.command.setValue_forKey_onLayer(artboard.objectID(),artboardDescLinkKey,layer);
 
 		// Set parent group
-		var parentGroup = findLayerByName(page,parentGroupName);
-
-		// If parent group does not exist...
-		if (!parentGroup) {
-			// Create parent group
-			var parentGroup = MSLayerGroup.new();
-			parentGroup.setName(parentGroupName);
-			parentGroup.frame().setX(0);
-			parentGroup.frame().setY(0);
-
-			// Add parent group to page
-			page.addLayers([parentGroup]);
-		}
-
-		// Set/reset parent group values
-		parentGroup.setIsLocked(true);
-		parentGroup.setHasClickThrough(true);
+		var parentGroup = getParentGroup(page,parentGroupName);
 
 		// Set annotation group
-		var noteGroup = findLayerByName(parentGroup,artboardDescGroupName);
-
-		// If annotation group does not exist...
-		if (!noteGroup) {
-			// Create annotation group
-			var noteGroup = MSLayerGroup.new();
-			noteGroup.setName(artboardDescGroupName);
-			noteGroup.frame().setX(0 - parentGroup.frame().x());
-			noteGroup.frame().setY(0 - parentGroup.frame().y());
-
-			// Add note group to page
-			parentGroup.addLayers([noteGroup]);
-		}
-
-		// Set/reset note group values
-		noteGroup.setIsLocked(true);
-		noteGroup.setHasClickThrough(true);
+		var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
 
 		// Set artboard description x/y in relation to artboard, with offsets
 		layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
@@ -166,6 +145,111 @@ var select = function(context) {
 
 	// Display feedback
 	doc.showMessage(count + strArtboardDescsSelected);
+}
+
+// Function to add/edit an artboard description
+var set = function(context) {
+	// Context variables
+	var doc = context.document;
+	var page = doc.currentPage();
+	var selection = context.selection;
+
+	// If there is one artboard selected...
+	if (selection.count() == 1 && selection[0] instanceof MSArtboardGroup) {
+		// Artboard variable
+		var artboard = selection[0];
+
+		// Initial artboard description value
+		var artboardDescValue = "";
+
+		// Get existing artboard description for selected artboard
+		var linkedArtboardDesc = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardDescLinkKey + " == '" + artboard.objectID() + "'",pluginDomain)).firstObject();
+
+		// If artboard description exists, update artboard description value
+		if (linkedArtboardDesc) artboardDescValue = linkedArtboardDesc.stringValue();
+
+		// Present add/edit window with artboard description value
+		var artboardDescText = artboardDescText(artboard.name(),artboardDescValue);
+
+		// If artboard description value was returned
+		if (artboardDescText) {
+			// If artboard description already existed...
+			if (linkedArtboardDesc) {
+				// Update the artboard description with new value
+				linkedArtboardDesc.setStringValue(artboardDescText.stringValue);
+
+				// Display feedback
+				doc.showMessage(strArtboardDescUpdated);
+			}
+			// If artboard description did not exist...
+			else {
+				// Set parent group
+				var parentGroup = getParentGroup(page,parentGroupName);
+
+				// Set annotation group
+				var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
+
+				// Set artboard description style
+				var artboardDescStyle = getTextStyle(context,artboardDescStyleName,artboardDescStyleData);
+
+				// Create new artboard description text layer
+				var artboardDesc = MSTextLayer.new();
+				artboardDesc.setStringValue(artboardDescText.stringValue);
+				artboardDesc.setName(artboardDescLinkPrefix + artboard.name());
+				artboardDesc.setStyle(artboardDescStyle.newInstance());
+				artboardDesc.setTextBehaviour(1);
+
+				// Add artboard description to annotation group
+				noteGroup.addLayers([artboardDesc]);
+
+				// Set artboard description x/y in relation to artboard, with offsets
+				artboardDesc.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
+				artboardDesc.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
+
+				// Set artboard description width
+				artboardDesc.frame().setWidth(artboard.frame().width());
+
+				// Resize note and parent groups to account for children
+				noteGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+
+				// Set stored value for linked artboard
+				context.command.setValue_forKey_onLayer(artboard.objectID(),artboardDescLinkKey,artboardDesc);
+
+				// Display feedback
+				doc.showMessage(strArtboardDescAdded);
+			}
+		}
+
+		function artboardDescText(artboardName,artboardDescValue) {
+			var alertWindow = COSAlertWindow.new();
+
+			alertWindow.setMessageText(strArtboardDescSetPluginName);
+
+			alertWindow.addTextLabelWithValue('For ' + artboardName + ':');
+			alertWindow.addAccessoryView(helpers.createField(artboardDescValue,NSMakeRect(0,0,300,120)));
+
+			alertWindow.addButtonWithTitle('OK');
+			alertWindow.addButtonWithTitle('Cancel');
+
+			// Set first responder and key order
+			var fieldOne = alertWindow.viewAtIndex(1);
+			alertWindow.alert().window().setInitialFirstResponder(fieldOne);
+
+			var responseCode = alertWindow.runModal();
+
+			if (responseCode == 1000) {
+				return {
+					stringValue : [[alertWindow viewAtIndex:1] stringValue]
+				}
+			} else return false;
+		}
+	}
+	// If there is not one artboard selected...
+	else {
+		// Display feedback
+		displayDialog(strArtboardDescSetPluginName,strArtboardDescSetProblem);
+	}
 }
 
 // Function to unlink artboard description(s)
@@ -233,42 +317,10 @@ var update = function(context) {
 	var removeCount = 0;
 
 	// Set parent group
-	var parentGroup = findLayerByName(page,parentGroupName);
-
-	// If parent group does not exist...
-	if (!parentGroup) {
-		// Create parent group
-		var parentGroup = MSLayerGroup.new();
-		parentGroup.setName(parentGroupName);
-		parentGroup.frame().setX(0);
-		parentGroup.frame().setY(0);
-
-		// Add parent group to page
-		page.addLayers([parentGroup]);
-	}
-
-	// Set/reset parent group values
-	parentGroup.setIsLocked(true);
-	parentGroup.setHasClickThrough(true);
+	var parentGroup = getParentGroup(page,parentGroupName);
 
 	// Set annotation group
-	var noteGroup = findLayerByName(parentGroup,artboardDescGroupName);
-
-	// If annotation group does not exist...
-	if (!noteGroup) {
-		// Create annotation group
-		var noteGroup = MSLayerGroup.new();
-		noteGroup.setName(artboardDescGroupName);
-
-		// Add note group to page
-		parentGroup.addLayers([noteGroup]);
-	}
-
-	// Set/reset note group values
-	noteGroup.frame().setX(0 - parentGroup.frame().x());
-	noteGroup.frame().setY(0 - parentGroup.frame().y());
-	noteGroup.setIsLocked(true);
-	noteGroup.setHasClickThrough(true);
+	var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
 
 	// Get the artboard descriptions and construct a loop
 	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(artboardDescLinkKeyQuery,pluginDomain));

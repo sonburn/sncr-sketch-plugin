@@ -47,8 +47,11 @@ Updates all linked section titles on the current page; updates the layer name to
 
 # Artboard Descriptions
 
+## Add/Edit
+Adds a new artboard description to the selected artboard, or edits an existing description if one exists. Will automatically position the description below the artboard, link the description to the artboard, and apply the artboard description style.
+
 ## Link Selected
-Links the selected artboard description and artboard together. Any link created between an artboard description and artboard will replace any previous link, if one existed.
+Links the selected artboard description and artboard together, which is useful for pre-existing artboard descriptions. Any link created between an artboard description and artboard will replace any previous link, if one existed.
 
 ## Unlink Selected
 Removes links for selected artboard descriptions, to break their relationships to any artboards.

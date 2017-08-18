@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.62,
+	"version": 0.63,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -20,12 +20,6 @@
 			"name": "Layout Artboards…",
 			"identifier": "layout-artboards",
 			"script": "layout-artboards.js"
-		},
-		{
-			"name": "Create Artboard Titles…",
-			"identifier": "create-artboard-titles",
-			"script": "artboard-titles.js",
-			"handler": "create"
 		},
 		{
 			"name": "Create Artboard Slice…",
@@ -74,6 +68,12 @@
 			"handler": "settings"
 		},
 		{
+			"name": "Add/Edit",
+			"identifier": "set-artboard-desc",
+			"script": "artboard-descriptions.js",
+			"handler": "set"
+		},
+		{
 			"name": "Link Selected",
 			"identifier": "link-artboard-desc",
 			"script": "artboard-descriptions.js",
@@ -96,6 +96,12 @@
 			"identifier": "update-artboard-descs",
 			"script": "artboard-descriptions.js",
 			"handler": "update"
+		},
+		{
+			"name": "Create Artboard Titles…",
+			"identifier": "create-artboard-titles",
+			"script": "artboard-titles.js",
+			"handler": "create"
 		}
 	],
 	"menu": {
@@ -104,6 +110,7 @@
 			{
 				"title": "SNCR - Artboard Descriptions",
 				"items": [
+					"set-artboard-desc",
 					"link-artboard-desc",
 					"unlink-artboard-desc",
 					"select-artboard-descs",
@@ -111,12 +118,15 @@
 				]
 			},
 			{
-				"title": "SNCR - Layout & Wireframes",
+				"title": "SNCR - Artboard Titles",
 				"items": [
-					"layout-artboards",
-					"create-artboard-titles",
-					"create-artboard-slice",
-					"export-wireframes",
+					"create-artboard-titles"
+				]
+			},
+			{
+				"title": "SNCR - Layout Artboards",
+				"items": [
+					"layout-artboards"
 				]
 			},
 			{
@@ -127,7 +137,14 @@
 					"unlink-section-title",
 					"select-section-titles",
 					"update-section-titles",
-					"section-title-settings",
+					"section-title-settings"
+				]
+			},
+			{
+				"title": "SNCR - Wireframe Tools",
+				"items": [
+					"create-artboard-slice",
+					"export-wireframes"
 				]
 			},
 			{

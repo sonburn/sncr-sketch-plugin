@@ -90,8 +90,9 @@ var createSelect = function(items,selectedItemIndex,frame) {
 	return comboBox;
 }
 
-var createField = function(value) {
-	var field = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 100, 20)];
+var createField = function(value,size) {
+	var size = (size) ? size : NSMakeRect(0,0,100,20);
+	var field = [[NSTextField alloc] initWithFrame:size];
 	[field setStringValue:value];
 
 	return field;
@@ -245,4 +246,52 @@ function deleteTextStyle(context,styleName) {
 	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
 
 	if (textStyle) layerTextStyles.removeSharedStyle(textStyle);
+}
+
+function getParentGroup(scope,name) {
+	// Set parent group
+	var parentGroup = findLayerByName(scope,name);
+
+	// If parent group does not exist...
+	if (!parentGroup) {
+		// Create parent group
+		var parentGroup = MSLayerGroup.new();
+		parentGroup.setName(name);
+		parentGroup.frame().setX(0);
+		parentGroup.frame().setY(0);
+
+		// Add parent group to scope
+		scope.addLayers([parentGroup]);
+	}
+
+	// Set/reset parent group values
+	parentGroup.setIsLocked(true);
+	parentGroup.setHasClickThrough(true);
+
+	// Return parent group
+	return parentGroup;
+}
+
+function getNoteGroup(scope,name) {
+	// Set annotation group
+	var noteGroup = findLayerByName(scope,name);
+
+	// If annotation group does not exist...
+	if (!noteGroup) {
+		// Create annotation group
+		var noteGroup = MSLayerGroup.new();
+		noteGroup.setName(name);
+		noteGroup.frame().setX(0 - scope.frame().x());
+		noteGroup.frame().setY(0 - scope.frame().y());
+
+		// Add note group to scope
+		scope.addLayers([noteGroup]);
+	}
+
+	// Set/reset note group values
+	noteGroup.setIsLocked(true);
+	noteGroup.setHasClickThrough(true);
+
+	// Return annotation group
+	return noteGroup;
 }

@@ -45,23 +45,7 @@ var create = function(context) {
 			var screenTitleStyle = getTextStyle(context,screenTitleStyleName,screenTitleStyleData);
 
 			// Set parent group
-			var parentGroup = findLayerByName(page,parentGroupName);
-
-			// If parent group does not exist...
-			if (!parentGroup) {
-				// Create parent group
-				var parentGroup = MSLayerGroup.new();
-				parentGroup.setName(parentGroupName);
-				parentGroup.frame().setX(0);
-				parentGroup.frame().setY(0);
-
-				// Add parent group to page
-				page.addLayers([parentGroup]);
-			}
-
-			// Set/reset parent group values
-			parentGroup.setIsLocked(true);
-			parentGroup.setHasClickThrough(true);
+			var parentGroup = getParentGroup(page,parentGroupName);
 
 			// Find and remove screen titles group if it exists on the page (the old location)
 			page.removeLayer(findLayerByName(page,titleGroupName));
