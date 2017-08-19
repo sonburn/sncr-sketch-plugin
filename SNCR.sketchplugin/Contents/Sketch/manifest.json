@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.63,
+	"version": 0.64,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -38,6 +38,21 @@
 			"handler": "add"
 		},
 		{
+			"name": "Section Titles",
+			"identifier": "section-titles",
+			"script": "section-titles.js",
+			"handlers" : {
+				"actions": {
+					"ArtboardChanged.finish": "update",
+					"LayersMoved.finish": "update",
+					"Duplicate.finish": "update",
+					"HandlerLostFocus": "update",
+					"ResizeArtboardToFit": "update",
+					"InsertArtboard.finish": "update"
+				}
+			}
+		},
+		{
 			"name": "Link Selected",
 			"identifier": "link-section-title",
 			"script": "section-titles.js",
@@ -66,6 +81,21 @@
 			"identifier": "section-title-settings",
 			"script": "section-titles.js",
 			"handler": "settings"
+		},
+		{
+			"name": "Artboard Descriptions",
+			"identifier": "artboard-descriptions",
+			"script": "artboard-descriptions.js",
+			"handlers" : {
+				"actions": {
+					"ArtboardChanged.finish": "update",
+					"LayersMoved.finish": "update",
+					"Duplicate.finish": "update",
+					"HandlerLostFocus": "update",
+					"ResizeArtboardToFit": "update",
+					"InsertArtboard.finish": "update"
+				}
+			}
 		},
 		{
 			"name": "Add/Edit",

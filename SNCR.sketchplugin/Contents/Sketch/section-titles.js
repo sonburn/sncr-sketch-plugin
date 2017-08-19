@@ -72,8 +72,16 @@ var add = function(context) {
 				count++;
 			}
 
-			// Display feedback
-			doc.showMessage(count + strSectionTitlesAdded);
+			// If adding one screen title...
+			if (selection.count() == 1) {
+				// Link the screen title to the artboard
+				link(context);
+			}
+			// If adding more than one screen title...
+			else {
+				// Display feedback
+				doc.showMessage(count + strSectionTitlesAdded);
+			}
 		}
 		// If nothing is selected...
 		else {
@@ -101,16 +109,16 @@ var add = function(context) {
 var link = function(context) {
 	// Context variables
 	var doc = context.document;
-	var selection = context.selection;
 	var page = doc.currentPage();
+	var selections = page.selectedLayers().layers();
 
 	// Take action on selections...
-	switch (selection.count()) {
+	switch (selections.count()) {
 		// If there are two selections...
 		case 2:
 			// Selection variables
-			var firstItem = selection[0];
-			var secondItem = selection[1];
+			var firstItem = selections[0];
+			var secondItem = selections[1];
 
 			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard
 			if ((firstItem instanceof MSSymbolInstance && firstItem.symbolMaster().name().trim() == sectionTitleSymbolMasterName) && secondItem instanceof MSArtboardGroup) {
@@ -238,7 +246,7 @@ var unlink = function(context) {
 // Function to update all section titles on page
 var update = function(context) {
 	// Context variables
-	var doc = context.document;
+	var doc = MSDocument.currentDocument();
 	var page = doc.currentPage();
 
 	// Set counters
@@ -298,13 +306,16 @@ var update = function(context) {
 		}
 	}
 
-	// If any artboard links were removed
-	if (removeCount > 0) {
-		// Display feedback
-		doc.showMessage(updateCount + strSectionTitlesUpdated + ", " + removeCount + strSectionTitlesUpdateUnlinked);
-	} else {
-		// Display feedback
-		doc.showMessage(updateCount + strSectionTitlesUpdated);
+	// If the function was not invoked by action...
+	if (!context.actionContext) {
+		// If any artboard links were removed
+		if (removeCount > 0) {
+			// Display feedback
+			doc.showMessage(updateCount + strSectionTitlesUpdated + ", " + removeCount + strSectionTitlesUpdateUnlinked);
+		} else {
+			// Display feedback
+			doc.showMessage(updateCount + strSectionTitlesUpdated);
+		}
 	}
 };
 

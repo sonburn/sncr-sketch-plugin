@@ -309,7 +309,7 @@ var unlink = function(context) {
 // Function to update all artboard descriptions on page
 var update = function(context) {
 	// Context variables
-	var doc = context.document;
+	var doc = MSDocument.currentDocument();
 	var page = doc.currentPage();
 
 	// Set counters
@@ -337,8 +337,8 @@ var update = function(context) {
 		// If artboard object exists...
 		if (artboard) {
 			// Set artboard description x/y in relation to artboard, with offsets
-			layer.frame().setX(artboard.frame().x() + artboardDescXOffset);
-			layer.frame().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
+			layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
+			layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
 
 			// Set artboard description width
 			layer.frame().setWidth(artboard.frame().width());
@@ -395,12 +395,15 @@ var update = function(context) {
 	// Resize parent group to account for children
 	parentGroup.resizeToFitChildrenWithOption(0);
 
-	// If any artboard links were removed
-	if (removeCount > 0) {
-		// Display feedback
-		doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUpdateUnlinked);
-	} else {
-		// Display feedback
-		doc.showMessage(updateCount + strArtboardDescsUpdated);
+	// If the function was not invoked by action...
+	if (!context.actionContext) {
+		// If any artboard links were removed
+		if (removeCount > 0) {
+			// Display feedback
+			doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUpdateUnlinked);
+		} else {
+			// Display feedback
+			doc.showMessage(updateCount + strArtboardDescsUpdated);
+		}
 	}
 };

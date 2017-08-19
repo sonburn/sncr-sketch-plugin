@@ -6,11 +6,11 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.63</title>
+			<title>Version 0.64</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added new functionality to add or edit an artboard description. Also centralized some shared functionality, and updated some strings.</li>
+				<li>Added functionality to make section titles and artboard descriptions automatically reposition if artboards have been moved.</li>
 				</ul>
 				]]>
 			</description>
