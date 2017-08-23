@@ -249,49 +249,37 @@ function deleteTextStyle(context,styleName) {
 }
 
 function getParentGroup(scope,name) {
-	// Set parent group
-	var parentGroup = findLayerByName(scope,name);
+	var group = findLayerByName(scope,name);
 
-	// If parent group does not exist...
-	if (!parentGroup) {
-		// Create parent group
-		var parentGroup = MSLayerGroup.new();
-		parentGroup.setName(name);
-		parentGroup.frame().setX(0);
-		parentGroup.frame().setY(0);
+	if (!group) {
+		var group = MSLayerGroup.new();
+		group.setName(name);
+		group.frame().setX(0);
+		group.frame().setY(0);
 
-		// Add parent group to scope
-		scope.addLayers([parentGroup]);
+		scope.addLayers([group]);
 	}
 
-	// Set/reset parent group values
-	parentGroup.setIsLocked(true);
-	parentGroup.setHasClickThrough(true);
+	group.setIsLocked(true);
+	group.setHasClickThrough(true);
 
-	// Return parent group
-	return parentGroup;
+	return group;
 }
 
-function getNoteGroup(scope,name) {
-	// Set annotation group
-	var noteGroup = findLayerByName(scope,name);
+function getChildGroup(scope,name) {
+	var group = findLayerByName(scope,name);
 
-	// If annotation group does not exist...
-	if (!noteGroup) {
-		// Create annotation group
-		var noteGroup = MSLayerGroup.new();
-		noteGroup.setName(name);
-		noteGroup.frame().setX(0 - scope.frame().x());
-		noteGroup.frame().setY(0 - scope.frame().y());
+	if (!group) {
+		var group = MSLayerGroup.new();
+		group.setName(name);
+		group.frame().setX(0 - scope.frame().x());
+		group.frame().setY(0 - scope.frame().y());
 
-		// Add note group to scope
-		scope.addLayers([noteGroup]);
+		scope.addLayers([group]);
 	}
 
-	// Set/reset note group values
-	noteGroup.setIsLocked(true);
-	noteGroup.setHasClickThrough(true);
+	group.setIsLocked(true);
+	group.setHasClickThrough(true);
 
-	// Return annotation group
-	return noteGroup;
+	return group;
 }
