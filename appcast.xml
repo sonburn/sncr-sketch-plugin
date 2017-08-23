@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.64</title>
+			<title>Version 0.65</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added functionality to make section titles and artboard descriptions automatically reposition if artboards have been moved.</li>
+				<li>Section titles will now automatically call Update function when linking, cleaned up the Update function for Artboard Descriptions, added new functions to Include/Preclude artboards from Layout Artboards (and also fixed bug in sorting).</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.63" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.65" />
 		</item>
 	</channel>
 </rss>

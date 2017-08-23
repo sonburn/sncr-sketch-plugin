@@ -120,15 +120,15 @@ var link = function(context) {
 			var firstItem = selections[0];
 			var secondItem = selections[1];
 
-			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard
+			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard...
 			if ((firstItem instanceof MSSymbolInstance && firstItem.symbolMaster().name().trim() == sectionTitleSymbolMasterName) && secondItem instanceof MSArtboardGroup) {
 				linkTitle(firstItem,secondItem);
 			}
-			// If the first item is an artboard, and the second item is a symbol instance and symbol master name matches the provided name
+			// If the first item is an artboard, and the second item is a symbol instance and symbol master name matches the provided name...
 			else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSSymbolInstance && secondItem.symbolMaster().name().trim() == sectionTitleSymbolMasterName)) {
 				linkTitle(secondItem,firstItem);
 			}
-			// If the selections do not contain a section title symbol instance and artboard
+			// If the selections do not contain a section title symbol instance and artboard...
 			else {
 				// Display feedback
 				displayDialog(strSectionTitleLinkPluginName,strSectionTitleLinkProblem);
@@ -157,6 +157,8 @@ var link = function(context) {
 
 		// Display feedback
 		doc.showMessage(titleName + strSectionTitleLinked + artboard.name());
+
+		update(context);
 	}
 }
 

@@ -7,7 +7,9 @@ var artboardDescGroupName = "Descriptions";
 var artboardDescXOffset = 0;
 var artboardDescYOffset = 24;
 var artboardDescLinkKey = "linkedToArtboard";
-var artboardDescLinkKeyQuery = "userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardDescLinkKey + " != nil";
+var artboardDescLinkTypeKey = "linkType";
+var artboardDescLinkTypeValue = "description";
+var artboardDescLinkKeyQuery = "userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardDescLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardDescLinkTypeKey + " == nil";
 var artboardDescLinkPrefix = "🔗 ";
 var artboardDescStyleName = "Wireframe/Artboard Description";
 var artboardDescStyleData = {
@@ -52,15 +54,15 @@ var link = function(context) {
 			var firstItem = selection[0];
 			var secondItem = selection[1];
 
-			// If the first item is a text layer and text style name matches the provided name, and the second item is an artboard
+			// If the first item is a text layer and text style name matches the provided name, and the second item is an artboard...
 			if ((firstItem instanceof MSTextLayer && firstItem.sharedObject() && firstItem.sharedObject().name() == artboardDescStyleName) && secondItem instanceof MSArtboardGroup) {
 				linkArtboardDesc(firstItem,secondItem);
 			}
-			// If the first item is an artboard, and the second item is a text layer and text style name matches the provided name
+			// If the first item is an artboard, and the second item is a text layer and text style name matches the provided name...
 			else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSTextLayer && secondItem.sharedObject() && secondItem.sharedObject().name() == artboardDescStyleName)) {
 				linkArtboardDesc(secondItem,firstItem);
 			}
-			// If the selections do not contain a artboard description text layer and artboard
+			// If the selections do not contain a artboard description text layer and artboard...
 			else {
 				// Display feedback
 				displayDialog(strArtboardDescLinkPluginName,strArtboardDescLinkProblem);
@@ -82,7 +84,7 @@ var link = function(context) {
 		var parentGroup = getParentGroup(page,parentGroupName);
 
 		// Set annotation group
-		var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
+		var descGroup = getChildGroup(parentGroup,artboardDescGroupName);
 
 		// Set artboard description x/y in relation to artboard, with offsets
 		layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
@@ -91,17 +93,17 @@ var link = function(context) {
 		// Set artboard description width
 		layer.frame().setWidth(artboard.frame().width());
 
-		// If the artboard description is not in the note group...
-		if (layer.parentGroup() != noteGroup) {
-			// Move the artboard description to the note group
-			layer.moveToLayer_beforeLayer(noteGroup,nil);
+		// If the artboard description is not in the description group...
+		if (layer.parentGroup() != descGroup) {
+			// Move the artboard description to the description group
+			layer.moveToLayer_beforeLayer(descGroup,nil);
 		}
 
 		// Deselect the artboard
 		artboard.select_byExpandingSelection(false,true);
 
-		// Resize note and parent groups to account for children
-		noteGroup.resizeToFitChildrenWithOption(0);
+		// Resize description and parent groups to account for children
+		descGroup.resizeToFitChildrenWithOption(0);
 		parentGroup.resizeToFitChildrenWithOption(0);
 
 		// Set layer name
@@ -118,7 +120,7 @@ var link = function(context) {
 	}
 }
 
-// Function to select all linked artboard descriptions on page
+// Function to select all linked descriptions on page
 var select = function(context) {
 	// Context variables
 	var doc = context.document;
@@ -130,11 +132,11 @@ var select = function(context) {
 	// Set a counter
 	var count = 0;
 
-	// Get the artboard descriptions and construct a loop
+	// Get the descriptions and construct a loop
 	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(artboardDescLinkKeyQuery,pluginDomain));
 	var loop = layers.objectEnumerator(), layer;
 
-	// Iterate through artboard descriptions...
+	// Iterate through descriptions...
 	while (layer = loop.nextObject()) {
 		// Select the artboard description while maintaining other selections
 		layer.select_byExpandingSelection(true,true);
@@ -187,7 +189,7 @@ var set = function(context) {
 				var parentGroup = getParentGroup(page,parentGroupName);
 
 				// Set annotation group
-				var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
+				var descGroup = getChildGroup(parentGroup,artboardDescGroupName);
 
 				// Set artboard description style
 				var artboardDescStyle = getTextStyle(context,artboardDescStyleName,artboardDescStyleData);
@@ -200,7 +202,7 @@ var set = function(context) {
 				artboardDesc.setTextBehaviour(1);
 
 				// Add artboard description to annotation group
-				noteGroup.addLayers([artboardDesc]);
+				descGroup.addLayers([artboardDesc]);
 
 				// Set artboard description x/y in relation to artboard, with offsets
 				artboardDesc.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
@@ -209,8 +211,8 @@ var set = function(context) {
 				// Set artboard description width
 				artboardDesc.frame().setWidth(artboard.frame().width());
 
-				// Resize note and parent groups to account for children
-				noteGroup.resizeToFitChildrenWithOption(0);
+				// Resize description and parent groups to account for children
+				descGroup.resizeToFitChildrenWithOption(0);
 				parentGroup.resizeToFitChildrenWithOption(0);
 
 				// Set stored value for linked artboard
@@ -306,104 +308,110 @@ var unlink = function(context) {
 	}
 }
 
-// Function to update all artboard descriptions on page
+// Function to update all descriptions on page
 var update = function(context) {
 	// Context variables
 	var doc = MSDocument.currentDocument();
 	var page = doc.currentPage();
 
-	// Set counters
-	var updateCount = 0;
-	var removeCount = 0;
-
-	// Set parent group
-	var parentGroup = getParentGroup(page,parentGroupName);
-
-	// Set annotation group
-	var noteGroup = getNoteGroup(parentGroup,artboardDescGroupName);
-
-	// Get the artboard descriptions and construct a loop
+	// Get descriptions on current page
 	var layers = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat(artboardDescLinkKeyQuery,pluginDomain));
-	var loop = layers.objectEnumerator(), layer;
 
-	// Iterate through artboard descriptions...
-	while (layer = loop.nextObject()) {
-		// Get stored value for linked artboard
-		var linkedArtboard = context.command.valueForKey_onLayer(artboardDescLinkKey,layer);
+	// If there are descriptions...
+	if (layers.count() > 0) {
+		var loop = layers.objectEnumerator(), layer;
 
-		// Get linked artboard object, if it resides on the artboard description page
-		var artboard = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("objectID == %@",linkedArtboard,pluginDomain)).firstObject();
+		// Set counters
+		var updateCount = 0;
+		var removeCount = 0;
 
-		// If artboard object exists...
-		if (artboard) {
-			// Set artboard description x/y in relation to artboard, with offsets
-			layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
-			layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
+		// Set parent group
+		var parentGroup = getParentGroup(page,parentGroupName);
 
-			// Set artboard description width
-			layer.frame().setWidth(artboard.frame().width());
+		// Set annotation group
+		var descGroup = getChildGroup(parentGroup,artboardDescGroupName);
 
-			// If the artboard description is not in the note group...
-			if (layer.parentGroup() != noteGroup) {
-				// Move the artboard description to the note group
-				layer.moveToLayer_beforeLayer(noteGroup,nil);
+		// Iterate through descriptions...
+		while (layer = loop.nextObject()) {
+			context.command.setValue_forKey_onLayer(artboardDescLinkTypeValue,artboardDescLinkTypeKey,layer);
 
-				// Deselect the artboard description (for some reason moveToLayer_beforeLayer selects it)
-				layer.select_byExpandingSelection(false,true);
+			// Get stored value for linked artboard
+			var linkedArtboard = context.command.valueForKey_onLayer(artboardDescLinkKey,layer);
+
+			// Get linked artboard object, if it resides on the artboard description page
+			var artboard = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("objectID == %@",linkedArtboard,pluginDomain)).firstObject();
+
+			// If artboard object exists...
+			if (artboard) {
+				// Set artboard description x/y in relation to artboard, with offsets
+				layer.absoluteRect().setX(artboard.frame().x() + artboardDescXOffset);
+				layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + artboardDescYOffset);
+
+				// Set artboard description width
+				layer.frame().setWidth(artboard.frame().width());
+
+				// If the artboard description is not in the description group...
+				if (layer.parentGroup() != descGroup) {
+					// Move the artboard description to the description group
+					layer.moveToLayer_beforeLayer(descGroup,nil);
+
+					// Deselect the artboard description (for some reason moveToLayer_beforeLayer selects it)
+					layer.select_byExpandingSelection(false,true);
+				}
+
+				// Set layer name
+				var layerName = artboardDescLinkPrefix + artboard.name();
+
+				// Update the layer name
+				layer.setName(layerName);
+
+				// Iterate counter
+				updateCount++;
 			}
+			// If artboard object does not exist...
+			else {
+				// Remove stored value for linked artboard
+				context.command.setValue_forKey_onLayer(nil,artboardDescLinkKey,layer);
 
-			// Set layer name
-			var layerName = artboardDescLinkPrefix + artboard.name();
+				// Set layer name
+				var layerName = layer.name().replace(artboardDescLinkPrefix,""));
 
-			// Update the layer name
-			layer.setName(layerName);
+				// Update the layer name
+				layer.setName(layerName);
 
-			// Iterate counter
-			updateCount++;
+				// Create a log event
+				log(layerName + strArtboardDescUnlinked + linkedArtboard);
+
+				// Iterate counters
+				updateCount++;
+				removeCount++;
+			}
 		}
-		// If artboard object does not exist...
+
+		// If description group is not empty...
+		if (descGroup.layers().count() > 0) {
+			// Resize description group to account for children
+			descGroup.resizeToFitChildrenWithOption(0);
+		}
+		// If description group is empty...
 		else {
-			// Remove stored value for linked artboard
-			context.command.setValue_forKey_onLayer(nil,artboardDescLinkKey,layer);
-
-			// Set layer name
-			var layerName = layer.name().replace(artboardDescLinkPrefix,""));
-
-			// Update the layer name
-			layer.setName(layerName);
-
-			// Create a log event
-			log(layerName + strArtboardDescUnlinked + linkedArtboard);
-
-			// Iterate counters
-			updateCount++;
-			removeCount++;
+			// Remove the description group
+			descGroup.removeFromParent();
 		}
-	}
 
-	// If note group is not empty...
-	if (noteGroup.layers().count() > 0) {
-		// Resize note group to account for children
-		noteGroup.resizeToFitChildrenWithOption(0);
-	}
-	// If note group is empty...
-	else {
-		// Remove the note group
-		noteGroup.removeFromParent();
-	}
+		// Resize parent group to account for children
+		parentGroup.resizeToFitChildrenWithOption(0);
 
-	// Resize parent group to account for children
-	parentGroup.resizeToFitChildrenWithOption(0);
-
-	// If the function was not invoked by action...
-	if (!context.actionContext) {
-		// If any artboard links were removed
-		if (removeCount > 0) {
-			// Display feedback
-			doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUpdateUnlinked);
-		} else {
-			// Display feedback
-			doc.showMessage(updateCount + strArtboardDescsUpdated);
+		// If the function was not invoked by action...
+		if (!context.actionContext) {
+			// If any artboard links were removed
+			if (removeCount > 0) {
+				// Display feedback
+				doc.showMessage(updateCount + strArtboardDescsUpdated + ", " + removeCount + strArtboardDescsUpdateUnlinked);
+			} else {
+				// Display feedback
+				doc.showMessage(updateCount + strArtboardDescsUpdated);
+			}
 		}
 	}
 };

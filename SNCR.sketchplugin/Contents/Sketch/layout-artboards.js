@@ -1,11 +1,88 @@
 @import 'lib/functions.js';
 
-var onRun = function(context) {
+var pluginDomain = "com.sncr.sketch";
+
+var strArtboardPrecludeKey = "layoutArtboards";
+var strArtboardPrecludeKeyValue = false;
+
+var strArtboardPrecludePluginName = "Preclude Selected Artboards";
+var strArtboardPrecludeProblem = "Select artboard(s) to mark as precluded from Layout Artboards.";
+var strArtboardPrecludeComplete = " is now precluded from Layout Artboards";
+var strArtboardPrecludesComplete = " artboard(s) are now precluded from Layout Artboards";
+
+var strArtboardIncludePluginName = "Include Selected Artboards";
+var strArtboardIncludeProblem = "Select artboard(s) to mark as included in Layout Artboards.";
+var strArtboardIncludeComplete = " is now included in Layout Artboards";
+var strArtboardIncludesComplete = " artboard(s) are now included in Layout Artboards";
+
+var strArtboardLayoutPluginName = "Layout Artboards";
+var strArtboardLayoutProblem = "There are no artboards to layout.";
+var strArtboardLayoutComplete = "Artboard layout complete";
+
+var preclude = function(context) {
+	var doc = context.document;
+	var selection = context.selection;
+
+	var count = 0;
+
+	if (selection.count()) {
+		for (var i = 0; i < selection.count(); i++) {
+			if (selection[i] instanceof MSArtboardGroup) {
+				context.command.setValue_forKey_onLayer(strArtboardPrecludeKeyValue,strArtboardPrecludeKey,selection[i]);
+
+				selection[i].select_byExpandingSelection(false,true);
+
+				count++;
+
+				log(selection[i].name() + strArtboardPrecludeComplete);
+			}
+		}
+
+		if (selection.count() == 1) {
+			doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
+		} else {
+			doc.showMessage(count + strArtboardPrecludesComplete);
+		}
+	} else {
+		displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
+	}
+}
+
+var include = function(context) {
+	var doc = context.document;
+	var selection = context.selection;
+
+	var count = 0;
+
+	if (selection.count()) {
+		for (var i = 0; i < selection.count(); i++) {
+			if (selection[i] instanceof MSArtboardGroup) {
+				context.command.setValue_forKey_onLayer(nil,strArtboardPrecludeKey,selection[i]);
+
+				selection[i].select_byExpandingSelection(false,true);
+
+				count++;
+
+				log(selection[i].name() + strArtboardIncludeComplete);
+			}
+		}
+
+		if (selection.count() == 1) {
+			doc.showMessage(selection[0].name() + strArtboardIncludeComplete);
+		} else {
+			doc.showMessage(count + strArtboardIncludesComplete);
+		}
+	} else {
+		displayDialog(strArtboardIncludePluginName,strArtboardIncludeProblem);
+	}
+}
+
+var layout = function(context) {
 	// Document variables
 	var doc = context.document;
 	var command = context.command;
 	var page = doc.currentPage();
-	var artboards = doc.artboards();
+	var layoutArtboards, layoutArtboardCount;
 
 	// Run for selections, otherwise for all artboards on page
 	if (context.selection.count() > 0) {
@@ -15,8 +92,8 @@ var onRun = function(context) {
 		layoutArtboards = doc.selectedLayers().layers();
 		layoutArtboardCount = doc.selectedLayers().layers().count();
 	} else {
-		layoutArtboards = artboards;
-		layoutArtboardCount = artboards.count();
+		layoutArtboards = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + strArtboardPrecludeKey + " != " + strArtboardPrecludeKeyValue,pluginDomain));
+		layoutArtboardCount = layoutArtboards.count();
 	}
 
 	// Run only if there are artboards
@@ -36,7 +113,7 @@ var onRun = function(context) {
 
 				var layoutLayers = (layoutSettings.sortOrder == 2) ? [[layoutArtboards reverseObjectEnumerator] allObjects] : layoutArtboards;
 
-				sortLayerList(layoutLayers);
+				sortLayerList(layoutLayers,page);
 			}
 
 			var firstBoard = layoutArtboards.objectAtIndex(0);
@@ -126,11 +203,11 @@ var onRun = function(context) {
 			}
 
 			// Feedback to user
-			doc.showMessage("Artboard layout complete!");
+			doc.showMessage(strArtboardLayoutComplete);
 		}
 	} else {
 		// Feedback to user
-		displayDialog("Layout Artboards","No artboards for layout.");
+		displayDialog(strArtboardLayoutPluginName,strArtboardLayoutProblem);
 	}
 
 	function groupCounter(group,obj) {
@@ -239,29 +316,13 @@ var onRun = function(context) {
 		} else return false;
 	}
 
-	function sortLayerList(layoutArtboards) {
-		var parent = page;
-		var artboardIndices = [];
-		var loop = [artboards objectEnumerator], artboard;
+	function sortLayerList(artboards,output) {
+		var loop = artboards.objectEnumerator(), artboard;
 
-		while (artboard = [loop nextObject]) {
-			artboardIndices.push(parent.indexOfLayer(artboard));
+		while (artboard = loop.nextObject()) {
+			artboard.moveToLayer_beforeLayer(output,nil);
+			artboard.select_byExpandingSelection(false,true);
 		}
-
-		var removeLoop = [artboards objectEnumerator], artboardToRemove;
-
-		while (artboardToRemove = [removeLoop nextObject]) {
-			[artboardToRemove removeFromParent];
-		}
-
-		for (var i = 0; i < artboardIndices.length; i++) {
-			var index = artboardIndices[i];
-			var sortedArtboard = layoutArtboards[i];
-			var layerArray = [NSArray arrayWithObject:sortedArtboard];
-			[parent insertLayers:layerArray atIndex:index];
-		}
-
-		artboards = [page artboards];
 	}
 
 	function filterSelections(selections) {
