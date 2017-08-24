@@ -10,13 +10,6 @@
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"commands": [
 		{
-			"name": "Toggle Toolbar",
-			"shortcut": "cmd option l",
-			"identifier": "layout-toolbar",
-			"handler": "layoutBar",
-			"script": "layout-toolbar.js"
-		},
-		{
 			"name": "Layout Artboards…",
 			"identifier": "layout-artboards",
 			"script": "layout-artboards.js",
@@ -88,12 +81,6 @@
 			"identifier": "update-section-titles",
 			"script": "section-titles.js",
 			"handler": "update"
-		},
-		{
-			"name": "Settings…",
-			"identifier": "section-title-settings",
-			"script": "section-titles.js",
-			"handler": "settings"
 		},
 		{
 			"name": "Artboard Descriptions",
@@ -207,8 +194,7 @@
 					"link-section-title",
 					"unlink-section-title",
 					"select-section-titles",
-					"update-section-titles",
-					"section-title-settings"
+					"update-section-titles"
 				]
 			},
 			{
@@ -216,12 +202,6 @@
 				"items": [
 					"create-artboard-slice",
 					"export-wireframes"
-				]
-			},
-			{
-				"title": "SNCR - Toolbar",
-				"items" : [
-					"layout-toolbar"
 				]
 			}
 		]
