@@ -8,12 +8,12 @@ var strArtboardPrecludeKeyValue = false;
 var strArtboardPrecludePluginName = "Preclude Selected Artboards";
 var strArtboardPrecludeProblem = "Select artboard(s) to mark as precluded from Layout Artboards.";
 var strArtboardPrecludeComplete = " is now precluded from Layout Artboards";
-var strArtboardPrecludesComplete = " artboard(s) are now precluded from Layout Artboards";
+var strArtboardPrecludesComplete = " artboards are now precluded from Layout Artboards";
 
 var strArtboardIncludePluginName = "Include Selected Artboards";
 var strArtboardIncludeProblem = "Select artboard(s) to mark as included in Layout Artboards.";
 var strArtboardIncludeComplete = " is now included in Layout Artboards";
-var strArtboardIncludesComplete = " artboard(s) are now included in Layout Artboards";
+var strArtboardIncludesComplete = " artboards are now included in Layout Artboards";
 
 var strArtboardLayoutPluginName = "Layout Artboards";
 var strArtboardLayoutProblem = "There are no artboards to layout.";
