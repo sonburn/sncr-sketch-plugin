@@ -260,7 +260,6 @@ function getParentGroup(scope,name) {
 		scope.addLayers([group]);
 	}
 
-	group.setIsLocked(true);
 	group.setHasClickThrough(true);
 
 	return group;
@@ -277,8 +276,7 @@ function getChildGroup(scope,name) {
 
 		scope.addLayers([group]);
 	}
-
-	group.setIsLocked(true);
+	
 	group.setHasClickThrough(true);
 
 	return group;

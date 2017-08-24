@@ -1,6 +1,21 @@
 @import 'lib/functions.js';
 
+var pluginDomain = "com.sncr.sketch";
+
+var strArtboardPrecludeKey = "createArtboardTitles";
+var strArtboardPrecludeKeyValue = false;
+
 // String variables
+var strArtboardPrecludePluginName = "Preclude Selected Artboards";
+var strArtboardPrecludeProblem = "Select artboard(s) to mark as precluded from Create Artboard Titles.";
+var strArtboardPrecludeComplete = " is now precluded from Create Artboard Titles";
+var strArtboardPrecludesComplete = " artboards are now precluded from Create Artboard Titles";
+
+var strArtboardIncludePluginName = "Include Selected Artboards";
+var strArtboardIncludeProblem = "Select artboard(s) to mark as included in Create Artboard Titles.";
+var strArtboardIncludeComplete = " is now included in Create Artboard Titles";
+var strArtboardIncludesComplete = " artboards are now included in Create Artboard Titles";
+
 var strCreateTitlesPluginName = "Create Artboard Titles";
 var strCreateTitlesCreatedTitles = " screen title(s) created!";
 var strCreateTitlesNoArtboards = "There are no artboards on the current page, therefore no titles to create.";
@@ -19,13 +34,71 @@ var screenTitleStyleData = {
 	textAlignment : 0
 }
 
+var preclude = function(context) {
+	var doc = context.document;
+	var selection = context.selection;
+
+	var count = 0;
+
+	if (selection.count()) {
+		for (var i = 0; i < selection.count(); i++) {
+			if (selection[i] instanceof MSArtboardGroup) {
+				context.command.setValue_forKey_onLayer(strArtboardPrecludeKeyValue,strArtboardPrecludeKey,selection[i]);
+
+				selection[i].select_byExpandingSelection(false,true);
+
+				count++;
+
+				log(selection[i].name() + strArtboardPrecludeComplete);
+			}
+		}
+
+		if (selection.count() == 1) {
+			doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
+		} else {
+			doc.showMessage(count + strArtboardPrecludesComplete);
+		}
+	} else {
+		displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
+	}
+}
+
+var include = function(context) {
+	var doc = context.document;
+	var selection = context.selection;
+
+	var count = 0;
+
+	if (selection.count()) {
+		for (var i = 0; i < selection.count(); i++) {
+			if (selection[i] instanceof MSArtboardGroup) {
+				context.command.setValue_forKey_onLayer(nil,strArtboardPrecludeKey,selection[i]);
+
+				selection[i].select_byExpandingSelection(false,true);
+
+				count++;
+
+				log(selection[i].name() + strArtboardIncludeComplete);
+			}
+		}
+
+		if (selection.count() == 1) {
+			doc.showMessage(selection[0].name() + strArtboardIncludeComplete);
+		} else {
+			doc.showMessage(count + strArtboardIncludesComplete);
+		}
+	} else {
+		displayDialog(strArtboardIncludePluginName,strArtboardIncludeProblem);
+	}
+}
+
 // Function to create artboard titles
 var create = function(context) {
 	// Document variables
 	var doc = context.document;
 	var command = context.command;
 	var page = doc.currentPage();
-	var artboards = page.artboards();
+	var artboards = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + strArtboardPrecludeKey + " != " + strArtboardPrecludeKeyValue,pluginDomain));;
 	var layers = page.layers();
 
 	// If artboards exist on the page...

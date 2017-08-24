@@ -316,6 +316,10 @@ var update = function(context) {
 
 		// If the function was not invoked by action...
 		if (!context.actionContext) {
+			// Lock the annotation and parent groups
+			noteGroup.setIsLocked(true);
+			parentGroup.setIsLocked(true);
+
 			// If any annotation links were removed
 			if (removeCount > 0) {
 				// Display feedback

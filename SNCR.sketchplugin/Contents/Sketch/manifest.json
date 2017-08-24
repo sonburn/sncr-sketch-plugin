@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.67,
+	"version": 0.68,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -17,13 +17,13 @@
 		},
 		{
 			"name": "Preclude Selected",
-			"identifier": "preclude-artboards",
+			"identifier": "layout-preclude-artboards",
 			"script": "layout-artboards.js",
 			"handler": "preclude"
 		},
 		{
 			"name": "Include Selected",
-			"identifier": "include-artboards",
+			"identifier": "layout-include-artboards",
 			"script": "layout-artboards.js",
 			"handler": "include"
 		},
@@ -134,6 +134,18 @@
 			"handler": "create"
 		},
 		{
+			"name": "Preclude Selected",
+			"identifier": "titles-preclude-artboards",
+			"script": "artboard-titles.js",
+			"handler": "preclude"
+		},
+		{
+			"name": "Include Selected",
+			"identifier": "titles-include-artboards",
+			"script": "artboard-titles.js",
+			"handler": "include"
+		},
+		{
 			"name": "Designate Selected",
 			"identifier": "designate-artboard-note",
 			"script": "artboard-annotations.js",
@@ -176,15 +188,17 @@
 			{
 				"title": "SNCR - Artboard Titles",
 				"items": [
-					"create-artboard-titles"
+					"create-artboard-titles",
+					"titles-preclude-artboards",
+					"titles-include-artboards"
 				]
 			},
 			{
 				"title": "SNCR - Layout Artboards",
 				"items": [
 					"layout-artboards",
-					"preclude-artboards",
-					"include-artboards"
+					"layout-preclude-artboards",
+					"layout-include-artboards"
 				]
 			},
 			{

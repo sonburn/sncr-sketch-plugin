@@ -404,6 +404,10 @@ var update = function(context) {
 
 		// If the function was not invoked by action...
 		if (!context.actionContext) {
+			// Lock the description and parent groups
+			descGroup.setIsLocked(true);
+			parentGroup.setIsLocked(true);
+
 			// If any artboard links were removed
 			if (removeCount > 0) {
 				// Display feedback

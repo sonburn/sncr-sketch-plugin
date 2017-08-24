@@ -36,6 +36,12 @@ Creates a title text layer above or below each artboard, with the value of each 
 
 ![Create Artboard Titles](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Create%20Artboard%20Titles.png)
 
+## Preclude Selected
+To do...
+
+## Include Selected
+To do...
+
 # Layout Artboards
 
 ## Layout Artboards…

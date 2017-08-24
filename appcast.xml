@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.67</title>
+			<title>Version 0.68</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Overlapping annotations will now offset.</li>
+				<li>Added ability to preclude/include artboards for Create Artboard Titles processing. Parent and child groups will no longer re-lock when functions are run automatically.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.67" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.68" />
 		</item>
 	</channel>
 </rss>
