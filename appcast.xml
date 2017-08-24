@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.66</title>
+			<title>Version 0.67</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added new functionality for annotations; designate selections as annotations, link selected annotation and object/artboard, and update all annotations on page. Creating and updating annotations will also draw links between annotations and linked object/artboard.</li>
+				<li>Overlapping annotations will now offset.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.66" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.67" />
 		</item>
 	</channel>
 </rss>

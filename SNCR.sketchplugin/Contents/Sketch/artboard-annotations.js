@@ -9,6 +9,7 @@ var artboardNoteConnectionsGroupName = "Connections";
 var artboardNoteXOffset = 48;
 var artboardNoteYOffset = 0;
 var artboardNoteWidth = 256;
+var artboardNoteSeparation = 12;
 var artboardNoteLinkKey = "linkedToObject";
 var artboardNoteLinkTypeKey = "linkType";
 var artboardNoteLinkTypeValue = "annotation";
@@ -176,9 +177,11 @@ var update = function(context) {
 	var updateCount = 0;
 	var removeCount = 0;
 
+	// Initiate array of parents with siblings
+	var parentsWithSiblings = [];
+
 	// If there are annotations...
 	if (annotations.count()) {
-
 		// Set parent group
 		var parentGroup = getParentGroup(page,parentGroupName);
 
@@ -195,6 +198,18 @@ var update = function(context) {
 
 			// If linked object exists...
 			if (linkedObject) {
+				// If linked object has a parent...
+				if (linkedObject.parentArtboard()) {
+					// Get siblings for this linked object (figure out how to exclude current object)
+					var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+
+					// If there are siblings...
+					if (siblings.count() > 1) {
+						// Add parent objectID to array of parents with siblings
+						parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
+					}
+				}
+
 				// Determine max X of artboard, or parent artboard
 				var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
 
@@ -247,6 +262,42 @@ var update = function(context) {
 
 		// If annotation group is not empty...
 		if (noteGroup.layers().count() > 0) {
+			// If any parents have siblings...
+			if (parentsWithSiblings) {
+				// Filter duplicates from parents with siblings array
+				var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
+					return parentsWithSiblings.indexOf(item) == pos;
+				});
+
+				// Iterate through the parents...
+				for (var i = 0; i < parentsWithSiblings.length; i++) {
+					// Get siblings for parent
+					var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+
+					// Sort the siblings by Y position
+					var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+					siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+
+					// Iterate through the siblings...
+					for (var j = 0; j < siblings.length; j++) {
+						// If there is a next sibling...
+						if (j+1 < siblings.length) {
+							// Sibling variables
+							var thisSibling = siblings[j];
+							var nextSibling = siblings[j+1];
+
+							thisSibling.moveToLayer_beforeLayer(noteGroup,nil);
+
+							// If this sibling and the next intersect...
+							if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+								// Adjust the Y coordinate of the next sibling
+								nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
+							}
+						}
+					}
+				}
+			}
+
 			// Resize annotation and parent groups to account for children
 			noteGroup.resizeToFitChildrenWithOption(0);
 			parentGroup.resizeToFitChildrenWithOption(0);
