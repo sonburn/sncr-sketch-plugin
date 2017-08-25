@@ -158,6 +158,9 @@ var link = function(context) {
 		// Display feedback
 		doc.showMessage(titleName + strSectionTitleLinked + artboard.name());
 
+		// Deselect the artboard
+		artboard.select_byExpandingSelection(false,true);
+
 		update(context);
 	}
 }

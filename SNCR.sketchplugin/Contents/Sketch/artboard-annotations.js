@@ -34,6 +34,8 @@ var strNoteLinkPluginName = "Link Artboard Annotation";
 var strNoteLinkProblem = "Select one designated annotation and one artboard or object to link.";
 var strNoteLinkComplete = " is now linked to ";
 
+var strArtboardNoteUnlinked = " artboard annotation is no longer linked to ";
+
 var strNoteLinksUpdated = " annotation(s) updated";
 var strNoteLinksUpdateUnlinked = " annotation(s) were unlinked due to missing artboards";
 
@@ -135,6 +137,32 @@ var link = function(context) {
 		if (note.parentGroup() != noteGroup) {
 			// Move the annotation to the annotation group
 			note.moveToLayer_beforeLayer(noteGroup,nil);
+		}
+
+		// Get siblings for parent
+		var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+
+		// If more than one sibling...
+		if (siblings && siblings.count() > 1) {
+			// Sort the siblings by Y position
+			var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+			siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+
+			// Iterate through the siblings...
+			for (var j = 0; j < siblings.length; j++) {
+				// If there is a next sibling...
+				if (j+1 < siblings.length) {
+					// Sibling variables
+					var thisSibling = siblings[j];
+					var nextSibling = siblings[j+1];
+
+					// If this sibling and the next intersect...
+					if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+						// Adjust the Y coordinate of the next sibling
+						nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
+					}
+				}
+			}
 		}
 
 		// Deselect the annotation and object
@@ -242,8 +270,10 @@ var update = function(context) {
 			}
 			// If object does not exist...
 			else {
-				// Remove stored value for linked artboard
+				// Remove stored values for linked artboard
 				context.command.setValue_forKey_onLayer(nil,artboardNoteLinkKey,note);
+				context.command.setValue_forKey_onLayer(nil,artboardNoteLinkTypeKey,note);
+				context.command.setValue_forKey_onLayer(nil,artboardNoteParentKey,note);
 
 				// Set annotation name
 				var noteName = note.name().replace(artboardNoteLinkPrefix,""));
@@ -256,7 +286,7 @@ var update = function(context) {
 				removeCount++;
 
 				// Create a log event
-				log(noteName + strArtboardDescUnlinked + linkedObjectID);
+				log(noteName + strArtboardNoteUnlinked + linkedObjectID);
 			}
 		}
 
@@ -285,8 +315,6 @@ var update = function(context) {
 							// Sibling variables
 							var thisSibling = siblings[j];
 							var nextSibling = siblings[j+1];
-
-							thisSibling.moveToLayer_beforeLayer(noteGroup,nil);
 
 							// If this sibling and the next intersect...
 							if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {

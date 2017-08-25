@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.68</title>
+			<title>Version 0.69</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added ability to preclude/include artboards for Create Artboard Titles processing. Parent and child groups will no longer re-lock when functions are run automatically.</li>
+				<li>Annotation Linking will now checking for siblings, and adjust accordingly. Add/Insert Section Titles will now deselect the artboard when adding a single title, to make it easier to apply an override name.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.68" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.69" />
 		</item>
 	</channel>
 </rss>
