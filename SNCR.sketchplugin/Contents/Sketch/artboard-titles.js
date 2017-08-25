@@ -19,7 +19,6 @@ var strArtboardIncludesComplete = " artboards are now included in Create Artboar
 var strCreateTitlesPluginName = "Create Artboard Titles";
 var strCreateTitlesCreatedTitles = " screen title(s) created!";
 var strCreateTitlesNoArtboards = "There are no artboards on the current page, therefore no titles to create.";
-var strCreateTitlesNoSettings = "There was a problem retrieving the settings required to create titles.";
 
 // Group variables
 var parentGroupName = "SNCR";
@@ -95,7 +94,7 @@ var include = function(context) {
 // Function to create artboard titles
 var create = function(context) {
 	// Document variables
-	var doc = context.document;
+	var doc = context.document || context.actionContext.document;
 	var command = context.command;
 	var page = doc.currentPage();
 	var artboards = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + strArtboardPrecludeKey + " != " + strArtboardPrecludeKeyValue,pluginDomain));;
@@ -104,7 +103,7 @@ var create = function(context) {
 	// If artboards exist on the page...
 	if (artboards.count() > 0) {
 		// Get user settings
-		var titleSettings = showTitleSettings();
+		var titleSettings = getTitleSettings(context);
 
 		// If user settings were retrieved...
 		if (titleSettings) {
@@ -112,10 +111,10 @@ var create = function(context) {
 			var screenTitleOffset = parseInt(titleSettings.titleOffset);
 
 			// Remove screen title style (the old style)
-			deleteTextStyle(context,'Layout/Screen Title');
+			deleteTextStyle('Layout/Screen Title');
 
 			// Get screen title style (will add style if it doesn't exist) (the new style)
-			var screenTitleStyle = getTextStyle(context,screenTitleStyleName,screenTitleStyleData);
+			var screenTitleStyle = getTextStyle(screenTitleStyleName,screenTitleStyleData);
 
 			// Set parent group
 			var parentGroup = getParentGroup(page,parentGroupName);
@@ -165,72 +164,110 @@ var create = function(context) {
 			// Resize title group to account for children
 			titleGroup.resizeToFitChildrenWithOption(0);
 
-			// Display feedback
-			doc.showMessage(artboards.count() + strCreateTitlesCreatedTitles);
-		}
-		// If user settings were not retrieved...
-		else {
-			// Display feedback
-			displayDialog(strCreateTitlesPluginName,strCreateTitlesNoSettings);
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
+				// Lock the parent group
+				parentGroup.setIsLocked(true);
+
+				// Display feedback
+				doc.showMessage(artboards.count() + strCreateTitlesCreatedTitles);
+			}
 		}
 	}
 	// If no artboards exist on the page...
 	else {
-		// Display feedback
-		displayDialog(strCreateTitlesPluginName,strCreateTitlesNoArtboards);
+		// If the function was not invoked by action...
+		if (!context.actionContext) {
+			// Display feedback
+			displayDialog(strCreateTitlesPluginName,strCreateTitlesNoArtboards);
+		}
 	}
+};
 
-	function showTitleSettings() {
-		var titleType = 0;
-		var titleOffset = '0';
+// Function to modify settings for artboard titles
+var settings = function(context) {
+	// Get user settings
+	var titleSettings = getTitleSettings(context,"config");
 
-		// Get cached settings
-		try {
-			if ([command valueForKey:"titleType" onDocument:context.document.documentData()]) {
-				titleType = [command valueForKey:"titleType" onDocument:context.document.documentData()];
-			}
+	// If user settings were retrieved...
+	if (titleSettings) {
+		// Create titles with new settings
+		create(context);
+	}
+}
 
-			if ([command valueForKey:"titleOffset" onDocument:context.document.documentData()]) {
-				titleOffset = [command valueForKey:"titleOffset" onDocument:context.document.documentData()];
-			}
-		}
-		catch(err) {
-			log("Unable to fetch settings.");
-		}
+function getTitleSettings(context,type) {
+	// Context variables
+	var doc = context.document || context.actionContext.document;
+	var page = doc.currentPage();
 
+	// Setting variables
+	var defaultSettings = {};
+	defaultSettings.titleType = 0;
+	defaultSettings.titleOffset = '0';
+
+	// Update default settings with cached settings
+	defaultSettings = getCachedSettings(context,page,defaultSettings);
+
+	// If type is set and equal to "config", operate in config mode...
+	if (type && type == "config") {
 		var alertWindow = COSAlertWindow.new();
-
 		alertWindow.setMessageText('Create Artboard Titles');
 
-		alertWindow.addAccessoryView(createRadioButtons(["Above artboards","Below artboards"],titleType));
-		var fieldOne = alertWindow.viewAtIndex(0);
+		var titleType = createRadioButtons(["Above artboards","Below artboards"],defaultSettings.titleType);
+		alertWindow.addAccessoryView(titleType);
 
 		alertWindow.addTextLabelWithValue('Vertical offset:');
-		alertWindow.addAccessoryView(helpers.createField(titleOffset));
-		var fieldTwo = alertWindow.viewAtIndex(2);
 
+		var titleOffset = createField(defaultSettings.titleOffset);
+		alertWindow.addAccessoryView(titleOffset);
+
+		// Buttons
 		alertWindow.addButtonWithTitle('OK');
 		alertWindow.addButtonWithTitle('Cancel');
 
-		// Set first responder and key order
-		alertWindow.alert().window().setInitialFirstResponder(fieldOne);
-		fieldOne.setNextKeyView(fieldTwo);
+		// Set key order and first responder
+		setKeyOrder(alertWindow,[
+			titleType,
+			titleOffset
+		]);
 
 		var responseCode = alertWindow.runModal();
 
 		if (responseCode == 1000) {
 			try {
-				[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"titleType" onDocument:context.document.documentData()];
-				[command setValue:[[alertWindow viewAtIndex:2] stringValue] forKey:"titleOffset" onDocument:context.document.documentData()];
+				context.command.setValue_forKey_onLayer([[titleType selectedCell] tag],"titleType",page);
+				context.command.setValue_forKey_onLayer([titleOffset stringValue],"titleOffset",page);
 			}
 			catch(err) {
 				log("Unable to save settings.");
 			}
 
 			return {
-				titleType : [[[alertWindow viewAtIndex:0] selectedCell] tag],
-				titleOffset : [[alertWindow viewAtIndex:2] stringValue]
+				titleType : [[titleType selectedCell] tag],
+				titleOffset : [titleOffset stringValue]
 			}
 		} else return false;
 	}
-};
+	// Otherwise operate in run mode...
+	else {
+		// Return updated settings
+		return {
+			titleType : defaultSettings.titleType,
+			titleOffset : defaultSettings.titleOffset
+		}
+	}
+}
+
+function getCachedSettings(context,location,settings) {
+	try {
+		for (i in settings) {
+			var value = context.command.valueForKey_onLayer_forPluginIdentifier(i,location,pluginDomain);
+			if (value) settings[i] = value;
+		}
+
+		return settings;
+	} catch(err) {
+		log(strProblemFetchingSettings);
+	}
+}

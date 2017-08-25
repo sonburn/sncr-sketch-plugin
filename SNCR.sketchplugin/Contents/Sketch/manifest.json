@@ -3,7 +3,7 @@
 	"description": "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author": "Jason Burns",
 	"homepage": "https://github.com/sonburn/sncr-sketch-plugin",
-	"version": 0.69,
+	"version": 0.70,
 	"identifier": "com.sncr.sketch",
 	"compatibleVersion": 3,
 	"bundleVersion": 1,
@@ -128,22 +128,33 @@
 			"handler": "update"
 		},
 		{
-			"name": "Create Artboard Titles…",
-			"identifier": "create-artboard-titles",
+			"name": "Create Artboard Titles",
+			"identifier": "artboard-titles-create",
 			"script": "artboard-titles.js",
-			"handler": "create"
+			"handlers" : {
+				"actions": {
+					"run": "create",
+					"LayersMoved.finish": "create"
+				}
+			}
 		},
 		{
 			"name": "Preclude Selected",
-			"identifier": "titles-preclude-artboards",
+			"identifier": "artboard-titles-preclude",
 			"script": "artboard-titles.js",
 			"handler": "preclude"
 		},
 		{
 			"name": "Include Selected",
-			"identifier": "titles-include-artboards",
+			"identifier": "artboard-titles-include",
 			"script": "artboard-titles.js",
 			"handler": "include"
+		},
+		{
+			"name": "Settings…",
+			"identifier": "artboard-titles-settings",
+			"script": "artboard-titles.js",
+			"handler": "settings"
 		},
 		{
 			"name": "Designate Selected",
@@ -161,7 +172,12 @@
 			"name": "Update All Linked on Page",
 			"identifier": "update-artboard-notes",
 			"script": "artboard-annotations.js",
-			"handler": "update"
+			"handlers" : {
+				"actions": {
+					"run": "update",
+					"LayersMoved.finish": "update"
+				}
+			}
 		}
 	],
 	"menu": {
@@ -188,9 +204,10 @@
 			{
 				"title": "SNCR - Artboard Titles",
 				"items": [
-					"create-artboard-titles",
-					"titles-preclude-artboards",
-					"titles-include-artboards"
+					"artboard-titles-create",
+					"artboard-titles-preclude",
+					"artboard-titles-include",
+					"artboard-titles-settings"
 				]
 			},
 			{

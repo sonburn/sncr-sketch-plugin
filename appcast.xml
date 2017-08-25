@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.69</title>
+			<title>Version 0.70</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Annotation Linking will now checking for siblings, and adjust accordingly. Add/Insert Section Titles will now deselect the artboard when adding a single title, to make it easier to apply an override name.</li>
+				<li>Create Artboard Titles will now run automatically when artboards are moved, and settings for the function are moved to a distinct menu item. Annotation feedback is now muted when annotations are moved automatically.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.69" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.70" />
 		</item>
 	</channel>
 </rss>

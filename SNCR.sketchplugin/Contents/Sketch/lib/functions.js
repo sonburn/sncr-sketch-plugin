@@ -223,8 +223,8 @@ function getObjectByName(haystack,needle) {
 	return false;
 }
 
-function getTextStyle(context,styleName,styleData) {
-	var layerTextStyles = context.document.documentData().layerTextStyles();
+function getTextStyle(styleName,styleData) {
+	var layerTextStyles = MSDocument.currentDocument().documentData().layerTextStyles();
 
 	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
 
@@ -241,8 +241,8 @@ function getTextStyle(context,styleName,styleData) {
 	return textStyle;
 }
 
-function deleteTextStyle(context,styleName) {
-	var layerTextStyles = context.document.documentData().layerTextStyles();
+function deleteTextStyle(styleName) {
+	var layerTextStyles = MSDocument.currentDocument().documentData().layerTextStyles();
 	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
 
 	if (textStyle) layerTextStyles.removeSharedStyle(textStyle);
@@ -276,8 +276,19 @@ function getChildGroup(scope,name) {
 
 		scope.addLayers([group]);
 	}
-	
+
 	group.setHasClickThrough(true);
 
 	return group;
+}
+
+function setKeyOrder(alert,order) {
+	for (var i = 0; i < order.length; i++) {
+		var thisItem = order[i];
+		var nextItem = order[i+1];
+
+		if (nextItem) thisItem.setNextKeyView(nextItem);
+	}
+
+	alert.alert().window().setInitialFirstResponder(order[0]);
 }

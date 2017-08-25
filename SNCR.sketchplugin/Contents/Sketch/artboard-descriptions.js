@@ -192,7 +192,7 @@ var set = function(context) {
 				var descGroup = getChildGroup(parentGroup,artboardDescGroupName);
 
 				// Set artboard description style
-				var artboardDescStyle = getTextStyle(context,artboardDescStyleName,artboardDescStyleData);
+				var artboardDescStyle = getTextStyle(artboardDescStyleName,artboardDescStyleData);
 
 				// Create new artboard description text layer
 				var artboardDesc = MSTextLayer.new();

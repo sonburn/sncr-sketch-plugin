@@ -360,8 +360,11 @@ var update = function(context) {
 	}
 	// If there are no annotations...
 	else {
-		// Display feedback
-		doc.showMessage(updateCount + strNoteLinksUpdated);
+		// If the function was not invoked by action...
+		if (!context.actionContext) {
+			// Display feedback
+			doc.showMessage(updateCount + strNoteLinksUpdated);
+		}
 	}
 };
 
