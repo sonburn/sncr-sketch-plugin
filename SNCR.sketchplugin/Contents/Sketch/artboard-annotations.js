@@ -40,333 +40,349 @@ var strNoteLinksUpdated = " annotation(s) updated";
 var strNoteLinksUpdateUnlinked = " annotation(s) were unlinked due to missing artboards";
 
 var designate = function(context) {
-	var doc = context.document;
-	var selection = context.selection;
-
-	var count = 0;
-
-	if (selection.count()) {
-		var noteName;
-
-		for (var i = 0; i < selection.count(); i++) {
-			if (selection[i] instanceof MSTextLayer) {
-				context.command.setValue_forKey_onLayer(artboardNoteLinkTypeValue,artboardNoteLinkTypeKey,selection[i]);
-
-				count++;
-
-				noteName = selection[i].name().split(/\r\n|\r|\n/g)[0];
-
-				log(noteName + strNoteDesignateComplete);
-			}
-		}
-
-		if (selection.count() == 1) {
-			doc.showMessage(noteName + strNoteDesignateComplete);
-		} else {
-			doc.showMessage(count + strNoteDesignatesComplete);
-		}
-	} else {
-		displayDialog(strNoteDesignatePluginName,strNoteDesignateProblem);
-	}
+	com.sncr.artboardAnnotations.designate(context);
 }
 
-// Function to link an annotation and object
 var link = function(context) {
-	// Context variables
-	var doc = context.document;
-	var selection = context.selection;
+	com.sncr.artboardAnnotations.link(context);
+}
 
-	// Take action on selections...
-	switch (selection.count()) {
-		// If there are two selections...
-		case 2:
-			// Selection variables
-			var firstItem = selection[0];
-			var secondItem = selection[1];
+var update = function(context) {
+	com.sncr.artboardAnnotations.update(context);
+};
 
-			// If the first item is a text layer with a linkType of annotation...
-			if (firstItem instanceof MSTextLayer && context.command.valueForKey_onLayer(artboardNoteLinkTypeKey,firstItem) == artboardNoteLinkTypeValue) {
-				linkNoteToObject(firstItem,secondItem);
+com.sncr.artboardAnnotations = {
+	designate: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
+
+		var count = 0;
+
+		if (selection.count()) {
+			var noteName;
+
+			for (var i = 0; i < selection.count(); i++) {
+				if (selection[i] instanceof MSTextLayer) {
+					context.command.setValue_forKey_onLayer(artboardNoteLinkTypeValue,artboardNoteLinkTypeKey,selection[i]);
+
+					count++;
+
+					noteName = selection[i].name().split(/\r\n|\r|\n/g)[0];
+
+					log(noteName + strNoteDesignateComplete);
+				}
 			}
-			// If the second is a text layer with a linkType of annotation...
-			else if (secondItem instanceof MSTextLayer && context.command.valueForKey_onLayer(artboardNoteLinkTypeKey,secondItem) == artboardNoteLinkTypeValue) {
-				linkNoteToObject(secondItem,firstItem);
+
+			if (selection.count() == 1) {
+				doc.showMessage(noteName + strNoteDesignateComplete);
+			} else {
+				doc.showMessage(count + strNoteDesignatesComplete);
 			}
-			// If the selections do not contain a text layer with a linkType of annotation...
-			else {
+		} else {
+			displayDialog(strNoteDesignatePluginName,strNoteDesignateProblem);
+		}
+	},
+	link: function(context) {
+		// Context variables
+		var doc = context.document;
+		var selection = context.selection;
+
+		// Take action on selections...
+		switch (selection.count()) {
+			// If there are two selections...
+			case 2:
+				// Selection variables
+				var firstItem = selection[0];
+				var secondItem = selection[1];
+
+				// If the first item is a text layer with a linkType of annotation...
+				if (firstItem instanceof MSTextLayer && context.command.valueForKey_onLayer(artboardNoteLinkTypeKey,firstItem) == artboardNoteLinkTypeValue) {
+					linkNoteToObject(firstItem,secondItem);
+				}
+				// If the second is a text layer with a linkType of annotation...
+				else if (secondItem instanceof MSTextLayer && context.command.valueForKey_onLayer(artboardNoteLinkTypeKey,secondItem) == artboardNoteLinkTypeValue) {
+					linkNoteToObject(secondItem,firstItem);
+				}
+				// If the selections do not contain a text layer with a linkType of annotation...
+				else {
+					// Display feedback
+					displayDialog(strNoteLinkPluginName,strNoteLinkProblem);
+				}
+
+				break;
+			// If there are not two selections...
+			default:
 				// Display feedback
 				displayDialog(strNoteLinkPluginName,strNoteLinkProblem);
-			}
-
-			break;
-		// If there are not two selections...
-		default:
-			// Display feedback
-			displayDialog(strNoteLinkPluginName,strNoteLinkProblem);
-	}
-
-	// Function to link an annotation to an object
-	function linkNoteToObject(note,object) {
-		// Set parent group
-		var parentGroup = getParentGroup(doc.currentPage(),parentGroupName);
-
-		// Set annotation group
-		var noteGroup = getChildGroup(parentGroup,artboardNoteGroupName);
-
-		// Set stored values on annotation
-		context.command.setValue_forKey_onLayer(object.objectID(),artboardNoteLinkKey,note);
-		context.command.setValue_forKey_onLayer(artboardNoteLinkTypeValue,artboardNoteLinkTypeKey,note);
-		context.command.setValue_forKey_onLayer(object.parentArtboard().objectID(),artboardNoteParentKey,note);
-
-		// Determine max X of artboard, or parent artboard
-		var artboardMaxX = (object.class() != "MSArtboardGroup") ? CGRectGetMaxX(object.parentArtboard().rect()) : CGRectGetMaxX(object.rect());
-
-		// Set annotation position including offsets
-		note.absoluteRect().setX(artboardMaxX + artboardNoteXOffset);
-		note.absoluteRect().setY(object.absoluteRect().y() + object.frame().height()/2 + artboardNoteYOffset - artboardNoteStyleData.lineHeight/2);
-
-		// Set annotation width
-		note.frame().setWidth(artboardNoteWidth);
-
-		// Set annotation font information
-		note.setFontSize(artboardNoteStyleData.fontSize);
-		note.setLineHeight(artboardNoteStyleData.lineHeight);
-		note.setTextAlignment(artboardNoteStyleData.textAlignment);
-
-		// If the annotation is not in the annotation group...
-		if (note.parentGroup() != noteGroup) {
-			// Move the annotation to the annotation group
-			note.moveToLayer_beforeLayer(noteGroup,nil);
 		}
 
-		// Get siblings for parent
-		var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+		// Function to link an annotation to an object
+		function linkNoteToObject(note,object) {
+			// Set parent group
+			var parentGroup = getParentGroup(doc.currentPage(),parentGroupName);
 
-		// If more than one sibling...
-		if (siblings && siblings.count() > 1) {
-			// Sort the siblings by Y position
-			var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-			siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+			// Set annotation group
+			var noteGroup = getChildGroup(parentGroup,artboardNoteGroupName);
 
-			// Iterate through the siblings...
-			for (var j = 0; j < siblings.length; j++) {
-				// If there is a next sibling...
-				if (j+1 < siblings.length) {
-					// Sibling variables
-					var thisSibling = siblings[j];
-					var nextSibling = siblings[j+1];
+			// Set stored values on annotation
+			context.command.setValue_forKey_onLayer(object.objectID(),artboardNoteLinkKey,note);
+			context.command.setValue_forKey_onLayer(artboardNoteLinkTypeValue,artboardNoteLinkTypeKey,note);
+			context.command.setValue_forKey_onLayer(object.parentArtboard().objectID(),artboardNoteParentKey,note);
 
-					// If this sibling and the next intersect...
-					if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-						// Adjust the Y coordinate of the next sibling
-						nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
-					}
-				}
+			// Determine max X of artboard, or parent artboard
+			var artboardMaxX = (object.class() != "MSArtboardGroup") ? CGRectGetMaxX(object.parentArtboard().rect()) : CGRectGetMaxX(object.rect());
+
+			// Set annotation position including offsets
+			note.absoluteRect().setX(artboardMaxX + artboardNoteXOffset);
+			note.absoluteRect().setY(object.absoluteRect().y() + object.frame().height()/2 + artboardNoteYOffset - artboardNoteStyleData.lineHeight/2);
+
+			// Set annotation width
+			note.frame().setWidth(artboardNoteWidth);
+
+			// Set annotation font information
+			note.setFontSize(artboardNoteStyleData.fontSize);
+			note.setLineHeight(artboardNoteStyleData.lineHeight);
+			note.setTextAlignment(artboardNoteStyleData.textAlignment);
+
+			// If the annotation is not in the annotation group...
+			if (note.parentGroup() != noteGroup) {
+				// Move the annotation to the annotation group
+				note.moveToLayer_beforeLayer(noteGroup,nil);
 			}
-		}
 
-		// Deselect the annotation and object
-		note.select_byExpandingSelection(false,true);
-		object.select_byExpandingSelection(false,true);
+			// Get siblings for parent
+			var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
 
-		// Resize annotation and parent groups to account for children
-		noteGroup.resizeToFitChildrenWithOption(0);
-		parentGroup.resizeToFitChildrenWithOption(0);
+			// If more than one sibling...
+			if (siblings && siblings.count() > 1) {
+				// Sort the siblings by Y position
+				var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+				siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
 
-		// Determine note name
-		var noteName = artboardNoteLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(artboardNoteLinkPrefix,"");
+				// Iterate through the siblings...
+				for (var j = 0; j < siblings.length; j++) {
+					// If there is a next sibling...
+					if (j+1 < siblings.length) {
+						// Sibling variables
+						var thisSibling = siblings[j];
+						var nextSibling = siblings[j+1];
 
-		// Update the annotation layer name
-		note.setName(artboardNoteLinkPrefix + object.name());
-
-		// Create a log event
-		log(noteName + strNoteLinkComplete + object.name());
-
-		// Redraw all connections
-		redraw(context);
-
-		// Display feedback
-		doc.showMessage(noteName + strNoteLinkComplete + object.name());
-	}
-}
-
-// Function to update all annotations on page
-var update = function(context) {
-	// Context variables
-	var doc = MSDocument.currentDocument();
-	var page = doc.currentPage();
-
-	// Construct loop of annotations
-	var annotations = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain)),
-		loop = annotations.objectEnumerator(),
-		note;
-
-	// Set counters
-	var updateCount = 0;
-	var removeCount = 0;
-
-	// Initiate array of parents with siblings
-	var parentsWithSiblings = [];
-
-	// If there are annotations...
-	if (annotations.count()) {
-		// Set parent group
-		var parentGroup = getParentGroup(page,parentGroupName);
-
-		// Set annotation group
-		var noteGroup = getChildGroup(parentGroup,artboardNoteGroupName);
-
-		// Iterate through annotations...
-		while (note = loop.nextObject()) {
-			// Get stored value for linked object
-			var linkedObjectID = context.command.valueForKey_onLayer(artboardNoteLinkKey,note);
-
-			// Get linked object if it resides on the page
-			var linkedObject = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,pluginDomain)).firstObject();
-
-			// If linked object exists...
-			if (linkedObject) {
-				// If linked object has a parent...
-				if (linkedObject.parentArtboard()) {
-					// Get siblings for this linked object (figure out how to exclude current object)
-					var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
-
-					// If there are siblings...
-					if (siblings.count() > 1) {
-						// Add parent objectID to array of parents with siblings
-						parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
-					}
-				}
-
-				// Determine max X of artboard, or parent artboard
-				var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
-
-				// Set annotation position including offsets
-				note.absoluteRect().setX(artboardMaxX + artboardNoteXOffset);
-				note.absoluteRect().setY(linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + artboardNoteYOffset - artboardNoteStyleData.lineHeight/2);
-
-				// Set annotation width
-				note.frame().setWidth(artboardNoteWidth);
-
-				// Set annotation font information
-				note.setFontSize(artboardNoteStyleData.fontSize);
-				note.setLineHeight(artboardNoteStyleData.lineHeight);
-				note.setTextAlignment(artboardNoteStyleData.textAlignment);
-
-				// If the annotation is not in the annotation group...
-				if (note.parentGroup() != noteGroup) {
-					// Move the annotation to the annotation group
-					note.moveToLayer_beforeLayer(noteGroup,nil);
-
-					// Deselect the annotation (for some reason moveToLayer_beforeLayer selects it)
-					note.select_byExpandingSelection(false,true);
-				}
-
-				// Update the annotation layer name
-				note.setName(artboardNoteLinkPrefix + linkedObject.name());
-
-				// Iterate counter
-				updateCount++;
-			}
-			// If object does not exist...
-			else {
-				// Remove stored values for linked artboard
-				context.command.setValue_forKey_onLayer(nil,artboardNoteLinkKey,note);
-				context.command.setValue_forKey_onLayer(nil,artboardNoteLinkTypeKey,note);
-				context.command.setValue_forKey_onLayer(nil,artboardNoteParentKey,note);
-
-				// Set annotation name
-				var noteName = note.name().replace(artboardNoteLinkPrefix,""));
-
-				// Update the layer name
-				note.setName(noteName);
-
-				// Iterate counters
-				updateCount++;
-				removeCount++;
-
-				// Create a log event
-				log(noteName + strArtboardNoteUnlinked + linkedObjectID);
-			}
-		}
-
-		// If annotation group is not empty...
-		if (noteGroup.layers().count() > 0) {
-			// If any parents have siblings...
-			if (parentsWithSiblings) {
-				// Filter duplicates from parents with siblings array
-				var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
-					return parentsWithSiblings.indexOf(item) == pos;
-				});
-
-				// Iterate through the parents...
-				for (var i = 0; i < parentsWithSiblings.length; i++) {
-					// Get siblings for parent
-					var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
-
-					// Sort the siblings by Y position
-					var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-					siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
-
-					// Iterate through the siblings...
-					for (var j = 0; j < siblings.length; j++) {
-						// If there is a next sibling...
-						if (j+1 < siblings.length) {
-							// Sibling variables
-							var thisSibling = siblings[j];
-							var nextSibling = siblings[j+1];
-
-							// If this sibling and the next intersect...
-							if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-								// Adjust the Y coordinate of the next sibling
-								nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
-							}
+						// If this sibling and the next intersect...
+						if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+							// Adjust the Y coordinate of the next sibling
+							nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
 						}
 					}
 				}
 			}
 
+			// Deselect the annotation and object
+			note.select_byExpandingSelection(false,true);
+			object.select_byExpandingSelection(false,true);
+
 			// Resize annotation and parent groups to account for children
 			noteGroup.resizeToFitChildrenWithOption(0);
 			parentGroup.resizeToFitChildrenWithOption(0);
 
+			// Determine note name
+			var noteName = artboardNoteLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(artboardNoteLinkPrefix,"");
+
+			// Update the annotation layer name
+			note.setName(artboardNoteLinkPrefix + object.name());
+
+			// Create a log event
+			log(noteName + strNoteLinkComplete + object.name());
+
 			// Redraw all connections
 			redraw(context);
+
+			// Display feedback
+			doc.showMessage(noteName + strNoteLinkComplete + object.name());
 		}
-		// If annotation group is empty...
+	},
+	update: function(context) {
+		// Context variables
+		var doc = MSDocument.currentDocument();
+		var page = doc.currentPage();
+
+		// Construct loop of annotations
+		var annotations = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain)),
+			loop = annotations.objectEnumerator(),
+			note;
+
+		// Set counters
+		var updateCount = 0;
+		var removeCount = 0;
+
+		// Initiate array of parents with siblings
+		var parentsWithSiblings = [];
+
+		// If there are annotations...
+		if (annotations.count()) {
+			// Set parent group
+			var parentGroup = getParentGroup(page,parentGroupName);
+
+			// Set annotation group
+			var noteGroup = getChildGroup(parentGroup,artboardNoteGroupName);
+
+			// Iterate through annotations...
+			while (note = loop.nextObject()) {
+				// Get stored value for linked object
+				var linkedObjectID = context.command.valueForKey_onLayer(artboardNoteLinkKey,note);
+
+				// Get linked object if it resides on the page
+				var linkedObject = page.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,pluginDomain)).firstObject();
+
+				// If linked object exists...
+				if (linkedObject) {
+					// If linked object has a parent...
+					if (linkedObject.parentArtboard()) {
+						// Get siblings for this linked object (figure out how to exclude current object)
+						var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+
+						// If there are siblings...
+						if (siblings.count() > 1) {
+							// Add parent objectID to array of parents with siblings
+							parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
+						}
+					}
+
+					// Determine max X of artboard, or parent artboard
+					var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
+
+					// Set annotation position including offsets
+					note.absoluteRect().setX(artboardMaxX + artboardNoteXOffset);
+					note.absoluteRect().setY(linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + artboardNoteYOffset - artboardNoteStyleData.lineHeight/2);
+
+					// Set annotation width
+					note.frame().setWidth(artboardNoteWidth);
+
+					// Set annotation font information
+					note.setFontSize(artboardNoteStyleData.fontSize);
+					note.setLineHeight(artboardNoteStyleData.lineHeight);
+					note.setTextAlignment(artboardNoteStyleData.textAlignment);
+
+					// If the annotation is not in the annotation group...
+					if (note.parentGroup() != noteGroup) {
+						// Move the annotation to the annotation group
+						note.moveToLayer_beforeLayer(noteGroup,nil);
+
+						// Deselect the annotation (for some reason moveToLayer_beforeLayer selects it)
+						note.select_byExpandingSelection(false,true);
+					}
+
+					// Update the annotation layer name
+					note.setName(artboardNoteLinkPrefix + linkedObject.name());
+
+					// Iterate counter
+					updateCount++;
+				}
+				// If object does not exist...
+				else {
+					// Remove stored values for linked artboard
+					context.command.setValue_forKey_onLayer(nil,artboardNoteLinkKey,note);
+					context.command.setValue_forKey_onLayer(nil,artboardNoteLinkTypeKey,note);
+					context.command.setValue_forKey_onLayer(nil,artboardNoteParentKey,note);
+
+					// Set annotation name
+					var noteName = note.name().replace(artboardNoteLinkPrefix,""));
+
+					// Update the layer name
+					note.setName(noteName);
+
+					// Iterate counters
+					updateCount++;
+					removeCount++;
+
+					// Create a log event
+					log(noteName + strArtboardNoteUnlinked + linkedObjectID);
+				}
+			}
+
+			// If annotation group is not empty...
+			if (noteGroup.layers().count() > 0) {
+				// If any parents have siblings...
+				if (parentsWithSiblings) {
+					// Filter duplicates from parents with siblings array
+					var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
+						return parentsWithSiblings.indexOf(item) == pos;
+					});
+
+					// Iterate through the parents...
+					for (var i = 0; i < parentsWithSiblings.length; i++) {
+						// Get siblings for parent
+						var siblings = noteGroup.children().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + artboardNoteLinkTypeKey + " == " + artboardNoteLinkTypeValue,pluginDomain));
+
+						// Sort the siblings by Y position
+						var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+						siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+
+						// Iterate through the siblings...
+						for (var j = 0; j < siblings.length; j++) {
+							// If there is a next sibling...
+							if (j+1 < siblings.length) {
+								// Sibling variables
+								var thisSibling = siblings[j];
+								var nextSibling = siblings[j+1];
+
+								// If this sibling and the next intersect...
+								if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+									// Adjust the Y coordinate of the next sibling
+									nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + artboardNoteSeparation);
+								}
+							}
+						}
+					}
+				}
+
+				// Resize annotation and parent groups to account for children
+				noteGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+
+				// Redraw all connections
+				redraw(context);
+			}
+			// If annotation group is empty...
+			else {
+				// Remove the annotation group
+				noteGroup.removeFromParent();
+
+				// Resize parent group to account for children
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
+
+			// Move parent group to the top of the layer list
+			parentGroup.moveToLayer_beforeLayer(page,nil);
+
+			// Deselect parent group
+			parentGroup.select_byExpandingSelection(false,true);
+
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
+				// Lock the annotation and parent groups
+				noteGroup.setIsLocked(true);
+				parentGroup.setIsLocked(true);
+
+				// If any annotation links were removed
+				if (removeCount > 0) {
+					// Display feedback
+					doc.showMessage(updateCount + strNoteLinksUpdated + ", " + removeCount + strNoteLinksUpdateUnlinked);
+				} else {
+					// Display feedback
+					doc.showMessage(updateCount + strNoteLinksUpdated);
+				}
+			}
+		}
+		// If there are no annotations...
 		else {
-			// Remove the annotation group
-			noteGroup.removeFromParent();
-
-			// Resize parent group to account for children
-			parentGroup.resizeToFitChildrenWithOption(0);
-		}
-
-		// If the function was not invoked by action...
-		if (!context.actionContext) {
-			// Lock the annotation and parent groups
-			noteGroup.setIsLocked(true);
-			parentGroup.setIsLocked(true);
-
-			// If any annotation links were removed
-			if (removeCount > 0) {
-				// Display feedback
-				doc.showMessage(updateCount + strNoteLinksUpdated + ", " + removeCount + strNoteLinksUpdateUnlinked);
-			} else {
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
 				// Display feedback
 				doc.showMessage(updateCount + strNoteLinksUpdated);
 			}
 		}
 	}
-	// If there are no annotations...
-	else {
-		// If the function was not invoked by action...
-		if (!context.actionContext) {
-			// Display feedback
-			doc.showMessage(updateCount + strNoteLinksUpdated);
-		}
-	}
-};
+}
 
 // Function to redraw all connections
 var redraw = function(context) {

@@ -20,6 +20,8 @@ var strCreateTitlesPluginName = "Create Artboard Titles";
 var strCreateTitlesCreatedTitles = " screen title(s) created!";
 var strCreateTitlesNoArtboards = "There are no artboards on the current page, therefore no titles to create.";
 
+var strProblemFetchingSettings = "Unable to fetch settings";
+
 // Group variables
 var parentGroupName = "SNCR";
 var titleGroupName = "Titles";
@@ -34,165 +36,185 @@ var screenTitleStyleData = {
 }
 
 var preclude = function(context) {
-	var doc = context.document;
-	var selection = context.selection;
-
-	var count = 0;
-
-	if (selection.count()) {
-		for (var i = 0; i < selection.count(); i++) {
-			if (selection[i] instanceof MSArtboardGroup) {
-				context.command.setValue_forKey_onLayer(strArtboardPrecludeKeyValue,strArtboardPrecludeKey,selection[i]);
-
-				selection[i].select_byExpandingSelection(false,true);
-
-				count++;
-
-				log(selection[i].name() + strArtboardPrecludeComplete);
-			}
-		}
-
-		if (selection.count() == 1) {
-			doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
-		} else {
-			doc.showMessage(count + strArtboardPrecludesComplete);
-		}
-	} else {
-		displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
-	}
+	com.sncr.artboardTitles.preclude(context);
 }
 
 var include = function(context) {
-	var doc = context.document;
-	var selection = context.selection;
-
-	var count = 0;
-
-	if (selection.count()) {
-		for (var i = 0; i < selection.count(); i++) {
-			if (selection[i] instanceof MSArtboardGroup) {
-				context.command.setValue_forKey_onLayer(nil,strArtboardPrecludeKey,selection[i]);
-
-				selection[i].select_byExpandingSelection(false,true);
-
-				count++;
-
-				log(selection[i].name() + strArtboardIncludeComplete);
-			}
-		}
-
-		if (selection.count() == 1) {
-			doc.showMessage(selection[0].name() + strArtboardIncludeComplete);
-		} else {
-			doc.showMessage(count + strArtboardIncludesComplete);
-		}
-	} else {
-		displayDialog(strArtboardIncludePluginName,strArtboardIncludeProblem);
-	}
+	com.sncr.artboardTitles.include(context);
 }
 
-// Function to create artboard titles
 var create = function(context) {
-	// Document variables
-	var doc = context.document || context.actionContext.document;
-	var command = context.command;
-	var page = doc.currentPage();
-	var artboards = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + strArtboardPrecludeKey + " != " + strArtboardPrecludeKeyValue,pluginDomain));;
-	var layers = page.layers();
+	com.sncr.artboardTitles.create(context);
+};
 
-	// If artboards exist on the page...
-	if (artboards.count() > 0) {
+var settings = function(context) {
+	com.sncr.artboardTitles.settings(context);
+}
+
+com.sncr.artboardTitles = {
+	preclude: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
+
+		var count = 0;
+
+		if (selection.count()) {
+			for (var i = 0; i < selection.count(); i++) {
+				if (selection[i] instanceof MSArtboardGroup) {
+					context.command.setValue_forKey_onLayer(strArtboardPrecludeKeyValue,strArtboardPrecludeKey,selection[i]);
+
+					selection[i].select_byExpandingSelection(false,true);
+
+					count++;
+
+					log(selection[i].name() + strArtboardPrecludeComplete);
+				}
+			}
+
+			if (selection.count() == 1) {
+				doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
+			} else {
+				doc.showMessage(count + strArtboardPrecludesComplete);
+			}
+		} else {
+			displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
+		}
+	},
+	include: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
+
+		var count = 0;
+
+		if (selection.count()) {
+			for (var i = 0; i < selection.count(); i++) {
+				if (selection[i] instanceof MSArtboardGroup) {
+					context.command.setValue_forKey_onLayer(nil,strArtboardPrecludeKey,selection[i]);
+
+					selection[i].select_byExpandingSelection(false,true);
+
+					count++;
+
+					log(selection[i].name() + strArtboardIncludeComplete);
+				}
+			}
+
+			if (selection.count() == 1) {
+				doc.showMessage(selection[0].name() + strArtboardIncludeComplete);
+			} else {
+				doc.showMessage(count + strArtboardIncludesComplete);
+			}
+		} else {
+			displayDialog(strArtboardIncludePluginName,strArtboardIncludeProblem);
+		}
+	},
+	create: function(context) {
+		// Document variables
+		var doc = context.document || context.actionContext.document;
+		var command = context.command;
+		var page = doc.currentPage();
+		var artboards = page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + strArtboardPrecludeKey + " != " + strArtboardPrecludeKeyValue,pluginDomain));;
+		var layers = page.layers();
+
+		// If artboards exist on the page...
+		if (artboards.count() > 0) {
+			// Get user settings
+			var titleSettings = getTitleSettings(context);
+
+			// If user settings were retrieved...
+			if (titleSettings) {
+				// Screen title settings
+				var screenTitleOffset = parseInt(titleSettings.titleOffset);
+
+				// Remove screen title style (the old style)
+				deleteTextStyle('Layout/Screen Title');
+
+				// Get screen title style (will add style if it doesn't exist) (the new style)
+				var screenTitleStyle = getTextStyle(screenTitleStyleName,screenTitleStyleData);
+
+				// Set parent group
+				var parentGroup = getParentGroup(page,parentGroupName);
+
+				// Find and remove screen titles group if it exists on the page (the old location)
+				page.removeLayer(findLayerByName(page,titleGroupName));
+
+				// Find and remove screen titles group if it exists in the parent group (the new location)
+				parentGroup.removeLayer(findLayerByName(parentGroup,titleGroupName));
+
+				// Create new screen title group
+				var titleGroup = MSLayerGroup.new();
+				titleGroup.setName(titleGroupName);
+				titleGroup.frame().setX(0 - parentGroup.frame().x());
+				titleGroup.frame().setY(0 - parentGroup.frame().y());
+				titleGroup.setIsLocked(true);
+				titleGroup.setHasClickThrough(true);
+
+				// Iterate through the artboards...
+				for (var i = 0; i < artboards.count(); i++) {
+					// Current artboard
+					var artboard = artboards.objectAtIndex(i);
+
+					// Create a screen title
+					var screenTitle = MSTextLayer.new();
+					screenTitle.setStringValue(artboard.name());
+					screenTitle.setName(artboard.name());
+					screenTitle.setStyle(screenTitleStyle.newInstance());
+
+					// Set screen title x/y position
+					screenTitle.frame().setX(artboard.frame().x());
+					screenTitle.frame().setY(artboard.frame().y() + artboard.frame().height() + screenTitleOffset);
+
+					// If user wants screen title below artboards...
+					if (titleSettings.titleType == 0) {
+						// Adjust screen title y position
+						screenTitle.frame().setY(artboard.frame().y() - (screenTitleStyleData.lineHeight + screenTitleOffset));
+					}
+
+					// Add screen title to title group
+					titleGroup.addLayers([screenTitle]);
+				}
+
+				// Add title group to parent group
+				parentGroup.addLayers([titleGroup]);
+
+				// Resize title and parents groups to account for children
+				titleGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+
+				// Move parent group to the top of the layer list
+				parentGroup.moveToLayer_beforeLayer(page,nil);
+
+				// Deselect parent group
+				parentGroup.select_byExpandingSelection(false,true);
+
+				// If the function was not invoked by action...
+				if (!context.actionContext) {
+					// Lock the parent group
+					parentGroup.setIsLocked(true);
+
+					// Display feedback
+					doc.showMessage(artboards.count() + strCreateTitlesCreatedTitles);
+				}
+			}
+		}
+		// If no artboards exist on the page...
+		else {
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
+				// Display feedback
+				displayDialog(strCreateTitlesPluginName,strCreateTitlesNoArtboards);
+			}
+		}
+	},
+	settings: function(context) {
 		// Get user settings
-		var titleSettings = getTitleSettings(context);
+		var titleSettings = getTitleSettings(context,"config");
 
 		// If user settings were retrieved...
 		if (titleSettings) {
-			// Screen title settings
-			var screenTitleOffset = parseInt(titleSettings.titleOffset);
-
-			// Remove screen title style (the old style)
-			deleteTextStyle('Layout/Screen Title');
-
-			// Get screen title style (will add style if it doesn't exist) (the new style)
-			var screenTitleStyle = getTextStyle(screenTitleStyleName,screenTitleStyleData);
-
-			// Set parent group
-			var parentGroup = getParentGroup(page,parentGroupName);
-
-			// Find and remove screen titles group if it exists on the page (the old location)
-			page.removeLayer(findLayerByName(page,titleGroupName));
-
-			// Find and remove screen titles group if it exists in the parent group (the new location)
-			parentGroup.removeLayer(findLayerByName(parentGroup,titleGroupName));
-
-			// Create new screen title group
-			var titleGroup = MSLayerGroup.new();
-			titleGroup.setName(titleGroupName);
-			titleGroup.frame().setX(0 - parentGroup.frame().x());
-			titleGroup.frame().setY(0 - parentGroup.frame().y());
-			titleGroup.setIsLocked(true);
-			titleGroup.setHasClickThrough(true);
-
-			// Iterate through the artboards...
-			for (var i = 0; i < artboards.count(); i++) {
-				// Current artboard
-				var artboard = artboards.objectAtIndex(i);
-
-				// Create a screen title
-				var screenTitle = MSTextLayer.new();
-				screenTitle.setStringValue(artboard.name());
-				screenTitle.setName(artboard.name());
-				screenTitle.setStyle(screenTitleStyle.newInstance());
-
-				// Set screen title x/y position
-				screenTitle.frame().setX(artboard.frame().x());
-				screenTitle.frame().setY(artboard.frame().y() + artboard.frame().height() + screenTitleOffset);
-
-				// If user wants screen title below artboards...
-				if (titleSettings.titleType == 0) {
-					// Adjust screen title y position
-					screenTitle.frame().setY(artboard.frame().y() - (screenTitleStyleData.lineHeight + screenTitleOffset));
-				}
-
-				// Add screen title to title group
-				titleGroup.addLayers([screenTitle]);
-			}
-
-			// Add title group to parent group
-			parentGroup.addLayers([titleGroup]);
-
-			// Resize title group to account for children
-			titleGroup.resizeToFitChildrenWithOption(0);
-
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// Lock the parent group
-				parentGroup.setIsLocked(true);
-
-				// Display feedback
-				doc.showMessage(artboards.count() + strCreateTitlesCreatedTitles);
-			}
+			// Create titles with new settings
+			com.sncr.artboardTitles.create(context);
 		}
-	}
-	// If no artboards exist on the page...
-	else {
-		// If the function was not invoked by action...
-		if (!context.actionContext) {
-			// Display feedback
-			displayDialog(strCreateTitlesPluginName,strCreateTitlesNoArtboards);
-		}
-	}
-};
-
-// Function to modify settings for artboard titles
-var settings = function(context) {
-	// Get user settings
-	var titleSettings = getTitleSettings(context,"config");
-
-	// If user settings were retrieved...
-	if (titleSettings) {
-		// Create titles with new settings
-		create(context);
 	}
 }
 

@@ -1,3 +1,6 @@
+var com = com || {};
+com.sncr = {}
+
 var writeTextToFile = function(text, filePath) {
 	var t = [NSString stringWithFormat:@"%@", text],
 	f = [NSString stringWithFormat:@"%@", filePath];
