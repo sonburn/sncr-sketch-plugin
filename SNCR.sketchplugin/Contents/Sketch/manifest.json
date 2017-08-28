@@ -3,12 +3,96 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : 0.71,
+	"version" : 0.72,
 	"identifier" : "com.sncr.sketch",
 	"compatibleVersion" : 3,
 	"bundleVersion" : 1,
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"commands" : [
+		{
+			"name" : "Designate Selected Layers as Annotations",
+			"identifier" : "com.sncr.artboardAnnotations.designate",
+			"script" : "artboard-annotations.js",
+			"handler" : "designate"
+		},
+		{
+			"name" : "Link Selected Annotation and Object/Artboard",
+			"identifier" : "com.sncr.artboardAnnotations.link",
+			"script" : "artboard-annotations.js",
+			"handler" : "link"
+		},
+		{
+			"name" : "Update All Linked Annotations on Page",
+			"identifier" : "com.sncr.artboardAnnotations.update",
+			"script" : "artboard-annotations.js",
+			"handlers" : {
+				"actions" : {
+					"run" : "update",
+					"LayersMoved.finish" : "update",
+					"ResizeArtboardToFit" : "update"
+				}
+			}
+		},
+		{
+			"name" : "Add/Edit Description on Selected Artboard",
+			"identifier" : "com.sncr.artboardDescriptions.set",
+			"script" : "artboard-descriptions.js",
+			"handler" : "set"
+		},
+		{
+			"name" : "Link Selected Description and Artboard",
+			"identifier" : "com.sncr.artboardDescriptions.link",
+			"script" : "artboard-descriptions.js",
+			"handler" : "link"
+		},
+		{
+			"name" : "Unlink Selected Descriptions",
+			"identifier" : "com.sncr.artboardDescriptions.unlink",
+			"script" : "artboard-descriptions.js",
+			"handler" : "unlink"
+		},
+		{
+			"name" : "Select All Linked Descriptions on Page",
+			"identifier" : "com.sncr.artboardDescriptions.select",
+			"script" : "artboard-descriptions.js",
+			"handler" : "select"
+		},
+		{
+			"name" : "Update All Linked Descriptions on Page",
+			"identifier" : "com.sncr.artboardDescriptions.update",
+			"script" : "artboard-descriptions.js",
+			"handlers" : {
+				"actions" : {
+					"run" : "update",
+					"LayersMoved.finish" : "update",
+					"ResizeArtboardToFit" : "update"
+				}
+			}
+		},
+		{
+			"name" : "Create Titles for Artboards on Page",
+			"identifier" : "com.sncr.artboardTitles.create",
+			"script" : "artboard-titles.js",
+			"handler" : "create"
+		},
+		{
+			"name" : "Include Selected Artboards",
+			"identifier" : "com.sncr.artboardTitles.include",
+			"script" : "artboard-titles.js",
+			"handler" : "include"
+		},
+		{
+			"name" : "Preclude Selected Artboards",
+			"identifier" : "com.sncr.artboardTitles.preclude",
+			"script" : "artboard-titles.js",
+			"handler" : "preclude"
+		},
+		{
+			"name" : "Settings for Page…",
+			"identifier" : "com.sncr.artboardTitles.settings",
+			"script" : "artboard-titles.js",
+			"handler" : "settings"
+		},
 		{
 			"name" : "Layout Artboards on Page",
 			"identifier" : "com.sncr.layoutArtboards.update",
@@ -52,141 +136,63 @@
 			"handler" : "settings"
 		},
 		{
-			"name" : "Create Artboard Slice…",
-			"identifier" : "create-artboard-slice",
-			"script" : "create-artboard-slice.js"
-		},
-		{
-			"name" : "Export Wireframes…",
-			"identifier" : "export-wireframes",
-			"script" : "export-wireframes.js"
-		},
-		{
-			"name" : "Add/Insert",
+			"name" : "Add/Insert Titles Before Selected Artboards",
 			"identifier" : "com.sncr.sectionTitles.add",
 			"script" : "section-titles.js",
 			"handler" : "add"
 		},
 		{
-			"name" : "Link Selected",
+			"name" : "Link Selected Title and Artboard",
 			"identifier" : "com.sncr.sectionTitles.link",
 			"script" : "section-titles.js",
 			"handler" : "link"
 		},
 		{
-			"name" : "Unlink Selected",
+			"name" : "Unlink Selected Titles",
 			"identifier" : "com.sncr.sectionTitles.unlink",
 			"script" : "section-titles.js",
 			"handler" : "unlink"
 		},
 		{
-			"name" : "Select All Linked on Page",
+			"name" : "Select All Linked Titles on Page",
 			"identifier" : "com.sncr.sectionTitles.select",
 			"script" : "section-titles.js",
 			"handler" : "select"
 		},
 		{
-			"name" : "Update All Linked on Page",
+			"name" : "Update All Linked Titles on Page",
 			"identifier" : "com.sncr.sectionTitles.update",
 			"script" : "section-titles.js",
-			"handler" : "update"
-		},
-		{
-			"name" : "Section Titles",
-			"identifier" : "com.sncr.sectionTitles.silent",
-			"script" : "section-titles.js",
-			"actions" : {
-				"LayersMoved.finish" : "update",
-				"ArtboardChanged.finish" : "update"
-			}
-		},
-		{
-			"name" : "Add/Edit",
-			"identifier" : "com.sncr.artboardDescriptions.set",
-			"script" : "artboard-descriptions.js",
-			"handler" : "set"
-		},
-		{
-			"name" : "Link Selected",
-			"identifier" : "com.sncr.artboardDescriptions.link",
-			"script" : "artboard-descriptions.js",
-			"handler" : "link"
-		},
-		{
-			"name" : "Unlink Selected",
-			"identifier" : "com.sncr.artboardDescriptions.unlink",
-			"script" : "artboard-descriptions.js",
-			"handler" : "unlink"
-		},
-		{
-			"name" : "Select All Linked on Page",
-			"identifier" : "com.sncr.artboardDescriptions.select",
-			"script" : "artboard-descriptions.js",
-			"handler" : "select"
-		},
-		{
-			"name" : "Update All Linked on Page",
-			"identifier" : "com.sncr.artboardDescriptions.update",
-			"script" : "artboard-descriptions.js",
 			"handlers" : {
 				"actions" : {
 					"run" : "update",
 					"LayersMoved.finish" : "update",
-					"ArtboardChanged.finish" : "update",
-					"ResizeArtboardToFit" : "update"
+					"ArtboardChanged.finish" : "update"
 				}
 			}
 		},
 		{
-			"name" : "Create Artboard Titles",
-			"identifier" : "com.sncr.artboardTitles.create",
-			"script" : "artboard-titles.js",
-			"handlers" : {
-				"actions" : {
-					"run" : "create"
-				}
-			}
+			"name" : "Create Artboard Slice…",
+			"identifier" : "create-artboard-slice",
+			"script" : "create-artboard-slice.js"
 		},
 		{
-			"name" : "Preclude Selected",
-			"identifier" : "com.sncr.artboardTitles.preclude",
-			"script" : "artboard-titles.js",
-			"handler" : "preclude"
-		},
-		{
-			"name" : "Include Selected",
-			"identifier" : "com.sncr.artboardTitles.include",
-			"script" : "artboard-titles.js",
+			"name" : "Include Selected Slice",
+			"identifier" : "com.sncr.wireframeExport.include",
+			"script" : "export-wireframes.js",
 			"handler" : "include"
 		},
 		{
-			"name" : "Settings…",
-			"identifier" : "com.sncr.artboardTitles.settings",
-			"script" : "artboard-titles.js",
-			"handler" : "settings"
+			"name" : "Preclude Selected Slice",
+			"identifier" : "com.sncr.wireframeExport.preclude",
+			"script" : "export-wireframes.js",
+			"handler" : "preclude"
 		},
 		{
-			"name" : "Designate Selected",
-			"identifier" : "com.sncr.artboardAnnotations.designate",
-			"script" : "artboard-annotations.js",
-			"handler" : "designate"
-		},
-		{
-			"name" : "Link Selected",
-			"identifier" : "com.sncr.artboardAnnotations.link",
-			"script" : "artboard-annotations.js",
-			"handler" : "link"
-		},
-		{
-			"name" : "Update All Linked on Page",
-			"identifier" : "com.sncr.artboardAnnotations.update",
-			"script" : "artboard-annotations.js",
-			"handlers" : {
-				"actions" : {
-					"run" : "update",
-					"LayersMoved.finish" : "update"
-				}
-			}
+			"name" : "Export All Wireframes…",
+			"identifier" : "com.sncr.wireframeExport.export",
+			"script" : "export-wireframes.js",
+			"handler" : "exportAll"
 		}
 	],
 	"menu" : {
@@ -244,7 +250,9 @@
 				"title" : "SNCR - Wireframe Tools",
 				"items" : [
 					"create-artboard-slice",
-					"export-wireframes"
+					"com.sncr.wireframeExport.include",
+					"com.sncr.wireframeExport.preclude",
+					"com.sncr.wireframeExport.export"
 				]
 			}
 		]

@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.71</title>
+			<title>Version 0.72</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Layout Artboards will now be automatically called when artboards are moved or “resized to fit”, and will also automatically adjust linked section titles, as well as artboard annotations and descriptions. Implemented first iteration of modularized functionality.</li>
+				<li>Improved functionality around Export Wireframes, which are now user designated instead of matching slice to page name. Overhauled function titles for clarity.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.71" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.72" />
 		</item>
 	</channel>
 </rss>

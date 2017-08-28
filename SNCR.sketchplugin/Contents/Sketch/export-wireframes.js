@@ -1,85 +1,119 @@
 @import 'lib/functions.js';
 
-var onRun = function(context) {
-	// Document variables
-	var doc = context.document;
-	var pages = [doc pages];
+var pluginDomain = "com.sncr.sketch";
+var filenamePrefix = "W";
+var functionKey = "wireframeExport";
 
-	// Slice variables
-	var sliceList = [];
-	var sliceCount = 0;
+var strIncludeSlicePluginName = "Include Selected Slice";
+var strIncludeSliceProblem = "Select one slice to include in Export Wireframes.";
+var strIncludeSliceComplete = " is now included in Export Wireframes";
 
-	// Iterate through each page in the document
-	for (var i = 0; i < pages.count(); i++) {
-		// Page variables
-		var page = pages.objectAtIndex(i);
-		var pageName = page.name().trim();
+var strPrecludeSlicePluginName = "Preclude Selected Slice";
+var strPrecludeSliceProblem = "Select one slice to preclude from Export Wireframes.";
+var strPrecludeSliceComplete = " is now precluded from Export Wireframes";
 
-		// Strip leading dash from page name if one exists
-		if (pageName.charAt(0) == "-") pageName = pageName.substr(1);
+var strExportWireframesPluginName = "Export All Wireframes";
+var strExportWireframesProblem = "No wireframes were found to export.";
+var strExportWireframesComplete = " wireframes were exported to your Downloads directory";
 
-		// Find layer that matches page name, and is a slice
-		var slice = findLayerByName(page,pageName,MSSliceLayer);
+var strExportDialogIntro = "Select which wireframes to export.";
+var strExportDialogOutro = "The export process may take some time, be patient.";
 
-		// If slice exists...
-		if (slice) {
-			// Increment slice counter
-			sliceCount++;
+var include = function(context) {
+	com.sncr.wireframeExport.include(context);
+}
 
-			// File variables
-			var fileName = "W" + sliceCount + " " + pageName;
-			var filePath = [@"~/Downloads" stringByExpandingTildeInPath] + "/" + fileName + ".pdf";
+var preclude = function(context) {
+	com.sncr.wireframeExport.preclude(context);
+}
 
-			// Add to sliceList array
-			sliceList.push({
-				name: fileName,
-				source: slice,
-				path: filePath
-			});
-		}
-	}
+var exportAll = function(context) {
+	com.sncr.wireframeExport.export(context);
+}
 
-	// If sliceList array has slices...
-	if (sliceList.length > 0) {
-		// Have user confirm which slices to export
-		var exportList = confirmSliceList(sliceList);
+com.sncr.wireframeExport = {
+	include: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
 
-		// If sliceList array still has slices...
-		if (exportList.length > 0) {
-			// Export each slice to the provided file path
-			for (var i = 0; i < exportList.length; i++) {
-				[doc saveArtboardOrSlice:exportList[i]['source'] toFile:exportList[i]['path']];
-			}
+		if (selection.count() == 1 && selection[0] instanceof MSSliceLayer) {
+			context.command.setValue_forKey_onLayer(true,functionKey,selection[0]);
 
-			// Feedback to user
-			doc.showMessage(sliceList.length + " wireframes were exported to your downloads directory!");
+			doc.showMessage(selection[0].name() + strIncludeSliceComplete);
 		} else {
-			// Feedback to user
-			var app = NSApplication.sharedApplication();
-			app.displayDialog_withTitle("No wireframes were selected to export.","Export Wireframes");
+			displayDialog(strIncludeSlicePluginName,strIncludeSliceProblem);
 		}
-	} else {
-		// Feedback to user
-		var app = NSApplication.sharedApplication();
-		app.displayDialog_withTitle("No wireframes were found to export.","Export Wireframes");
+	},
+	preclude: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
+
+		if (selection.count() == 1 && selection[0] instanceof MSSliceLayer) {
+			context.command.setValue_forKey_onLayer(false,functionKey,selection[0]);
+
+			doc.showMessage(selection[0].name() + strPrecludeSliceComplete);
+		} else {
+			displayDialog(strPrecludeSlicePluginName,strPrecludeSliceProblem);
+		}
+	},
+	export: function(context) {
+		var doc = context.document;
+
+		var wireframes = [];
+		var count = 1;
+
+		var pages = doc.pages(),
+			loop = pages.objectEnumerator(),
+			page;
+
+		while (page = loop.nextObject()) {
+			var predicate = NSPredicate.predicateWithFormat("className == 'MSSliceLayer' && userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + functionKey + " == " + true,pluginDomain);
+
+			var slices = page.children().filteredArrayUsingPredicate(predicate),
+				loop2 = slices.objectEnumerator(),
+				slice;
+
+			while (slice = loop2.nextObject()) {
+				var filename = filenamePrefix + count + " " + slice.name();
+				var filepath = [@"~/Downloads" stringByExpandingTildeInPath] + "/" + filename + ".pdf";
+
+				wireframes.push({
+					source : slice,
+					name : filename,
+					path : filepath
+				});
+
+				count++;
+			}
+		}
+
+		if (wireframes.length) {
+			var exportList = confirmExport(wireframes);
+
+			if (exportList.length) {
+				for (var i = 0; i < exportList.length; i++) {
+					[doc saveArtboardOrSlice:exportList[i]['source'] toFile:exportList[i]['path']];
+				}
+
+				doc.showMessage(exportList.length + strExportWireframesComplete);
+			}
+		} else {
+			displayDialog(strExportWireframesPluginName,strExportWireframesProblem);
+		}
 	}
-};
+}
 
-function confirmSliceList(sliceList) {
-	var exportList = sliceList;
-
+function confirmExport(wireframes) {
 	var alertWindow = COSAlertWindow.new();
+	alertWindow.setMessageText(strExportWireframesPluginName);
 
-	alertWindow.setMessageText('Export Wireframes');
-	alertWindow.addTextLabelWithValue('Select which wireframes to export...');
+	alertWindow.addTextLabelWithValue(strExportDialogIntro);
 
-	//alertWindow.addAccessoryView(helpers.createCheckbox({name:"All/None",value:i},1,NSMakeRect(0,0,300,30)));
-
-	for (var i = 0; i < exportList.length; i++) {
-		alertWindow.addAccessoryView(helpers.createCheckbox({name:exportList[i]['name'],value:i},1,NSMakeRect(0,0,300,15)));
+	for (var i = 0; i < wireframes.length; i++) {
+		alertWindow.addAccessoryView(createCheckbox({name:wireframes[i]['name'],value:i},1,NSMakeRect(0,0,300,18)));
 	}
 
-	alertWindow.addTextLabelWithValue('The export process may take some time, be patient.');
+	alertWindow.addTextLabelWithValue(strExportDialogOutro);
 
 	alertWindow.addButtonWithTitle('OK');
 	alertWindow.addButtonWithTitle('Cancel');
@@ -87,32 +121,18 @@ function confirmSliceList(sliceList) {
 	var responseCode = alertWindow.runModal();
 
 	if (responseCode == 1000) {
-		// List of slices user does not want to print
 		var slicesToRemove = [];
 
-		//For each slice in the main exportList...
-		for (var i = 0; i < exportList.length; i++) {
-			// Shift the index to account for items before the list of checkboxes
-			var indexShift = i + 1;
-
-			// If the corresponding checkbox for this slice is unchecked...
-			if ([[alertWindow viewAtIndex:indexShift] state] == 0) {
-				// Add this item to the list of slices to remove
-				slicesToRemove.push([[alertWindow viewAtIndex:indexShift] tag]);
-			}
+		for (var i = 0; i < wireframes.length; i++) {
+			if ([[alertWindow viewAtIndex:i+1] state] == 0) slicesToRemove.push([[alertWindow viewAtIndex:i+1] tag]);
 		}
 
-		// Reverse the order of the list of items to remove, as not to create index mismatches while removing
 		slicesToRemove.sort(function(a,b){ return b-a; });
 
-		// For each item in the list of slices to remove...
 		for (var i = 0; i < slicesToRemove.length; i++) {
-			// Remove the slice from the main exportList
-			exportList.splice(slicesToRemove[i],1);
+			wireframes.splice(slicesToRemove[i],1);
 		}
-	} else {
-		exportList = new Object();
-	}
 
-	return exportList;
+		return wireframes;
+	} else return false;
 }

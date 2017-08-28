@@ -54,44 +54,6 @@ var update = function(context) {
 }
 
 com.sncr.layoutArtboards = {
-	preclude: function(context) {
-		var doc = context.document;
-		var selection = context.selection;
-
-		var count = 0;
-
-		if (selection.count()) {
-			for (var i = 0; i < selection.count(); i++) {
-				if (selection[i] instanceof MSArtboardGroup) {
-					context.command.setValue_forKey_onLayer(false,strArtboardPrecludeKey,selection[i]);
-
-					selection[i].select_byExpandingSelection(false,true);
-
-					count++;
-
-					log(selection[i].name() + strArtboardPrecludeComplete);
-				}
-			}
-
-			if (selection.count() == 1) {
-				doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
-			} else {
-				doc.showMessage(count + strArtboardPrecludesComplete);
-			}
-		} else {
-			displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
-		}
-	},
-	precludePage: function(context) {
-		var doc = context.document;
-		var page = doc.currentPage();
-
-		context.command.setValue_forKey_onLayer(false,strArtboardPrecludeKey,page);
-
-		com.sncr.layoutArtboards.sanitizePages(context);
-
-		doc.showMessage(page.name() + strPagePrecludeComplete);
-	},
 	include: function(context) {
 		var doc = context.document;
 		var selection = context.selection;
@@ -131,6 +93,44 @@ com.sncr.layoutArtboards = {
 		if (!feedback) {
 			doc.showMessage(page.name() + strPageIncludeComplete);
 		}
+	},
+	preclude: function(context) {
+		var doc = context.document;
+		var selection = context.selection;
+
+		var count = 0;
+
+		if (selection.count()) {
+			for (var i = 0; i < selection.count(); i++) {
+				if (selection[i] instanceof MSArtboardGroup) {
+					context.command.setValue_forKey_onLayer(false,strArtboardPrecludeKey,selection[i]);
+
+					selection[i].select_byExpandingSelection(false,true);
+
+					count++;
+
+					log(selection[i].name() + strArtboardPrecludeComplete);
+				}
+			}
+
+			if (selection.count() == 1) {
+				doc.showMessage(selection[0].name() + strArtboardPrecludeComplete);
+			} else {
+				doc.showMessage(count + strArtboardPrecludesComplete);
+			}
+		} else {
+			displayDialog(strArtboardPrecludePluginName,strArtboardPrecludeProblem);
+		}
+	},
+	precludePage: function(context) {
+		var doc = context.document;
+		var page = doc.currentPage();
+
+		context.command.setValue_forKey_onLayer(false,strArtboardPrecludeKey,page);
+
+		com.sncr.layoutArtboards.sanitizePages(context);
+
+		doc.showMessage(page.name() + strPagePrecludeComplete);
 	},
 	sanitizePages: function(context) {
 		var doc = context.document || context.actionContext.document;
