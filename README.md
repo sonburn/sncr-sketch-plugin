@@ -30,18 +30,19 @@ Selects all linked artboard descriptions on the current page, facilitating the a
 Updates all linked artboard descriptions on the current page; updates the layer name to match the linked artboard name, moves the artboard description to the SNCR > Descriptions directory, and re-orients the position in the case the artboards have been moved.
 
 # Artboard Titles
+Sketch displays titles above each artboard on the canvas, however these titles do not get exported when exporting slices which contain multiple artboards. The following functions assist in the creation of artboard titles, allowing them to be exported in wireframes.
 
 ## Create Titles for Artboards on Page
-To do...
+Generates text layers with the name of each artboard, for all artboards (not precluded) on the page. The text layers are positioned above the artboards (by default), and on the background canvas. All titles are contained in a "Titles" group within the parent "SNCR" group at the top of the layers panel.
 
 ## Include Selected Artboards
-To do...
+Indicates the selected artboards should be included when new titles are created. This function is only necessary of the artboard was previously precluded.
 
 ## Preclude Selected Artboards
-To do...
+Indicates the selected artboards should not be included when new titles are created.
 
-## Settings for Page…
-Creates a title text layer above or below each artboard, with the value of each artboard name. These titles are useful to identify screens in wireframes, as the native Sketch artboard title names don't export. All titles are contained in a group at the top of the layers panel called "Titles". Any time you change the name of an artboard, simply run this action again and all titles will be quickly re-generated to reflect name changes.
+## Settings…
+Presents some controls over the location of the artboard titles, and an option to automatically create titles for all artboards (not precluded) on the page when artboards are moved, on all pages other than Symbols page.
 
 ![Create Artboard Titles](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Create%20Artboard%20Titles.png)
 
@@ -68,25 +69,27 @@ Lays out all artboards on current page into groupings determined by artboard nam
 ![Layout Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Screenshots/Layout%20Artboards.png)
 
 # Section Titles
+A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to designate a symbol to be used for section titles, and to insert and link a section title to an artboard. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
 
-## Add/Insert Titles Before Selected Artboards
-Adds an instance of the designated section title¹ symbol to the page, or inserts one above selected artboard(s). Once section title is added/inserted, user should apply override to set the section title name, link to an artboard, and then run "Update All in Document".
+A section title symbol is intended to contain one text layer which can be overridden within each instance, as this override will be used as the name of the symbol instance after section titles get updated.
 
-¹Will eventually be designated within the settings for this group of functions. Currently set to "Wireframe/Section".
+## Insert & Link Title to Selected Artboard
+Adds a section title instance above the selected artboard, and links it to the artboard. Once section title is inserted, user should apply an override to the section title instance. The override will become the layer name the next time "Update All Linked Titles on Page" is run (either manually or triggered when artboards have been moved on the canvas).
 
 ## Link Selected Title and Artboard
-Links the selected section title and artboard together. Meant to be used in conjunction with "Update All in Document", which will re-orient section titles to their linked artboards, in the case the artboards have been moved.
-
-Any link created between a section title and artboard will replace any previous link if one existed.
+Links the selected section title and artboard together. Any pre-existing link for a section title will be replaced. Linking a section title will automatically run "Update All Linked Titles on Page", which will orient the newly linked section title in relation to the linked artboard.
 
 ## Unlink Selected Titles
-Removes links for selected section titles, to break their relationships to any artboards.
+Removes links for selected section titles, breaking their relationships to any artboards.
 
 ## Select All Linked Titles on Page
 Selects all linked section titles on the current page, facilitating the ability to run another process against all selected section titles at once.
 
 ## Update All Linked Titles on Page
-Updates all linked section titles on the current page; updates the layer name to match the override name, re-orients to a linked artboard if link is present, locks layer to prevent accidental augmentation.
+Updates all linked section titles on the current page. When a section title is updated, the layer name is updated to match the override name if one is applied (otherwise linked artboard name is used), each section title is re-oriented to the artboard for which it is linked (if the artboard no longer exists on the page, the link will be removed), and locks the section title instance prevent accidental modification.
+
+## Settings…
+Presents a list of all symbols in the document, allowing the user to select a symbol which is intended to be used for section titles. Also allows for width, and horizontal and vertical offsets to be defined, applied next time user inserts new, or updates existing, section titles.
 
 # Wireframe Tools
 

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- ANNOTATIONS -->
+	<key>annotation-designate-plugin</key>
+	<string>Designate Selected Annotations</string>
+	<key>annotation-designate-problem</key>
+	<string>Select text layer(s) to designate as annotation(s). This is required in order to link an annotation to an artboard.</string>
+	<key>annotation-designate-complete</key>
+	<string> is now designated as an annotation</string>
+	<key>annotation-designates-complete</key>
+	<string> text layers are now designated as annotations</string>
+	<key>annotation-link-plugin</key>
+	<string>Link Artboard Annotation</string>
+	<key>annotation-link-problem</key>
+	<string>Select one designated annotation and one artboard or object to link.</string>
+	<key>annotation-link-complete</key>
+	<string> is now linked to </string>
+	<key>annotation-unlink-complete</key>
+	<string> artboard annotation is no longer linked to </string>
+	<key>annotation-update-complete</key>
+	<string> annotation(s) updated</string>
+	<key>annotation-update-complete-unlinked</key>
+	<string> annotation(s) were unlinked due to missing artboards</string>
+	<!-- DESCRIPTIONS -->
+	<key>description-link-plugin</key>
+	<string>Link Artboard Description</string>
+	<key>description-link-problem</key>
+	<string>Select one artboard description (a text layer with \"Wireframe/Artboard Description\" style applied) and one artboard to link.</string>
+	<key>description-link-complete</key>
+	<string> is now linked to </string>
+	<key>description-unlink-plugin</key>
+	<string>Unlink Artboard Description</string>
+	<key>description-unlink-problem</key>
+	<string>Select an artboard description to unlink.</string>
+	<key>description-unlink-complete</key>
+	<string> artboard description is no longer linked to </string>
+	<key>description-unlinks-complete</key>
+	<string> artboard description(s) unlinked</string>
+	<key>description-selects-complete</key>
+	<string> artboard description(s) selected</string>
+	<key>description-set-plugin</key>
+	<string>Add/Edit Artboard Description</string>
+	<key>description-set-problem</key>
+	<string>Select one artboard to add/edit a description.</string>
+	<key>description-set-complete</key>
+	<string>Artboard description added</string>
+	<key>description-update-complete</key>
+	<string>Artboard description updated</string>
+	<key>description-updates-complete</key>
+	<string> artboard description(s) updated</string>
+	<key>description-updates-complete-unlinked</key>
+	<string> artboard description(s) were unlinked due to missing artboards</string>
+	<!-- LAYOUT -->
+	<key>layout-preclude-plugin</key>
+	<string>Preclude Selected Artboards</string>
+	<key>layout-preclude-problem</key>
+	<string>Select artboard(s) to mark as precluded from Layout Artboards.</string>
+	<key>layout-preclude-complete</key>
+	<string> is now precluded from Layout Artboards</string>
+	<key>layout-precludes-complete</key>
+	<string> artboards are now precluded from Layout Artboards</string>
+	<key>layout-preclude-page-complete</key>
+	<string> will no longer auto-layout with Layout Artboards</string>
+	<key>layout-include-plugin</key>
+	<string>Include Selected Artboards</string>
+	<key>layout-include-problem</key>
+	<string>Select artboard(s) to mark as included in Layout Artboards.</string>
+	<key>layout-include-complete</key>
+	<string> is now included in Layout Artboards</string>
+	<key>layout-includes-complete</key>
+	<string> artboards are now included in Layout Artboards</string>
+	<key>layout-include-page-complete</key>
+	<string> will now auto-layout with Layout Artboards</string>
+	<key>layout-artboards-plugin</key>
+	<string>Layout Artboards</string>
+	<key>layout-artboards-problem</key>
+	<string>There are no artboards to layout.</string>
+	<key>layout-artboards-complete</key>
+	<string>Artboard layout complete</string>
+	<!-- SECTIONS -->
+	<key>section-insert-plugin</key>
+	<string>Insert Section Title</string>
+	<key>section-insert-problem</key>
+	<string>Before you can insert a section title, you must designate a symbol to be used for section titles (if this was done already, then the previously designated symbol is missing).&#xD;&#xD;To designate a section title symbol, navigate to Section Titles > Settings.</string>
+	<key>section-selection-problem</key>
+	<string>Select one artboard to insert and link a section title.</string>
+	<key>section-insert-complete</key>
+	<string> section title inserted, and linked to </string>
+	<key>section-link-plugin</key>
+	<string>Link Section Title</string>
+	<key>section-link-problem</key>
+	<string>Select one section title and one artboard to link.</string>
+	<key>section-link-complete</key>
+	<string> section title is now linked to </string>
+	<key>section-unlink-plugin</key>
+	<string>Unlink Section Title</string>
+	<key>section-unlink-problem</key>
+	<string>Select a section title to unlink.</string>
+	<key>section-unlink-complete</key>
+	<string> section title is no longer linked to </string>
+	<key>section-unlinks-complete</key>
+	<string> section titles unlinked</string>
+	<key>section-titles-selected</key>
+	<string> section title(s) selected</string>
+	<key>section-titles-updated</key>
+	<string>Section titles updated</string>
+	<key>section-titles-updated-unlinked</key>
+	<string> section title(s) were unlinked due to missing artboards</string>
+	<key>section-settings-plugin</key>
+	<string>Section Title Settings</string>
+	<key>section-settings-symbol</key>
+	<string>Section title symbol:</string>
+	<key>section-settings-width</key>
+	<string>Width (leave blank to use symbol size):</string>
+	<key>section-settings-offsetX</key>
+	<string>Horizontal offset:</string>
+	<key>section-settings-offsetY</key>
+	<string>Vertical offset:</string>
+	<key>section-settings-complete</key>
+	<string> will now be used for Section Titles, other settings will be applied on next update</string>
+	<!-- TITLES -->
+	<key>title-preclude-plugin</key>
+	<string>Preclude Selected Artboards</string>
+	<key>title-preclude-problem</key>
+	<string>Select artboard(s) to mark as precluded from Create Artboard Titles.</string>
+	<key>title-preclude-complete</key>
+	<string> is now precluded from Create Artboard Titles</string>
+	<key>title-precludes-complete</key>
+	<string> artboards are now precluded from Create Artboard Titles</string>
+	<key>title-include-plugin</key>
+	<string>Include Selected Artboards</string>
+	<key>title-include-problem</key>
+	<string>Select artboard(s) to mark as included in Create Artboard Titles.</string>
+	<key>title-include-complete</key>
+	<string> is now included in Create Artboard Titles</string>
+	<key>title-includes-complete</key>
+	<string> artboards are now included in Create Artboard Titles</string>
+	<key>title-create-plugin</key>
+	<string>Create Artboard Titles</string>
+	<key>title-create-problem</key>
+	<string>There are no artboards on the current page, or all artboards on the page are precluded, therefore no titles to create.</string>
+	<key>title-create-complete</key>
+	<string>Screen titles created</string>
+	<!-- WIREFRAMES -->
+	<key>wireframe-add-complete</key>
+	<string>Wireframe slice created and included in Export Wireframes</string>
+	<key>wireframe-include-plugin</key>
+	<string>Include Selected Slice</string>
+	<key>wireframe-include-problem</key>
+	<string>Select one slice to include in Export Wireframes.</string>
+	<key>wireframe-include-complete</key>
+	<string> is now included in Export Wireframes</string>
+	<key>wireframe-preclude-plugin</key>
+	<string>Preclude Selected Slice</string>
+	<key>wireframe-preclude-problem</key>
+	<string>Select one slice to preclude from Export Wireframes.</string>
+	<key>wireframe-preclude-complete</key>
+	<string> is now precluded from Export Wireframes</string>
+	<key>wireframe-export-plugin</key>
+	<string>Export All Wireframes</string>
+	<key>wireframe-export-problem</key>
+	<string>No wireframes were found to export.</string>
+	<key>wireframe-export-complete</key>
+	<string> wireframes were exported to your Downloads directory</string>
+	<key>wireframe-export-intro</key>
+	<string>Select which wireframes to export.</string>
+	<key>wireframe-export-outro</key>
+	<string>The export process may take some time, be patient.</string>
+</dict>
+</plist>

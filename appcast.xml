@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.72</title>
+			<title>Version 0.73</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Improved functionality around Export Wireframes, which are now user designated instead of matching slice to page name. Overhauled function titles for clarity.</li>
+				<li>Massive codebase overhaul, centralized strings, icons for Sketchrunner, and many other quality of life improvements.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.72" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.73" />
 		</item>
 	</channel>
 </rss>
