@@ -259,6 +259,9 @@ sncr.annotations = {
 			if (note.parentGroup() != noteGroup) {
 				// Move the annotation to the annotation group
 				note.moveToLayer_beforeLayer(noteGroup,nil);
+
+				// Deselect the annotation (moveToLayer_beforeLayer selects it)
+				note.select_byExpandingSelection(false,true);
 			}
 
 			// Get siblings for parent
@@ -364,11 +367,11 @@ sncr.annotations = {
 		// Set annotation group
 		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
-		// Get connection shape layers
-		var connectionLayers = MSLayerArray.arrayWithLayers(drawShapes(connections,sncr.page));
+		// Create new connections group
+		connectionsGroup = MSLayerGroup.new();
 
-		// Create new connections group from shape layers
-		connectionsGroup = MSLayerGroup.groupFromLayers(connectionLayers);
+		// Get connection shape layers, and add to connections group
+		var connectionLayers = MSLayerArray.arrayWithLayers(drawShapes(connections,connectionsGroup));
 
 		// Move connections group to annotation group
 		connectionsGroup.moveToLayer_beforeLayer(noteGroup,nil);
@@ -451,7 +454,7 @@ sncr.annotations = {
 						// Move the annotation to the annotation group
 						note.moveToLayer_beforeLayer(noteGroup,nil);
 
-						// Deselect the annotation (for some reason moveToLayer_beforeLayer selects it)
+						// Deselect the annotation (moveToLayer_beforeLayer selects it)
 						note.select_byExpandingSelection(false,true);
 					}
 
@@ -539,13 +542,13 @@ sncr.annotations = {
 			// Move parent group to the top of the layer list
 			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
-			// Deselect parent group
+			// Deselect parent group (moveToLayer_beforeLayer selects it)
 			parentGroup.select_byExpandingSelection(false,true);
 
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
 				// Lock the parent group
-				parentGroup.setIsLocked(true);
+				parentGroup.setIsLocked(1);
 
 				// If any annotation links were removed
 				if (removeCount > 0) {
@@ -720,6 +723,9 @@ sncr.descriptions = {
 			if (layer.parentGroup() != descGroup) {
 				// Move the artboard description to the description group
 				layer.moveToLayer_beforeLayer(descGroup,nil);
+
+				// Deselect the artboard description (moveToLayer_beforeLayer selects it)
+				layer.select_byExpandingSelection(false,true);
 			}
 
 			// Deselect the artboard
@@ -815,7 +821,12 @@ sncr.descriptions = {
 		// Display feedback
 		displayMessage(count + sncr.strings["description-selects-complete"]);
 	},
-	updateAllOnPage: function(context) {
+	updateAllOnPage: function(context,command) {
+		// If function was invoked by action, set command
+		if (!command && context.actionContext) command = "action";
+
+		logFunctionStart("Artboard Descriptions: Update",command);
+
 		// Get descriptions on current page
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkTypeKey + " == nil",sncr.pluginDomain),
 			layers = sncr.page.children().filteredArrayUsingPredicate(predicate),
@@ -859,7 +870,7 @@ sncr.descriptions = {
 						// Move the artboard description to the description group
 						layer.moveToLayer_beforeLayer(descGroup,nil);
 
-						// Deselect the artboard description (for some reason moveToLayer_beforeLayer selects it)
+						// Deselect the artboard description (moveToLayer_beforeLayer selects it)
 						layer.select_byExpandingSelection(false,true);
 					}
 
@@ -915,7 +926,7 @@ sncr.descriptions = {
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
 				// Lock the parent group
-				parentGroup.setIsLocked(true);
+				parentGroup.setIsLocked(1);
 
 				// If any artboard links were removed
 				if (removeCount > 0) {
@@ -1670,7 +1681,7 @@ sncr.sections = {
 	},
 	updateAllOnPage: function(context,command) {
 		// If function was invoked by action, set command
-		if (context.actionContext) command = "action";
+		if (!command && context.actionContext) command = "action";
 
 		logFunctionStart("Section Titles: Update",command);
 
@@ -2002,7 +2013,7 @@ sncr.titles = {
 				// Move parent group to the top of the layer list
 				parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
-				// Deselect parent group
+				// Deselect parent group (moveToLayer_beforeLayer selects it)
 				parentGroup.select_byExpandingSelection(false,true);
 
 				// Switch message and handling per method the function was invoked
@@ -2017,7 +2028,7 @@ sncr.titles = {
 						break;
 					default:
 						// Lock the parent group
-						parentGroup.setIsLocked(true);
+						parentGroup.setIsLocked(1);
 
 						// Display feedback
 						displayMessage(sncr.strings["title-create-complete"]);
