@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.73</title>
+			<title>Version 0.74</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Massive codebase overhaul, centralized strings, icons for Sketchrunner, and many other quality of life improvements.</li>
+				<li>Fix for artboard titles not regenerating when triggered automatically by Layout Artboards.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.73" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.74" />
 		</item>
 	</channel>
 </rss>

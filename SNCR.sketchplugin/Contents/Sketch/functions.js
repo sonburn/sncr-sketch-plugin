@@ -1918,7 +1918,7 @@ sncr.titles = {
 	},
 	create: function(context,command) {
 		// If function was invoked by action, set command
-		if (context.actionContext) command = "action";
+		if (!command && context.actionContext) command = "action";
 
 		logFunctionStart("Artboard Titles: Create",command);
 
