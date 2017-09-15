@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.75</title>
+			<title>Version 0.76</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fixed issues with layer selections getting lost when Layout Artboards runs (was related to annotation connections being redrawn).</li>
+				<li>Removed ability to run Layout Artboards for selected layers (no longer needed due to ability to preclude artboards).</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.75" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.76" />
 		</item>
 	</channel>
 </rss>

@@ -1029,20 +1029,8 @@ sncr.layout = {
 		}
 
 		if (context.command.valueForKey_onLayer_forPluginIdentifier(sncr.layout.config.featureKey,sncr.page,sncr.pluginDomain) != false) {
-			var layoutArtboards,
-				layoutArtboardCount;
-
-			// Run for selections, otherwise for all artboards on page
-			if (sncr.selection && sncr.selection.count() > 0) {
-				// Filter selections to only select artboards
-				filterSelections(sncr.selection);
-
-				layoutArtboards = sncr.document.selectedLayers().layers();
-				layoutArtboardCount = sncr.document.selectedLayers().layers().count();
-			} else {
-				layoutArtboards = sncr.page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.layout.config.featureKey + " != " + false,sncr.pluginDomain));
+			var layoutArtboards = sncr.page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.layout.config.featureKey + " != " + false,sncr.pluginDomain)),
 				layoutArtboardCount = layoutArtboards.count();
-			}
 
 			// Run only if there are artboards
 			if (layoutArtboardCount) {
@@ -1181,14 +1169,6 @@ sncr.layout = {
 				while (artboard = loop.nextObject()) {
 					artboard.moveToLayer_beforeLayer(output,nil);
 					artboard.select_byExpandingSelection(false,true);
-				}
-			}
-
-			function filterSelections(selections) {
-				for (var i = 0; i < selections.count(); i++) {
-					if (selections[i].class() != "MSArtboardGroup") {
-						selections[i].select_byExpandingSelection(false,true);
-					}
 				}
 			}
 		}
