@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.76</title>
+			<title>Version 0.77</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Removed ability to run Layout Artboards for selected layers (no longer needed due to ability to preclude artboards).</li>
+				<li>Fix for odd dimensions for dynamically generated connections group.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.76" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.77" />
 		</item>
 	</channel>
 </rss>

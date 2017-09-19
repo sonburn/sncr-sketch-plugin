@@ -371,10 +371,13 @@ sncr.annotations = {
 		connectionsGroup = MSLayerGroup.new();
 
 		// Get connection shape layers, and add to connections group
-		var connectionLayers = MSLayerArray.arrayWithLayers(drawShapes(connections,connectionsGroup));
+		drawShapes(connections,connectionsGroup);
 
 		// Move connections group to annotation group
 		connectionsGroup.moveToLayer_beforeLayer(noteGroup,nil);
+
+		// Resize connections group to account for children
+		connectionsGroup.resizeToFitChildrenWithOption(0);
 
 		// Deselection connections and annotations groups
 		connectionsGroup.deselectLayerAndParent();
@@ -2493,8 +2496,7 @@ function getCachedSettings(context,location,settings,domain) {
 }
 
 function drawShapes(connections,output) {
-	var connectionLayers = [],
-		strokeWidth = 1,
+	var strokeWidth = 1,
 		arrowRotation = 0,
 		arrowOffsetX = 0,
 		path,
@@ -2547,7 +2549,6 @@ function drawShapes(connections,output) {
 		hitAreaLayer = MSShapeGroup.shapeWithBezierPath(path);
 		hitAreaLayer.style().addStylePartOfType(0).setColor(hitAreaBorderColor);
 		output.addLayers([hitAreaLayer]);
-		connectionLayers.push(hitAreaLayer);
 
 		// Draw the path
 		linePath = NSBezierPath.bezierPath();
@@ -2559,7 +2560,6 @@ function drawShapes(connections,output) {
 		hitAreaBorder.setThickness(strokeWidth);
 		hitAreaBorder.setPosition(0);
 		output.addLayers([lineLayer]);
-		connectionLayers.push(lineLayer);
 
 		// Draw the arrow
 		var arrowSize = Math.max(8, strokeWidth*3);
@@ -2574,10 +2574,7 @@ function drawShapes(connections,output) {
 		arrow.setRotation(-arrowRotation);
 		arrow.absoluteRect().setX(arrow.absoluteRect().x() + arrowOffsetX);
 		output.addLayers([arrow]);
-		connectionLayers.push(arrow);
 	}
-
-	return connectionLayers;
 }
 
 function logFunctionStart(output,command) {
