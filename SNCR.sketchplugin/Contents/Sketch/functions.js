@@ -1498,42 +1498,53 @@ sncr.sections = {
 		}
 	},
 	linkSelected: function(context,command) {
-		// Validate the selections to link
-		var selections = sncr.sections.validateSelected(context);
+		// Get the saved symbol
+		var savedSymbol = sncr.sections.symbolCheck(context);
 
-		// If selections are valid...
-		if (selections) {
-			// Set stored value for linked artboard
-			context.command.setValue_forKey_onLayer(selections.artboard.objectID(),sncr.sections.config.titleLinkKey,selections.title);
+		// If the saved symbol is set and exists...
+		if (savedSymbol) {
+			// Validate the selections to link
+			var selections = sncr.sections.validateSelected(context);
 
-			// Set the title name
-			var titleName = (selections.title.overrides()) ? sncr.sections.config.titleLinkPrefix + selections.title.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + selections.title.name().replace(sncr.sections.config.titleLinkPrefix,"");
+			// If selections are valid...
+			if (selections) {
+				// Set stored value for linked artboard
+				context.command.setValue_forKey_onLayer(selections.artboard.objectID(),sncr.sections.config.titleLinkKey,selections.title);
 
-			// Update the title name
-			selections.title.setName(titleName);
+				// Set the title name
+				var titleName = (selections.title.overrides()) ? sncr.sections.config.titleLinkPrefix + selections.title.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + selections.title.name().replace(sncr.sections.config.titleLinkPrefix,"");
 
-			// Create a log event
-			log(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+				// Update the title name
+				selections.title.setName(titleName);
 
-			// Update all section titles on the page
-			sncr.sections.updateAllOnPage(context,"link");
+				// Create a log event
+				log(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
 
-			// Switch message and handling per method the function was invoked
-			switch (command) {
-				case "insert":
-					// Display feedback
-					displayMessage(titleName + sncr.strings["section-insert-complete"] + selections.artboard.name());
+				// Update all section titles on the page
+				sncr.sections.updateAllOnPage(context,"link");
 
-					// Deselect the artboard
-					selections.artboard.select_byExpandingSelection(false,true);
+				// Switch message and handling per method the function was invoked
+				switch (command) {
+					case "insert":
+						// Display feedback
+						displayMessage(titleName + sncr.strings["section-insert-complete"] + selections.artboard.name());
 
-					break;
-				default:
-					// Display feedback
-					displayMessage(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+						// Deselect the artboard
+						selections.artboard.select_byExpandingSelection(false,true);
 
-					break;
+						break;
+					default:
+						// Display feedback
+						displayMessage(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+
+						break;
+				}
 			}
+		}
+		// If the saved symbol is not set or does not exist...
+		else {
+			// Display feedback
+			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-insert-problem"]);
 		}
 	},
 	unlinkSelected: function(context) {

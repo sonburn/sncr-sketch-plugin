@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.77</title>
+			<title>Version 0.78</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fix for odd dimensions for dynamically generated connections group.</li>
+				<li>Linking a section title and artboard will now check to see if section symbol has been set (like inserting).</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.77" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.78" />
 		</item>
 	</channel>
 </rss>
