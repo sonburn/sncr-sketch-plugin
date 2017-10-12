@@ -1177,7 +1177,7 @@ sncr.layout = {
 		}
 	},
 	settings: function(context,command) {
-		var artboardsPerRow = ['6','8','10','12','14','100'];
+		var artboardsPerRow = ['4','6','8','10','12','14','100'];
 
 		// Setting variables
 		var defaultSettings = {};

@@ -165,7 +165,7 @@
 	<key>wireframe-export-complete</key>
 	<string> wireframes were exported to your Downloads directory</string>
 	<key>wireframe-export-intro</key>
-	<string>Select which wireframes to export.</string>
+	<string>Select which wireframes to export...</string>
 	<key>wireframe-export-outro</key>
 	<string>The export process may take some time, be patient.</string>
 </dict>

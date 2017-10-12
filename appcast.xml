@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.78</title>
+			<title>Version 0.79</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Linking a section title and artboard will now check to see if section symbol has been set (like inserting).</li>
+				<li>Layout Artboards now allows for 4 items per row. Renamed screenshots directory to "Resources" and added Sketch file of plugin icons.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.78" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.79" />
 		</item>
 	</channel>
 </rss>
