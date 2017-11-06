@@ -1770,9 +1770,11 @@ sncr.sections = {
 		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
 
 		if (!command) {
-			var symbolDefault = 0,
+			var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
+				symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
+				loop = symbols.objectEnumerator(),
+				symbolDefault = 0,
 				symbolNames = [],
-				loop = sncr.symbols.objectEnumerator(),
 				symbol;
 
 			while (symbol = loop.nextObject()) {
@@ -1790,7 +1792,7 @@ sncr.sections = {
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-symbol"]);
 
-			var selectedSymbol = createSelect(symbolNames,symbolDefault,NSMakeRect(0,0,160,25));
+			var selectedSymbol = createSelect(symbolNames,symbolDefault,NSMakeRect(0,0,300,25));
 			alertWindow.addAccessoryView(selectedSymbol);
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-width"]);
@@ -1821,10 +1823,12 @@ sncr.sections = {
 			var responseCode = alertWindow.runModal();
 
 			if (responseCode == 1000) {
-				var selectedSymbol = selectedSymbol.indexOfSelectedItem();
+				var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
+					symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
+					selectedSymbol = selectedSymbol.indexOfSelectedItem();
 
 				try {
-					context.command.setValue_forKey_onLayer(sncr.symbols[selectedSymbol].objectID(),sncr.sections.config.symbolMasterKey,sncr.document.documentData());
+					context.command.setValue_forKey_onLayer(symbols[selectedSymbol].objectID(),sncr.sections.config.symbolMasterKey,sncr.document.documentData());
 					context.command.setValue_forKey_onLayer(titleWidth.stringValue(),"sectionTitleWidth",sncr.document.documentData());
 					context.command.setValue_forKey_onLayer(Number(titleXOffset.stringValue()),"sectionTitleXOffset",sncr.document.documentData());
 					context.command.setValue_forKey_onLayer(Number(titleYOffset.stringValue()),"sectionTitleYOffset",sncr.document.documentData());
@@ -1833,7 +1837,7 @@ sncr.sections = {
 					log("Unable to save settings.");
 				}
 
-				displayMessage(sncr.symbols[selectedSymbol].name() + sncr.strings["section-settings-complete"]);
+				displayMessage(symbols[selectedSymbol].name() + sncr.strings["section-settings-complete"]);
 			} else return false;
 		}
 		// Otherwise operate in run mode...
@@ -1850,17 +1854,19 @@ sncr.sections = {
 		var savedSymbol = context.command.valueForKey_onLayer(sncr.sections.config.symbolMasterKey,sncr.document.documentData());
 
 		if (savedSymbol) {
-			var symbolMasterIndex;
+			var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
+				symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
+				symbolMasterIndex;
 
-			for (i = 0; i < sncr.symbols.length; i++) {
-				if (sncr.symbols[i].objectID() == savedSymbol) {
+			for (i = 0; i < symbols.length; i++) {
+				if (symbols[i].objectID() == savedSymbol) {
 					symbolMasterIndex = i;
 				}
 			}
 
 			if (symbolMasterIndex >= 0) {
 				return {
-					symbolMaster : sncr.symbols[symbolMasterIndex],
+					symbolMaster : symbols[symbolMasterIndex],
 					symbolIndex : symbolMasterIndex
 				}
 			} else return false;
@@ -2294,11 +2300,14 @@ var createCheckbox = function(item,flag,frame) {
 	return checkbox;
 }
 
-var createSelect = function(items,selectedItemIndex,frame) {
-	selectedItemIndex = (selectedItemIndex > -1) ? selectedItemIndex : 0;
-	var comboBox = [[NSComboBox alloc] initWithFrame:frame];
-	[comboBox addItemsWithObjectValues:items];
-	[comboBox selectItemAtIndex:selectedItemIndex];
+function createSelect(items,selectedItemIndex,frame) {
+	var comboBox = NSComboBox.alloc().initWithFrame(frame),
+		selectedItemIndex = (selectedItemIndex > -1) ? selectedItemIndex : 0;
+
+	comboBox.addItemsWithObjectValues(items);
+	comboBox.selectItemAtIndex(selectedItemIndex);
+	comboBox.setNumberOfVisibleItems(16);
+	comboBox.setEditable(0);
 
 	return comboBox;
 }
