@@ -2255,13 +2255,46 @@ sncr.wireframes = {
 	},
 	confirm: function(wireframes) {
 		var alertWindow = COSAlertWindow.new();
+
 		alertWindow.setMessageText(sncr.strings["wireframe-export-plugin"]);
 
 		alertWindow.addTextLabelWithValue(sncr.strings["wireframe-export-intro"]);
 
+		var wireframeListHeader = NSView.alloc().initWithFrame(NSMakeRect(0,0,300,18)),
+			wireframeListCheckbox = createCheckbox({name:"",value:1},1,NSMakeRect(0,0,18,18)),
+			wireframeListLabel = createBoldLabel("Wireframes (" + wireframes.length + ")",12,NSMakeRect(22,0,300-22,18));
+
+		wireframeListCheckbox.setAction("callAction:");
+		wireframeListCheckbox.setCOSJSTargetFunction(function(sender) {
+			for (var i = 0; i < wireframeListCheckboxes.length; i++) {
+				wireframeListCheckboxes[i].state = sender.state();
+			}
+		});
+
+		wireframeListHeader.addSubview(wireframeListCheckbox);
+		wireframeListHeader.addSubview(wireframeListLabel);
+
+		alertWindow.addAccessoryView(wireframeListHeader);
+
+		var wireframeListItem = 24,
+			wireframeListContent = NSView.alloc().initWithFrame(NSMakeRect(0,0,300,wireframes.length*wireframeListItem)),
+			wireframeListCheckboxes = [],
+			count = 0;
+
+		wireframeListContent.setFlipped(1);
+		wireframeListContent.setWantsLayer(1);
+		wireframeListContent.layer().setBackgroundColor(CGColorCreateGenericRGB(255,255,255,1));
+
 		for (var i = 0; i < wireframes.length; i++) {
-			alertWindow.addAccessoryView(createCheckbox({name:wireframes[i]['name'],value:i},1,NSMakeRect(0,0,300,18)));
+			var wireframeCheckbox = createCheckbox({name:wireframes[i]['name'],value:i},1,NSMakeRect(4,count*wireframeListItem,300,wireframeListItem));
+
+			wireframeListCheckboxes.push(wireframeCheckbox);
+			wireframeListContent.addSubview(wireframeCheckbox);
+
+			count++;
 		}
+
+		alertWindow.addAccessoryView(wireframeListContent);
 
 		alertWindow.addTextLabelWithValue(sncr.strings["wireframe-export-outro"]);
 
@@ -2273,8 +2306,10 @@ sncr.wireframes = {
 		if (responseCode == 1000) {
 			var slicesToRemove = [];
 
-			for (var i = 0; i < wireframes.length; i++) {
-				if ([[alertWindow viewAtIndex:i+1] state] == 0) slicesToRemove.push([[alertWindow viewAtIndex:i+1] tag]);
+			for (var i = 0; i < wireframeListCheckboxes.length; i++) {
+				if (wireframeListCheckboxes[i].state() == 0) {
+					slicesToRemove.push(wireframeListCheckboxes[i].tag());
+				}
 			}
 
 			slicesToRemove.sort(function(a,b){ return b-a; });
@@ -2286,6 +2321,19 @@ sncr.wireframes = {
 			return wireframes;
 		} else return false;
 	}
+}
+
+function createBoldLabel(text,size,frame) {
+	var label = NSTextField.alloc().initWithFrame(frame);
+
+	label.setStringValue(text);
+	label.setFont(NSFont.boldSystemFontOfSize(size));
+	label.setBezeled(0);
+	label.setDrawsBackground(0);
+	label.setEditable(0);
+	label.setSelectable(0);
+
+	return label;
 }
 
 var createCheckbox = function(item,flag,frame) {

@@ -159,7 +159,7 @@
 	<key>wireframe-preclude-complete</key>
 	<string> is now precluded from Export Wireframes</string>
 	<key>wireframe-export-plugin</key>
-	<string>Export All Wireframes</string>
+	<string>Export Wireframes</string>
 	<key>wireframe-export-problem</key>
 	<string>No wireframes were found to export.</string>
 	<key>wireframe-export-complete</key>
