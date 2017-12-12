@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.82</title>
+			<title>Version 0.83</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Quality of life improvements: 1. Including artboards for Create Titles will no longer deselect the selected artboards. 2. Including artboards for Layout Artboards will no longer deselect the selected artboards. 3. Adding annotations to an artboard will now immediately relayout other annotations related to the artboard. 4. Updating all annotations will no longer lock the SNCR group.</li>
+				<li>Linking annotations will now try designating first, should cover the majority of designation cases.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.82" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.83" />
 		</item>
 	</channel>
 </rss>

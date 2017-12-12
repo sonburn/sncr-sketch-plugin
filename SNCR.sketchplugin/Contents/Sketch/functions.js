@@ -78,7 +78,7 @@ var sncr = {
 		if (command) {
 			switch (command) {
 				case "annotations-designate" :
-					this.annotations.designate(context);
+					this.annotations.designateSelected();
 					break;
 				case "annotations-link" :
 					this.annotations.linkSelected(context);
@@ -170,31 +170,43 @@ var sncr = {
 }
 
 sncr.annotations = {
-	designate: function(context) {
-		var count = 0;
-
-		if (sncr.selection.count()) {
+	designateSelected: function(textLayer) {
+		if (textLayer) {
 			var noteName;
 
-			for (var i = 0; i < sncr.selection.count(); i++) {
-				if (sncr.selection[i] instanceof MSTextLayer) {
-					context.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,sncr.selection[i]);
+			context.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,textLayer);
 
-					count++;
+			noteName = textLayer.name().split(/\r\n|\r|\n/g)[0];
 
-					noteName = sncr.selection[i].name().split(/\r\n|\r|\n/g)[0];
+			log(noteName + sncr.strings["annotation-designate-complete"]);
 
-					log(noteName + sncr.strings["annotation-designate-complete"]);
-				}
-			}
-
-			if (sncr.selection.count() == 1) {
-				displayMessage(noteName + sncr.strings["annotation-designate-complete"]);
-			} else {
-				displayMessage(count + sncr.strings["annotation-designates-complete"]);
-			}
+			displayMessage(noteName + sncr.strings["annotation-designate-complete"]);
 		} else {
-			displayDialog(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
+			var count = 0;
+
+			if (sncr.selection.count()) {
+				var noteName;
+
+				for (var i = 0; i < sncr.selection.count(); i++) {
+					if (sncr.selection[i] instanceof MSTextLayer) {
+						context.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,sncr.selection[i]);
+
+						count++;
+
+						noteName = sncr.selection[i].name().split(/\r\n|\r|\n/g)[0];
+
+						log(noteName + sncr.strings["annotation-designate-complete"]);
+					}
+				}
+
+				if (sncr.selection.count() == 1) {
+					displayMessage(noteName + sncr.strings["annotation-designate-complete"]);
+				} else {
+					displayMessage(count + sncr.strings["annotation-designates-complete"]);
+				}
+			} else {
+				displayDialog(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
+			}
 		}
 	},
 	linkSelected: function(context) {
@@ -207,24 +219,30 @@ sncr.annotations = {
 					secondItem = sncr.selection[1];
 
 				// If the first item is a text layer with a linkType of annotation...
-				if (firstItem instanceof MSTextLayer && context.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkTypeKey,firstItem) == sncr.annotations.config.annotationLinkTypeValue) {
+				if (firstItem.class() == "MSTextLayer" && secondItem.class() != "MSTextLayer") {
+					// Designate the text layer as an annotation
+					sncr.annotations.designateSelected(firstItem);
+
 					linkNoteToObject(firstItem,secondItem);
 				}
 				// If the second is a text layer with a linkType of annotation...
-				else if (secondItem instanceof MSTextLayer && context.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkTypeKey,secondItem) == sncr.annotations.config.annotationLinkTypeValue) {
+				else if (firstItem.class() != "MSTextLayer" && secondItem.class() == "MSTextLayer") {
+					// Designate the text layer as an annotation
+					sncr.annotations.designateSelected(secondItem);
+
 					linkNoteToObject(secondItem,firstItem);
 				}
 				// If the selections do not contain a text layer with a linkType of annotation...
 				else {
 					// Display feedback
-					displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem"]);
+					displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-textlayer"]);
 				}
 
 				break;
 			// If there are not two selections...
 			default:
 				// Display feedback
-				displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem"]);
+				displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
 		}
 
 		// Function to link an annotation to an object

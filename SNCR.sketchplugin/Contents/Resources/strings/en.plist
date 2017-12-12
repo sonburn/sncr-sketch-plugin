@@ -13,8 +13,10 @@
 	<string> text layers are now designated as annotations</string>
 	<key>annotation-link-plugin</key>
 	<string>Link Artboard Annotation</string>
-	<key>annotation-link-problem</key>
-	<string>Select one designated annotation and one artboard or object to link.</string>
+	<key>annotation-link-problem-selection</key>
+	<string>Select one annotation and one artboard or object to link.</string>
+	<key>annotation-link-problem-textlayer</key>
+	<string>Since you have selected two text layers, you will need to manually designate one as an annotation first.</string>
 	<key>annotation-link-complete</key>
 	<string> is now linked to </string>
 	<key>annotation-unlink-complete</key>
