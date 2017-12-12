@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.83</title>
+			<title>Version 0.84</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Linking annotations will now try designating first, should cover the majority of designation cases.</li>
+				<li>Paramaterized context.command to sncr.command.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.83" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.84" />
 		</item>
 	</channel>
 </rss>
