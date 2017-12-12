@@ -308,8 +308,8 @@ sncr.annotations = {
 			// Create a log event
 			log(noteName + sncr.strings["annotation-link-complete"] + object.name());
 
-			// Redraw all connections
-			sncr.annotations.redraw(context);
+			// Update all sibling connections
+			sncr.annotations.updateAllSiblings(context,object.parentArtboard());
 
 			// Display feedback
 			displayMessage(noteName + sncr.strings["annotation-link-complete"] + object.name());
@@ -550,9 +550,184 @@ sncr.annotations = {
 
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
-				// Lock the parent group
-				parentGroup.setIsLocked(1);
+				// If any annotation links were removed
+				if (removeCount > 0) {
+					// Display feedback
+					displayMessage(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
+				} else {
+					// Display feedback
+					displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
+				}
+			}
+		}
+		// If there are no annotations...
+		else {
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
+				// Display feedback
+				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
+			}
+		}
+	},
+	updateAllSiblings: function(context,artboard) {
+		// Construct loop of annotations
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + artboard.objectID() + "'",sncr.pluginDomain),
+			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
+			loop = annotations.objectEnumerator(),
+			note;
 
+		// Set counters
+		var updateCount = 0;
+		var removeCount = 0;
+
+		// Initiate array of parents with siblings
+		var parentsWithSiblings = [];
+
+		// If there are annotations...
+		if (annotations.count()) {
+			// Set parent group
+			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+
+			// Set annotation group
+			var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+
+			// Iterate through annotations...
+			while (note = loop.nextObject()) {
+				// Get stored value for linked object
+				var linkedObjectID = context.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,note);
+
+				// Get linked object if it resides on the page
+				var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,sncr.pluginDomain),
+					linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
+
+				// If linked object exists...
+				if (linkedObject) {
+					// If linked object has a parent...
+					if (linkedObject.parentArtboard()) {
+						// Get siblings for this linked object (figure out how to exclude current object)
+						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
+							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
+
+						// If there are siblings...
+						if (siblings.count() > 1) {
+							// Add parent objectID to array of parents with siblings
+							parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
+						}
+					}
+
+					// Determine max X of artboard, or parent artboard
+					var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
+
+					// Set annotation position including offsets
+					note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
+					note.absoluteRect().setY(linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
+
+					// Set annotation width
+					note.frame().setWidth(sncr.annotations.config.annotationWidth);
+
+					// Set annotation font information
+					note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
+					note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+					note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
+
+					// If the annotation is not in the annotation group...
+					if (note.parentGroup() != noteGroup) {
+						// Move the annotation to the annotation group
+						note.moveToLayer_beforeLayer(noteGroup,nil);
+
+						// Deselect the annotation (moveToLayer_beforeLayer selects it)
+						note.select_byExpandingSelection(false,true);
+					}
+
+					// Update the annotation layer name
+					note.setName(sncr.annotations.config.annotationLinkPrefix + linkedObject.name());
+
+					// Iterate counter
+					updateCount++;
+				}
+				// If object does not exist...
+				else {
+					// Remove stored values for linked artboard
+					context.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,note);
+					context.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,note);
+					context.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,note);
+
+					// Set annotation name
+					var noteName = note.name().replace(sncr.annotations.config.annotationLinkPrefix,""));
+
+					// Update the layer name
+					note.setName(noteName);
+
+					// Iterate counters
+					updateCount++;
+					removeCount++;
+
+					// Create a log event
+					log(noteName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
+				}
+			}
+
+			// If annotation group is not empty...
+			if (noteGroup.layers().count() > 0) {
+				// If any parents have siblings...
+				if (parentsWithSiblings) {
+					// Filter duplicates from parents with siblings array
+					var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
+						return parentsWithSiblings.indexOf(item) == pos;
+					});
+
+					// Iterate through the parents...
+					for (var i = 0; i < parentsWithSiblings.length; i++) {
+						// Get siblings for parent
+						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
+							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
+
+						// Sort the siblings by Y position
+						var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+						siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+
+						// Iterate through the siblings...
+						for (var j = 0; j < siblings.length; j++) {
+							// If there is a next sibling...
+							if (j+1 < siblings.length) {
+								// Sibling variables
+								var thisSibling = siblings[j];
+								var nextSibling = siblings[j+1];
+
+								// If this sibling and the next intersect...
+								if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+									// Adjust the Y coordinate of the next sibling
+									nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
+								}
+							}
+						}
+					}
+				}
+
+				// Resize annotation and parent groups to account for children
+				noteGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+
+				// Redraw all connections
+				sncr.annotations.redraw(context);
+			}
+			// If annotation group is empty...
+			else {
+				// Remove the annotation group
+				noteGroup.removeFromParent();
+
+				// Resize parent group to account for children
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
+
+			// Move parent group to the top of the layer list
+			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
+
+			// Deselect parent group (moveToLayer_beforeLayer selects it)
+			parentGroup.select_byExpandingSelection(false,true);
+
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
 				// If any annotation links were removed
 				if (removeCount > 0) {
 					// Display feedback
@@ -952,8 +1127,6 @@ sncr.layout = {
 			for (var i = 0; i < sncr.selection.count(); i++) {
 				if (sncr.selection[i] instanceof MSArtboardGroup) {
 					context.command.setValue_forKey_onLayer(nil,sncr.layout.config.featureKey,sncr.selection[i]);
-
-					sncr.selection[i].select_byExpandingSelection(false,true);
 
 					count++;
 
@@ -1882,8 +2055,6 @@ sncr.titles = {
 			for (var i = 0; i < sncr.selection.count(); i++) {
 				if (sncr.selection[i] instanceof MSArtboardGroup) {
 					context.command.setValue_forKey_onLayer(true,sncr.titles.config.featureKey,sncr.selection[i]);
-
-					sncr.selection[i].select_byExpandingSelection(false,true);
 
 					count++;
 
