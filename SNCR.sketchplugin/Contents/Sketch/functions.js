@@ -103,7 +103,7 @@ var sncr = {
 					this.descriptions.updateAllOnPage(context);
 					break;
 				case "titles-create" :
-					this.titles.create(context);
+					this.titles.create(context,"create");
 					break;
 				case "titles-include" :
 					this.titles.include(context);
@@ -2124,7 +2124,7 @@ sncr.titles = {
 
 		var titleSettings = sncr.titles.settings(context,"create");
 
-		if (!command || command == "layout" || command != "layout" && titleSettings.onByDefault == 1 && (sncr.page != sncr.symbolsPage)) {
+		if (sncr.page != sncr.symbolsPage) {
 			// Set parent group
 			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
 
@@ -2213,6 +2213,8 @@ sncr.titles = {
 						break;
 					case "action":
 						break;
+					case "settings":
+						break;
 					case "layout":
 						break;
 					default:
@@ -2271,8 +2273,8 @@ sncr.titles = {
 			var titleOffset = createField(defaultSettings.artboardTitleOffset,NSMakeRect(0,0,60,20));
 			alertWindow.addAccessoryView(titleOffset);
 
-			var onByDefault = createCheckbox({name:"When artboards are moved, automatically create\ntitles for all artboards (not precluded) on the\npage, on all pages other than Symbols page.",value:1},defaultSettings.artboardTitleAuto,NSMakeRect(0,0,300,54));
-			alertWindow.addAccessoryView(onByDefault);
+			// var onByDefault = createCheckbox({name:"When artboards are moved, automatically create\ntitles for all artboards (not precluded) on the\npage, on all pages other than Symbols page.",value:1},defaultSettings.artboardTitleAuto,NSMakeRect(0,0,300,54));
+			// alertWindow.addAccessoryView(onByDefault);
 
 			// Buttons
 			alertWindow.addButtonWithTitle('OK');
@@ -2281,8 +2283,7 @@ sncr.titles = {
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
 				titleType,
-				titleOffset,
-				onByDefault
+				titleOffset
 			]);
 
 			var responseCode = alertWindow.runModal();
@@ -2296,7 +2297,7 @@ sncr.titles = {
 					// Save new settings in new location
 					sncr.command.setValue_forKey_onLayer(titleType.selectedCell().tag(),"artboardTitleType",sncr.document.documentData());
 					sncr.command.setValue_forKey_onLayer(Number(titleOffset.stringValue()),"artboardTitleOffset",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(onByDefault.state(),"artboardTitleAuto",sncr.document.documentData());
+					//sncr.command.setValue_forKey_onLayer(onByDefault.state(),"artboardTitleAuto",sncr.document.documentData());
 				}
 				catch(err) {
 					log("Unable to save settings.");
@@ -2310,8 +2311,8 @@ sncr.titles = {
 			// Return updated settings
 			return {
 				titleType : defaultSettings.artboardTitleType,
-				titleOffset : defaultSettings.artboardTitleOffset,
-				onByDefault : defaultSettings.artboardTitleAuto
+				titleOffset : defaultSettings.artboardTitleOffset
+				//onByDefault : defaultSettings.artboardTitleAuto
 			}
 		}
 	}

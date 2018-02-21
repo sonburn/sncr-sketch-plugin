@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.85</title>
+			<title>Version 0.86</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Exposed margin value in Create Artboard Slice function.</li>
+				<li>Artboard Titles will now be regenerated after including/precluding artboards.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.85" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.86" />
 		</item>
 	</channel>
 </rss>
