@@ -1430,11 +1430,11 @@ sncr.layout = {
 
 			if (responseCode == 1000) {
 				try {
-					sncr.command.setValue_forKey_onLayer([[alertWindow viewAtIndex:1] indexOfSelectedItem],"artboardsPerRowDefault",sncr.page);
-					sncr.command.setValue_forKey_onLayer([[rowDensity selectedCell] tag],"rowDensity",sncr.page);
-					sncr.command.setValue_forKey_onLayer([[sortOrder selectedCell] tag],"sortOrder",sncr.page);
-					sncr.command.setValue_forKey_onLayer([xPad stringValue],"xPad",sncr.page);
-					sncr.command.setValue_forKey_onLayer([yPad stringValue],"yPad",sncr.page);
+					sncr.command.setValue_forKey_onLayer(perRow.indexOfSelectedItem(),"artboardsPerRowDefault",sncr.page);
+					sncr.command.setValue_forKey_onLayer(rowDensity.selectedCell().tag(),"rowDensity",sncr.page);
+					sncr.command.setValue_forKey_onLayer(sortOrder.selectedCell().tag(),"sortOrder",sncr.page);
+					sncr.command.setValue_forKey_onLayer(xPad.stringValue(),"xPad",sncr.page);
+					sncr.command.setValue_forKey_onLayer(yPad.stringValue(),"yPad",sncr.page);
 				}
 				catch(err) {
 					log("Unable to save settings.");
@@ -1482,7 +1482,7 @@ sncr.other = {
 				var selectionSize = getSelectionSize(artboards);
 
 				// Layout variables
-				var margin = 100;
+				var margin = sliceSettings.sliceMargin;
 				var sliceX = selectionSize.minX - margin;
 				var sliceY = selectionSize.minY - margin;
 				var sliceWidth = selectionSize.width + (margin*2);
@@ -1565,69 +1565,68 @@ sncr.other = {
 		}
 
 		function showSliceSettings() {
-			var sliceType = 1;
-			var exportScales = ['.5x','1x','2x','3x'];
-			var exportScale = 0;
-			var exportFormats = ['JPG','PDF','PNG'];
-			var exportFormat = 1;
+			// Setting variables
+			var defaultSettings = {};
+			defaultSettings.sliceType = 1;
+			defaultSettings.sliceMargin = '100';
+			defaultSettings.exportScales = ['.5x','1x','2x','3x'];
+			defaultSettings.exportScale = 0;
+			defaultSettings.exportFormats = ['JPG','PDF','PNG'];
+			defaultSettings.exportFormat = 1;
 
-			// Get cached settings
-			try {
-				if ([command valueForKey:"sliceType" onDocument:context.document.documentData()]) {
-					sliceType = [command valueForKey:"sliceType" onDocument:context.document.documentData()];
-				}
-
-				if ([command valueForKey:"exportScale" onDocument:context.document.documentData()]) {
-					exportScale = [command valueForKey:"exportScale" onDocument:context.document.documentData()];
-				}
-
-				if ([command valueForKey:"exportFormat" onDocument:context.document.documentData()]) {
-					exportFormat = [command valueForKey:"exportFormat" onDocument:context.document.documentData()];
-				}
-			}
-			catch(err) {
-				log("Unable to fetch settings.");
-			}
+			// Update default settings with cached settings
+			defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
 
 			var alertWindow = COSAlertWindow.new();
-
 			alertWindow.setMessageText('Create Artboard Slice');
 
-			alertWindow.addAccessoryView(createRadioButtons(["Create slice around selections","Create slice around all artboards"],sliceType));
-			var fieldOne = alertWindow.viewAtIndex(0);
+			var sliceTypeRadio = createRadioButtons(["Create slice around selections","Create slice around all artboards"],defaultSettings.sliceType);
+			alertWindow.addAccessoryView(sliceTypeRadio);
+
+			alertWindow.addTextLabelWithValue('Slice margin:');
+
+			var sliceMarginSize = createField(defaultSettings.sliceMargin,NSMakeRect(0,0,60,20));
+			alertWindow.addAccessoryView(sliceMarginSize);
 
 			alertWindow.addTextLabelWithValue('Slice export density:');
-			alertWindow.addAccessoryView(createSelect(exportScales,exportScale,NSMakeRect(0,0,100,25)));
-			var fieldTwo = alertWindow.viewAtIndex(2);
+
+			var sliceExportSelect = createSelect(defaultSettings.exportScales,defaultSettings.exportScale,NSMakeRect(0,0,100,25))
+			alertWindow.addAccessoryView(sliceExportSelect);
 
 			alertWindow.addTextLabelWithValue('Slice export format:');
-			alertWindow.addAccessoryView(createSelect(exportFormats,exportFormat,NSMakeRect(0,0,100,25)));
-			var fieldThree = alertWindow.viewAtIndex(4);
+
+			var sliceFormatSelect = createSelect(defaultSettings.exportFormats,defaultSettings.exportFormat,NSMakeRect(0,0,100,25))
+			alertWindow.addAccessoryView(sliceFormatSelect);
 
 			alertWindow.addButtonWithTitle('OK');
 			alertWindow.addButtonWithTitle('Cancel');
 
-			// Set first responder and key order
-			alertWindow.alert().window().setInitialFirstResponder(fieldOne);
-			fieldOne.setNextKeyView(fieldTwo);
-			fieldTwo.setNextKeyView(fieldThree);
+			// Set key order and first responder
+			setKeyOrder(alertWindow,[
+				sliceTypeRadio,
+				sliceMarginSize,
+				sliceExportSelect,
+				sliceFormatSelect
+			]);
 
 			var responseCode = alertWindow.runModal();
 
 			if (responseCode == 1000) {
 				try {
-					[command setValue:[[[alertWindow viewAtIndex:0] selectedCell] tag] forKey:"sliceType" onDocument:context.document.documentData()];
-					[command setValue:[[alertWindow viewAtIndex:2] indexOfSelectedItem] forKey:"exportScale" onDocument:context.document.documentData()];
-					[command setValue:[[alertWindow viewAtIndex:4] indexOfSelectedItem] forKey:"exportFormat" onDocument:context.document.documentData()];
+					context.command.setValue_forKey_onLayer(sliceTypeRadio.selectedCell().tag(),"sliceType",sncr.document.documentData());
+					context.command.setValue_forKey_onLayer(sliceMarginSize.stringValue(),"sliceMargin",sncr.document.documentData());
+					context.command.setValue_forKey_onLayer(sliceExportSelect.indexOfSelectedItem(),"exportScale",sncr.document.documentData());
+					context.command.setValue_forKey_onLayer(sliceFormatSelect.indexOfSelectedItem(),"exportFormat",sncr.document.documentData());
 				}
 				catch(err) {
 					log("Unable to save settings.");
 				}
 
 				return {
-					sliceType : [[[alertWindow viewAtIndex:0] selectedCell] tag],
-					exportScale : exportScales[[[alertWindow viewAtIndex:2] indexOfSelectedItem]].slice(0,-1),
-					exportFormat : exportFormats[[[alertWindow viewAtIndex:4] indexOfSelectedItem]]
+					sliceType : sliceTypeRadio.selectedCell().tag(),
+					sliceMargin : sliceMarginSize.stringValue(),
+					exportScale : defaultSettings.exportScales[sliceExportSelect.indexOfSelectedItem()].slice(0,-1),
+					exportFormat : defaultSettings.exportFormats[sliceFormatSelect.indexOfSelectedItem()]
 				}
 			} else return false;
 		}
@@ -2545,7 +2544,6 @@ function createSelect(items,selectedItemIndex,frame) {
 	comboBox.addItemsWithObjectValues(items);
 	comboBox.selectItemAtIndex(selectedItemIndex);
 	comboBox.setNumberOfVisibleItems(16);
-	comboBox.setEditable(0);
 
 	return comboBox;
 }
