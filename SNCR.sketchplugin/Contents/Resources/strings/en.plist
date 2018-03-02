@@ -82,14 +82,6 @@
 	<key>layout-artboards-complete</key>
 	<string>Artboard layout complete</string>
 	<!-- SECTIONS -->
-	<key>section-insert-plugin</key>
-	<string>Insert Section Title</string>
-	<key>section-insert-problem</key>
-	<string>Before you can insert/link a section title, you must designate a symbol to be used for section titles (if this was done already, then the previously designated symbol is missing).&#xD;&#xD;To designate a section title symbol, navigate to Section Titles > Settings.</string>
-	<key>section-selection-problem</key>
-	<string>Select one artboard to insert and link a section title.</string>
-	<key>section-insert-complete</key>
-	<string> section title inserted, and linked to </string>
 	<key>section-link-plugin</key>
 	<string>Link Section Title</string>
 	<key>section-link-problem</key>
@@ -112,16 +104,12 @@
 	<string> section title(s) were unlinked due to missing artboards</string>
 	<key>section-settings-plugin</key>
 	<string>Section Title Settings</string>
-	<key>section-settings-symbol</key>
-	<string>Section title symbol:</string>
 	<key>section-settings-width</key>
 	<string>Width (leave blank to use symbol size):</string>
 	<key>section-settings-offsetX</key>
 	<string>Horizontal offset:</string>
 	<key>section-settings-offsetY</key>
 	<string>Vertical offset:</string>
-	<key>section-settings-complete</key>
-	<string> will now be used for Section Titles, other settings will be applied on next update</string>
 	<!-- TITLES -->
 	<key>title-preclude-plugin</key>
 	<string>Preclude Selected Artboards</string>

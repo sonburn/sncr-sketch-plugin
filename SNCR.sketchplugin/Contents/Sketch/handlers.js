@@ -56,10 +56,6 @@ var layoutUpdate = function(context) {
 	sncr.init(context,"layout-update");
 }
 
-var sectionsInsert = function(context) {
-	sncr.init(context,"sections-insert");
-}
-
 var sectionsLink = function(context) {
 	sncr.init(context,"sections-link");
 }

@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.86</title>
+			<title>Version 0.87</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Artboard Titles will now be regenerated after including/precluding artboards.</li>
+				<li>Removed functionality for inserting and validating section title symbols, which has never worked right and instead prohibited use of the section titles featureset.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.86" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.87" />
 		</item>
 	</channel>
 </rss>

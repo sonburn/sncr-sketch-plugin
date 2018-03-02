@@ -140,13 +140,6 @@
 			"handler" : "layoutSettings"
 		},
 		{
-			"name" : "Insert & Link Title to Selected Artboard",
-			"identifier" : "sections-insert",
-			"script" : "handlers.js",
-			"handler" : "sectionsInsert",
-			"icon" : "icons/sections-insert.png"
-		},
-		{
 			"name" : "Link Selected Title and Artboard",
 			"identifier" : "sections-link",
 			"script" : "handlers.js",
@@ -265,7 +258,6 @@
 			{
 				"title" : "SNCR - Section Titles",
 				"items" : [
-					"sections-insert",
 					"sections-link",
 					"sections-unlink",
 					"sections-select",

@@ -1656,86 +1656,29 @@ sncr.other = {
 }
 
 sncr.sections = {
-	insertTitle: function(context) {
-		// Get the saved symbol
-		var savedSymbol = sncr.sections.symbolCheck(context);
-
-		// If the saved symbol is set and exists...
-		if (savedSymbol) {
-			// If there is one selection and it's an artboard
-			if (sncr.selection.count() == 1 && sncr.selection[0] instanceof MSArtboardGroup) {
-				// Create a symbol instance
-				var symbolInstance = savedSymbol.symbolMaster.newSymbolInstance();
-
-				// Insert the symbol instance below the selection
-				sncr.selection[0].parentGroup().insertLayer_atIndex(symbolInstance,getLayerIndex(sncr.selection[0]));
-
-				// Select the symbol instance, and maintain other selections
-				symbolInstance.select_byExpandingSelection(true,true);
-
-				// Link the screen title to the artboard
-				sncr.sections.linkSelected(context,"insert");
-			}
-			// If there is not one selection, or there is but it's not an artboard...
-			else {
-				// Display feedback
-				displayDialog(sncr.strings["section-insert-plugin"],sncr.strings["section-selection-problem"]);
-			}
-		}
-		// If the saved symbol is not set or does not exist...
-		else {
-			// Display feedback
-			displayDialog(sncr.strings["section-insert-plugin"],sncr.strings["section-insert-problem"]);
-		}
-	},
 	linkSelected: function(context,command) {
-		// Get the saved symbol
-		var savedSymbol = sncr.sections.symbolCheck(context);
+		// Validate the selections to link
+		var selections = sncr.sections.validateSelected(context);
 
-		// If the saved symbol is set and exists...
-		if (savedSymbol) {
-			// Validate the selections to link
-			var selections = sncr.sections.validateSelected(context);
+		// If selections are valid...
+		if (selections) {
+			// Set stored value for linked artboard
+			sncr.command.setValue_forKey_onLayer(selections.artboard.objectID(),sncr.sections.config.titleLinkKey,selections.title);
 
-			// If selections are valid...
-			if (selections) {
-				// Set stored value for linked artboard
-				sncr.command.setValue_forKey_onLayer(selections.artboard.objectID(),sncr.sections.config.titleLinkKey,selections.title);
+			// Set the title name
+			var titleName = (selections.title.overrides()) ? sncr.sections.config.titleLinkPrefix + selections.title.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + selections.title.name().replace(sncr.sections.config.titleLinkPrefix,"");
 
-				// Set the title name
-				var titleName = (selections.title.overrides()) ? sncr.sections.config.titleLinkPrefix + selections.title.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + selections.title.name().replace(sncr.sections.config.titleLinkPrefix,"");
+			// Update the title name
+			selections.title.setName(titleName);
 
-				// Update the title name
-				selections.title.setName(titleName);
+			// Create a log event
+			log(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
 
-				// Create a log event
-				log(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+			// Update all section titles on the page
+			sncr.sections.updateAllOnPage(context,"link");
 
-				// Update all section titles on the page
-				sncr.sections.updateAllOnPage(context,"link");
-
-				// Switch message and handling per method the function was invoked
-				switch (command) {
-					case "insert":
-						// Display feedback
-						displayMessage(titleName + sncr.strings["section-insert-complete"] + selections.artboard.name());
-
-						// Deselect the artboard
-						selections.artboard.select_byExpandingSelection(false,true);
-
-						break;
-					default:
-						// Display feedback
-						displayMessage(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
-
-						break;
-				}
-			}
-		}
-		// If the saved symbol is not set or does not exist...
-		else {
 			// Display feedback
-			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-insert-problem"]);
+			displayMessage(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
 		}
 	},
 	unlinkSelected: function(context) {
@@ -1797,9 +1740,6 @@ sncr.sections = {
 		}
 	},
 	validateSelected: function(context) {
-		// Get the saved symbol
-		var savedSymbol = sncr.sections.symbolCheck(context);
-
 		// Get latest selections, as they may have been changed by Insert
 		var selections = sncr.page.selectedLayers().layers();
 
@@ -1810,14 +1750,14 @@ sncr.sections = {
 				secondItem = selections[1];
 
 			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard...
-			if ((firstItem instanceof MSSymbolInstance && firstItem.symbolMaster() == savedSymbol.symbolMaster) && secondItem instanceof MSArtboardGroup) {
+			if (firstItem instanceof MSSymbolInstance && secondItem instanceof MSArtboardGroup) {
 				return {
 					title: firstItem,
 					artboard: secondItem
 				}
 			}
 			// If the first item is an artboard, and the second item is a symbol instance and symbol master name matches the provided name...
-			else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSSymbolInstance && secondItem.symbolMaster() == savedSymbol.symbolMaster)) {
+			else if (firstItem instanceof MSArtboardGroup && secondItem instanceof MSSymbolInstance) {
 				return {
 					title: secondItem,
 					artboard: firstItem
@@ -1826,7 +1766,7 @@ sncr.sections = {
 			// If the selections do not contain a section title symbol instance and artboard...
 			else {
 				// Display feedback
-				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-selection-problem"]);
+				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
 
 				return false;
 			}
@@ -1938,6 +1878,9 @@ sncr.sections = {
 			case "link":
 				break;
 			case "settings":
+				// Display feedback
+				displayMessage(sncr.strings["section-titles-updated"]);
+
 				break;
 			default:
 				// If any artboard links were removed
@@ -1961,30 +1904,8 @@ sncr.sections = {
 		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
 
 		if (!command) {
-			var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
-				symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
-				loop = symbols.objectEnumerator(),
-				symbolDefault = 0,
-				symbolNames = [],
-				symbol;
-
-			while (symbol = loop.nextObject()) {
-				symbolNames.push(symbol.name());
-			}
-
-			var savedSymbol = sncr.sections.symbolCheck(context);
-
-			if (savedSymbol) {
-				symbolDefault = savedSymbol.symbolIndex;
-			}
-
 			var alertWindow = COSAlertWindow.new();
 			alertWindow.setMessageText(sncr.strings["section-settings-plugin"]);
-
-			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-symbol"]);
-
-			var selectedSymbol = createSelect(symbolNames,symbolDefault,NSMakeRect(0,0,300,25));
-			alertWindow.addAccessoryView(selectedSymbol);
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-width"]);
 
@@ -2005,7 +1926,6 @@ sncr.sections = {
 			alertWindow.addButtonWithTitle("Cancel");
 
 			setKeyOrder(alertWindow,[
-				selectedSymbol,
 				titleWidth,
 				titleXOffset,
 				titleYOffset
@@ -2014,12 +1934,7 @@ sncr.sections = {
 			var responseCode = alertWindow.runModal();
 
 			if (responseCode == 1000) {
-				var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
-					symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
-					selectedSymbol = selectedSymbol.indexOfSelectedItem();
-
 				try {
-					sncr.command.setValue_forKey_onLayer(symbols[selectedSymbol].objectID(),sncr.sections.config.symbolMasterKey,sncr.document.documentData());
 					sncr.command.setValue_forKey_onLayer(titleWidth.stringValue(),"sectionTitleWidth",sncr.document.documentData());
 					sncr.command.setValue_forKey_onLayer(Number(titleXOffset.stringValue()),"sectionTitleXOffset",sncr.document.documentData());
 					sncr.command.setValue_forKey_onLayer(Number(titleYOffset.stringValue()),"sectionTitleYOffset",sncr.document.documentData());
@@ -2028,7 +1943,7 @@ sncr.sections = {
 					log("Unable to save settings.");
 				}
 
-				displayMessage(symbols[selectedSymbol].name() + sncr.strings["section-settings-complete"]);
+				sncr.sections.updateAllOnPage(context,"settings");
 			} else return false;
 		}
 		// Otherwise operate in run mode...
@@ -2040,28 +1955,6 @@ sncr.sections = {
 				titleYOffset : defaultSettings.sectionTitleYOffset
 			}
 		}
-	},
-	symbolCheck: function(context) {
-		var savedSymbol = sncr.command.valueForKey_onLayer(sncr.sections.config.symbolMasterKey,sncr.document.documentData());
-
-		if (savedSymbol) {
-			var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
-				symbols = sncr.symbols.sortedArrayUsingDescriptors([sortByName]),
-				symbolMasterIndex;
-
-			for (i = 0; i < symbols.length; i++) {
-				if (symbols[i].objectID() == savedSymbol) {
-					symbolMasterIndex = i;
-				}
-			}
-
-			if (symbolMasterIndex >= 0) {
-				return {
-					symbolMaster : symbols[symbolMasterIndex],
-					symbolIndex : symbolMasterIndex
-				}
-			} else return false;
-		} else return false;
 	}
 }
 
