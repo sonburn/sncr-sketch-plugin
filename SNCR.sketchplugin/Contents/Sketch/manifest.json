@@ -3,12 +3,24 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : 0.87,
+	"version" : 0.88,
 	"identifier" : "com.sncr.sketch",
 	"compatibleVersion" : 3,
 	"bundleVersion" : 1,
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"commands" : [
+		{
+			"name" : "Create Annotations for Selected Artboards",
+			"identifier" : "annotations-create",
+			"script" : "handlers.js",
+			"handlers" : {
+				"actions" : {
+					"run" : "annotationsCreate",
+					"AddFlow.finish" : "annotationsCreate"
+				}
+			},
+			"icon" : "icons/annotations-create.png"
+		},
 		{
 			"name" : "Designate Selected Layers as Annotations",
 			"identifier" : "annotations-designate",
@@ -29,6 +41,19 @@
 			"script" : "handlers.js",
 			"handler" : "annotationsUpdate",
 			"icon" : "icons/annotations-update.png"
+		},
+		{
+			"name" : "Settings…",
+			"identifier" : "annotations-settings",
+			"script" : "handlers.js",
+			"handler" : "annotationsSettings"
+		},
+		{
+			"name" : "Add/Edit Condition for Selected Layer",
+			"identifier" : "conditions-set",
+			"script" : "handlers.js",
+			"handler" : "conditionsSet",
+			"icon" : "icons/conditions-set.png"
 		},
 		{
 			"name" : "Add/Edit Description on Selected Artboard",
@@ -107,9 +132,9 @@
 		},
 		{
 			"name" : "Include Selected Artboards",
-			"identifier" : "layout-include",
+			"identifier" : "layout-includeSelected",
 			"script" : "handlers.js",
-			"handler" : "layoutInclude",
+			"handler" : "layoutIncludeSelected",
 			"icon" : "icons/layout-include.png"
 		},
 		{
@@ -121,9 +146,9 @@
 		},
 		{
 			"name" : "Preclude Selected Artboards",
-			"identifier" : "layout-preclude",
+			"identifier" : "layout-precludeSelected",
 			"script" : "handlers.js",
-			"handler" : "layoutPreclude",
+			"handler" : "layoutPrecludeSelected",
 			"icon" : "icons/layout-preclude.png"
 		},
 		{
@@ -209,18 +234,33 @@
 		},
 	],
 	"menu" : {
-		"isRoot" : true,
+		"isRoot" : false,
+		"title" : "SNCR",
 		"items" : [
 			{
-				"title" : "SNCR - Artboard Annotations",
+				"title" : "Section Titles",
 				"items" : [
-					"annotations-designate",
-					"annotations-link",
-					"annotations-update"
+					"sections-link",
+					"sections-unlink",
+					"sections-select",
+					"sections-update",
+					"-",
+					"sections-settings"
+				]
+			},
+			"-",
+			{
+				"title" : "Artboard Titles",
+				"items" : [
+					"titles-create",
+					"titles-include",
+					"titles-preclude",
+					"-",
+					"titles-settings"
 				]
 			},
 			{
-				"title" : "SNCR - Artboard Descriptions",
+				"title" : "Artboard Descriptions",
 				"items" : [
 					"descriptions-set",
 					"descriptions-link",
@@ -229,49 +269,46 @@
 					"descriptions-update"
 				]
 			},
+			"-",
 			{
-				"title" : "SNCR - Artboard Titles",
+				"title" : "Layer Annotations",
 				"items" : [
-					"titles-create",
-					"titles-include",
-					"titles-preclude",
-					"titles-settings"
+					"annotations-create",
+					"annotations-designate",
+					"annotations-link",
+					"annotations-update",
+					"-",
+					"annotations-settings"
 				]
 			},
+			"-",
 			{
-				"title" : "SNCR - Layout Artboards",
+				"title" : "Layout",
 				"items" : [
 					"layout-update",
-					"layout-include",
+					"layout-includeSelected",
 					"layout-includePage",
-					"layout-preclude",
+					"layout-precludeSelected",
 					"layout-precludePage",
+					"-",
 					"layout-settings"
 				]
 			},
+			"-",
 			{
-				"title" : "SNCR - Other Tools",
-				"items" : [
-					"other.slice"
-				]
-			},
-			{
-				"title" : "SNCR - Section Titles",
-				"items" : [
-					"sections-link",
-					"sections-unlink",
-					"sections-select",
-					"sections-update",
-					"sections-settings"
-				]
-			},
-			{
-				"title" : "SNCR - Wireframe Tools",
+				"title" : "Wireframes",
 				"items" : [
 					"wireframes-add",
 					"wireframes-include",
 					"wireframes-preclude",
 					"wireframes-export"
+				]
+			},
+			"-",
+			{
+				"title" : "Other",
+				"items" : [
+					"other.slice"
 				]
 			}
 		]

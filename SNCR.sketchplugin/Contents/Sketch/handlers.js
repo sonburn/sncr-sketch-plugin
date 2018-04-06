@@ -1,5 +1,9 @@
 @import 'functions.js';
 
+var annotationsCreate = function(context) {
+	sncr.init(context,"annotations-create");
+}
+
 var annotationsDesignate = function(context) {
 	sncr.init(context,"annotations-designate");
 }
@@ -10,6 +14,10 @@ var annotationsLink = function(context) {
 
 var annotationsUpdate = function(context) {
 	sncr.init(context,"annotations-update");
+}
+
+var annotationsSettings = function(context) {
+	sncr.init(context,"annotations-settings");
 }
 
 var descriptionsSet = function(context) {
@@ -32,16 +40,16 @@ var descriptionsUpdate = function(context) {
 	sncr.init(context,"descriptions-update");
 }
 
-var layoutInclude = function(context) {
-	sncr.init(context,"layout-include");
+var layoutIncludeSelected = function(context) {
+	sncr.init(context,"layout-include-selected");
 }
 
 var layoutIncludePage = function(context) {
 	sncr.init(context,"layout-include-page");
 }
 
-var layoutPreclude = function(context) {
-	sncr.init(context,"layout-preclude");
+var layoutPrecludeSelected = function(context) {
+	sncr.init(context,"layout-preclude-selected");
 }
 
 var layoutPrecludePage = function(context) {

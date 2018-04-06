@@ -78,6 +78,9 @@ var sncr = {
 
 		if (command) {
 			switch (command) {
+				case "annotations-create" :
+					this.annotations.createSelected(context);
+					break;
 				case "annotations-designate" :
 					this.annotations.designateSelected(context);
 					break;
@@ -86,6 +89,9 @@ var sncr = {
 					break;
 				case "annotations-update" :
 					this.annotations.updateAllOnPage(context);
+					break;
+				case "annotations-settings" :
+					this.annotations.settings(context);
 					break;
 				case "descriptions-set" :
 					this.descriptions.addEdit(context);
@@ -126,14 +132,14 @@ var sncr = {
 				case "wireframes-export" :
 					this.wireframes.export(context);
 					break;
-				case "layout-include" :
-					this.layout.include(context);
+				case "layout-include-selected" :
+					this.layout.includeSelected(context);
 					break;
 				case "layout-include-page" :
 					this.layout.includePage(context);
 					break;
-				case "layout-preclude" :
-					this.layout.preclude(context);
+				case "layout-preclude-selected" :
+					this.layout.precludeSelected(context);
 					break;
 				case "layout-preclude-page" :
 					this.layout.precludePage(context);
@@ -171,6 +177,123 @@ var sncr = {
 }
 
 sncr.annotations = {
+	createSelected: function(context) {
+		if (context.actionContext) {
+			if (sncr.annotations.settings(context,"create").autoAnnotate == 1) {
+				COScript.currentCOScript().scheduleWithInterval_jsFunction(2, function() {
+					var selections = context.actionContext.document.selectedLayers().layers(),
+						selectionLoop = selections.objectEnumerator(),
+						selection;
+
+					while (selection = selectionLoop.nextObject()) {
+						createFlowAnnotation(selection);
+					}
+				});
+			}
+		} else {
+			var selections = sncr.selection,
+				selectionLoop = selections.objectEnumerator(),
+				selection;
+
+			if (selections.count() == 0) {
+				displayMessage('Nothing is selected');
+
+				return;
+			}
+
+			while (selection = selectionLoop.nextObject()) {
+				if (selection instanceof MSArtboardGroup) {
+					var predicate = NSPredicate.predicateWithFormat("flow != nil"),
+						flowLayers = selection.children().filteredArrayUsingPredicate(predicate),
+						flowLayerLoop = flowLayers.objectEnumerator(),
+						flowLayer;
+
+					while (flowLayer = flowLayerLoop.nextObject()) {
+						createFlowAnnotation(flowLayer);
+					}
+				} else {
+					if (selection.flow()) {
+						createFlowAnnotation(selection);
+					}
+				}
+			}
+		}
+
+		function createFlowAnnotation(flowLayer) {
+			var destinationArtboardID = flowLayer.flow().destinationArtboardID(),
+				destinationArtboardName = (destinationArtboardID == "back") ? "Back to originating screen" : sncr.document.documentData().artboardWithID_(destinationArtboardID).name()),
+				parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
+				noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+
+			var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + flowLayer.objectID() + "'",sncr.pluginDomain),
+				existingNote = noteGroup.children().filteredArrayUsingPredicate(predicate).firstObject();
+
+			if (existingNote) {
+				var existingString = existingNote.stringValue();
+
+				if (existingString.indexOf("\n") != -1 || existingString.indexOf("\r") != -1) {
+					var n = existingString.indexOf("\n"),
+						r = existingString.indexOf("\r"),
+						returnIndex,
+						returnType;
+
+					if (n != -1 && r != -1) {
+						if (n < r) {
+							returnIndex = n;
+							returnType = "\n";
+						} else {
+							returnIndex = r;
+							returnType = "\r";
+						}
+					} else if (n != -1) {
+						returnIndex = n;
+						returnType = "\n";
+					} else {
+						returnIndex = r;
+						returnType = "\r";
+					}
+
+					var rangeBegin = returnIndex + 1,
+						rangeEnd = existingString.length() - rangeBegin,
+						newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
+
+					existingNote.setStringValue(newString);
+					existingNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
+
+					var rangeBegin = newString.indexOf("\n") + 1,
+						rangeEnd = newString.length - rangeBegin,
+						range = NSMakeRange(rangeBegin,rangeEnd),
+						rangeFont = NSFont.fontWithName_size("Helvetica Neue",14);
+
+					existingNote.addAttribute_value_forRange(NSFontAttributeName,rangeFont,range);
+				} else {
+					existingNote.setStringValue(destinationArtboardName);
+					existingNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
+				}
+
+				existingNote.setName(destinationArtboardName);
+				existingNote.setLineHeight(18);
+				existingNote.setTextColor(MSImmutableColor.colorWithSVGString("#000000"));
+				existingNote.setTextBehaviour(1);
+				existingNote.frame().setWidth(256);
+
+				sncr.annotations.linkNoteToObject(context,existingNote,flowLayer);
+			} else {
+				var newNote = MSTextLayer.new();
+				newNote.setStringValue(destinationArtboardName);
+				newNote.setName(destinationArtboardName);
+				newNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
+				newNote.setLineHeight(18);
+				newNote.setTextColor(MSImmutableColor.colorWithSVGString("#000000"));
+				newNote.setTextBehaviour(1);
+				newNote.frame().setWidth(256);
+
+				noteGroup.addLayers([newNote]);
+
+				sncr.annotations.linkNoteToObject(context,newNote,flowLayer);
+			}
+		}
+	},
 	designateSelected: function(context,textLayer) {
 		if (textLayer) {
 			var noteName;
@@ -224,14 +347,14 @@ sncr.annotations = {
 					// Designate the text layer as an annotation
 					sncr.annotations.designateSelected(context,firstItem);
 
-					linkNoteToObject(firstItem,secondItem);
+					sncr.annotations.linkNoteToObject(context,firstItem,secondItem);
 				}
 				// If the second is a text layer with a linkType of annotation...
 				else if (firstItem.class() != "MSTextLayer" && secondItem.class() == "MSTextLayer") {
 					// Designate the text layer as an annotation
 					sncr.annotations.designateSelected(context,secondItem);
 
-					linkNoteToObject(secondItem,firstItem);
+					sncr.annotations.linkNoteToObject(context,secondItem,firstItem);
 				}
 				// If the selections do not contain a text layer with a linkType of annotation...
 				else {
@@ -245,94 +368,92 @@ sncr.annotations = {
 				// Display feedback
 				displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
 		}
+	},
+	linkNoteToObject: function(context,note,object) {
+		// Set parent group
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
 
-		// Function to link an annotation to an object
-		function linkNoteToObject(note,object) {
-			// Set parent group
-			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+		// Set annotation group
+		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
-			// Set annotation group
-			var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+		// Set stored values on annotation
+		sncr.command.setValue_forKey_onLayer(object.objectID(),sncr.annotations.config.annotationLinkKey,note);
+		sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,note);
+		sncr.command.setValue_forKey_onLayer(object.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,note);
 
-			// Set stored values on annotation
-			sncr.command.setValue_forKey_onLayer(object.objectID(),sncr.annotations.config.annotationLinkKey,note);
-			sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,note);
-			sncr.command.setValue_forKey_onLayer(object.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,note);
+		// Determine max X of artboard, or parent artboard
+		var artboardMaxX = (object.class() != "MSArtboardGroup") ? CGRectGetMaxX(object.parentArtboard().rect()) : CGRectGetMaxX(object.rect());
 
-			// Determine max X of artboard, or parent artboard
-			var artboardMaxX = (object.class() != "MSArtboardGroup") ? CGRectGetMaxX(object.parentArtboard().rect()) : CGRectGetMaxX(object.rect());
+		// Set annotation position including offsets
+		note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
+		note.absoluteRect().setY(object.absoluteRect().y() + object.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
 
-			// Set annotation position including offsets
-			note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
-			note.absoluteRect().setY(object.absoluteRect().y() + object.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
+		// Set annotation width
+		note.frame().setWidth(sncr.annotations.config.annotationWidth);
 
-			// Set annotation width
-			note.frame().setWidth(sncr.annotations.config.annotationWidth);
+		// Set annotation font information
+		note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
+		note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+		note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
 
-			// Set annotation font information
-			note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
-			note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-			note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
+		// If the annotation is not in the annotation group...
+		if (note.parentGroup() != noteGroup) {
+			// Move the annotation to the annotation group
+			note.moveToLayer_beforeLayer(noteGroup,nil);
 
-			// If the annotation is not in the annotation group...
-			if (note.parentGroup() != noteGroup) {
-				// Move the annotation to the annotation group
-				note.moveToLayer_beforeLayer(noteGroup,nil);
+			// Deselect the annotation (moveToLayer_beforeLayer selects it)
+			note.select_byExpandingSelection(false,true);
+		}
 
-				// Deselect the annotation (moveToLayer_beforeLayer selects it)
-				note.select_byExpandingSelection(false,true);
-			}
+		// Get siblings for parent
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
+			siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
 
-			// Get siblings for parent
-			var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-				siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
+		// If more than one sibling...
+		if (siblings && siblings.count() > 1) {
+			// Sort the siblings by Y position
+			var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
+			siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
 
-			// If more than one sibling...
-			if (siblings && siblings.count() > 1) {
-				// Sort the siblings by Y position
-				var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-				siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
+			// Iterate through the siblings...
+			for (var j = 0; j < siblings.length; j++) {
+				// If there is a next sibling...
+				if (j+1 < siblings.length) {
+					// Sibling variables
+					var thisSibling = siblings[j];
+					var nextSibling = siblings[j+1];
 
-				// Iterate through the siblings...
-				for (var j = 0; j < siblings.length; j++) {
-					// If there is a next sibling...
-					if (j+1 < siblings.length) {
-						// Sibling variables
-						var thisSibling = siblings[j];
-						var nextSibling = siblings[j+1];
-
-						// If this sibling and the next intersect...
-						if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-							// Adjust the Y coordinate of the next sibling
-							nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
-						}
+					// If this sibling and the next intersect...
+					if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
+						// Adjust the Y coordinate of the next sibling
+						nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
 					}
 				}
 			}
-
-			// Deselect the annotation and object
-			note.select_byExpandingSelection(false,true);
-			object.select_byExpandingSelection(false,true);
-
-			// Resize annotation and parent groups to account for children
-			noteGroup.resizeToFitChildrenWithOption(0);
-			parentGroup.resizeToFitChildrenWithOption(0);
-
-			// Determine note name
-			var noteName = sncr.annotations.config.annotationLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
-
-			// Update the annotation layer name
-			note.setName(sncr.annotations.config.annotationLinkPrefix + object.name());
-
-			// Create a log event
-			log(noteName + sncr.strings["annotation-link-complete"] + object.name());
-
-			// Update all sibling connections
-			sncr.annotations.updateAllSiblings(context,object.parentArtboard());
-
-			// Display feedback
-			displayMessage(noteName + sncr.strings["annotation-link-complete"] + object.name());
 		}
+
+		// Deselect the annotation and object
+		note.select_byExpandingSelection(false,true);
+		object.select_byExpandingSelection(false,true);
+
+		// Resize annotation and parent groups to account for children
+		noteGroup.resizeToFitChildrenWithOption(0);
+		parentGroup.resizeToFitChildrenWithOption(0);
+
+		// Determine note name
+		var noteName = sncr.annotations.config.annotationLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
+
+		// Update the annotation layer name
+		note.setName(sncr.annotations.config.annotationLinkPrefix + object.name());
+
+		// Create a log event
+		log(noteName + sncr.strings["annotation-link-complete"] + object.name());
+
+		// Update all sibling connections
+		sncr.annotations.updateAllSiblings(context,object.parentArtboard());
+
+		// Display feedback
+		displayMessage(noteName + sncr.strings["annotation-link-complete"] + object.name());
 	},
 	redraw: function(context) {
 		// Set connections group
@@ -765,6 +886,143 @@ sncr.annotations = {
 				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
 			}
 		}
+	},
+	settings: function(context,command) {
+		// Setting variables
+		var defaultSettings = {};
+		defaultSettings.autoAnnotate = 1;
+
+		// Update default settings with cached settings
+		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
+
+		// If a command is not passed, operate in config mode...
+		if (!command) {
+			var alertWindow = COSAlertWindow.new();
+
+			alertWindow.setMessageText(sncr.strings["annotation-settings"]);
+
+			var autoAnnotate = createCheckbox({
+				name : sncr.strings["annotation-settings-automatic"],
+				value: 1
+			},defaultSettings.autoAnnotate,NSMakeRect(0,0,300,54));
+
+			alertWindow.addAccessoryView(autoAnnotate);
+
+			var buttonOK = alertWindow.addButtonWithTitle('OK');
+			var buttonCancel = alertWindow.addButtonWithTitle('Cancel');
+
+			// Set key order and first responder
+			setKeyOrder(alertWindow,[
+				autoAnnotate,
+				buttonOK
+			]);
+
+			var responseCode = alertWindow.runModal();
+
+			if (responseCode == 1000) {
+				try {
+					sncr.command.setValue_forKey_onLayer(autoAnnotate.state(),"autoAnnotate",sncr.document.documentData());
+				}
+				catch(err) {
+					log("Unable to save settings.");
+				}
+			} else return false;
+		}
+		// Otherwise operate in run mode...
+		else {
+			// Return updated settings
+			return {
+				autoAnnotate : defaultSettings.autoAnnotate
+			}
+		}
+	}
+}
+
+sncr.common = {
+	linkObject : function(layer,destination,type) {
+		switch (type) {
+			case "condition" :
+				sncr.command.setValue_forKey_onLayer(type,"linkType",layer);
+				sncr.command.setValue_forKey_onLayer(destination.objectID(),"linkedObject",layer);
+				sncr.command.setValue_forKey_onLayer(destination.parentArtboard().objectID(),"linkedParentArtboard",layer);
+
+				break;
+			case "section" :
+				sncr.command.setValue_forKey_onLayer(type,"linkType",layer);
+				sncr.command.setValue_forKey_onLayer(destination,sncr.sections.config.titleLinkKey,layer);
+
+				break;
+			default :
+				log("sncr.common.linkObject: Invalid or missing link type");
+
+				break;
+		}
+	}
+}
+
+sncr.conditions = {
+	addEdit: function(context) {
+		var selection = sncr.selection.firstObject();
+
+		if (sncr.selection.count() != 1 || sncr.selection.count() == 1 && selection.class() == "MSArtboardGroup") {
+			displayMessage("Select one layer which is not an artboard");
+
+			return;
+		}
+
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:','" + sncr.pluginDomain + "').linkType == 'condition' && function(userInfo,'valueForKeyPath:','" + sncr.pluginDomain + "').linkedObject == '" + selection.objectID() + "'"),
+			conditionGroup = sncr.page.artboards().filteredArrayUsingPredicate(predicate).firstObject();
+
+		if (!conditionGroup) {
+			var conditionGroup = MSArtboardGroup.new(),
+				insertIndex = getLayerIndex(selection.parentArtboard()) + 1;
+
+			sncr.common.linkObject(conditionGroup,selection,"condition");
+			selection.parentArtboard().parentGroup().insertLayer_atIndex(conditionGroup,insertIndex);
+		}
+
+		conditionGroup.setName("-Conditions-");
+		conditionGroup.setHasBackgroundColor(1);
+		conditionGroup.setBackgroundColor(MSImmutableColor.colorWithSVGString("#F2F2F2"));
+
+		sncr.layout.preclude(conditionGroup);
+
+		conditionGroup.absoluteRect().setX(CGRectGetMaxX(selection.parentArtboard().rect()) + sncr.annotations.config.annotationXOffset);
+		conditionGroup.absoluteRect().setY(selection.absoluteRect().y() + selection.frame().height() / 2 - 16);
+
+		var predicate = NSPredicate.predicateWithFormat("className == %@","MSTextLayer"),
+			conditions = conditionGroup.children().filteredArrayUsingPredicate(predicate);
+
+		var alertWindow = COSAlertWindow.new();
+		alertWindow.setMessageText("Conditions for " + selection.name());
+
+		if (conditions.count() > 0) {
+			for (var i = 0; i < conditions.count(); i++) {
+				alertWindow.addAccessoryView(createLabel("Condition " + (i + 1),NSMakeRect(0,0,160,16)));
+				alertWindow.addAccessoryView(createField(conditions[i].stringValue(),NSMakeRect(0,0,300,20)));
+			}
+		}
+
+		alertWindow.addAccessoryView(createLabel("New Condition ",NSMakeRect(0,0,160,16)));
+		alertWindow.addAccessoryView(createField("",NSMakeRect(0,0,300,20)));
+
+		alertWindow.addButtonWithTitle("OK");
+		alertWindow.addButtonWithTitle("Cancel");
+		alertWindow.addButtonWithTitle("Add Condition");
+
+		var responseCode = alertWindow.runModal();
+
+		if (responseCode == 1000) {
+			// Do something
+		} else if (responseCode == 1002) {
+			// Add new condition to dialog
+		} else return false;
+
+		// Add in condition groups/texts
+		// Resize to fit
+
+		conditionGroup.frame().setWidth(200);
+		conditionGroup.frame().setHeight(200);
 	}
 }
 
@@ -1139,13 +1397,13 @@ sncr.descriptions = {
 }
 
 sncr.layout = {
-	include: function(context) {
+	includeSelected: function(context) {
 		var count = 0;
 
 		if (sncr.selection.count()) {
 			for (var i = 0; i < sncr.selection.count(); i++) {
 				if (sncr.selection[i] instanceof MSArtboardGroup) {
-					sncr.command.setValue_forKey_onLayer(nil,sncr.layout.config.featureKey,sncr.selection[i]);
+					sncr.layout.include(sncr.selection[i]);
 
 					count++;
 
@@ -1163,7 +1421,7 @@ sncr.layout = {
 		}
 	},
 	includePage: function(context,feedback) {
-		sncr.command.setValue_forKey_onLayer(true,sncr.layout.config.featureKey,sncr.page);
+		sncr.layout.include(sncr.page);
 
 		sncr.layout.sanitizePages(context);
 
@@ -1171,13 +1429,16 @@ sncr.layout = {
 			displayMessage(sncr.page.name() + sncr.strings["layout-include-page-complete"]);
 		}
 	},
-	preclude: function(context) {
+	include: function(object) {
+		sncr.command.setValue_forKey_onLayer(true,sncr.layout.config.featureKey,object);
+	},
+	precludeSelected: function(context) {
 		var count = 0;
 
 		if (sncr.selection.count()) {
 			for (var i = 0; i < sncr.selection.count(); i++) {
 				if (sncr.selection[i] instanceof MSArtboardGroup) {
-					sncr.command.setValue_forKey_onLayer(false,sncr.layout.config.featureKey,sncr.selection[i]);
+					sncr.layout.preclude(sncr.selection[i]);
 
 					count++;
 
@@ -1195,11 +1456,14 @@ sncr.layout = {
 		}
 	},
 	precludePage: function(context) {
-		sncr.command.setValue_forKey_onLayer(false,sncr.layout.config.featureKey,sncr.page);
+		sncr.layout.preclude(sncr.page);
 
 		sncr.layout.sanitizePages(context);
 
 		displayMessage(sncr.page.name() + sncr.strings["layout-preclude-page-complete"]);
+	},
+	preclude: function(object) {
+		sncr.command.setValue_forKey_onLayer(false,sncr.layout.config.featureKey,object);
 	},
 	sanitizePages: function(context) {
 		var loop = sncr.pages.objectEnumerator(),
@@ -1663,22 +1927,22 @@ sncr.sections = {
 		// If selections are valid...
 		if (selections) {
 			// Set stored value for linked artboard
-			sncr.command.setValue_forKey_onLayer(selections.artboard.objectID(),sncr.sections.config.titleLinkKey,selections.title);
+			sncr.common.linkObject(selections.title,selections.artboard.objectID(),"section");
 
-			// Set the title name
-			var titleName = (selections.title.overrides()) ? sncr.sections.config.titleLinkPrefix + selections.title.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + selections.title.name().replace(sncr.sections.config.titleLinkPrefix,"");
+			// Get layer name
+			var layerName = sncr.sections.getName(selections.title);
 
-			// Update the title name
-			selections.title.setName(titleName);
+			// Update the layer name
+			selections.title.setName(layerName);
 
 			// Create a log event
-			log(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+			log(layerName + sncr.strings["section-link-complete"] + selections.artboard.name());
 
 			// Update all section titles on the page
 			sncr.sections.updateAllOnPage(context,"link");
 
 			// Display feedback
-			displayMessage(titleName + sncr.strings["section-link-complete"] + selections.artboard.name());
+			displayMessage(layerName + sncr.strings["section-link-complete"] + selections.artboard.name());
 		}
 	},
 	unlinkSelected: function(context) {
@@ -1704,6 +1968,9 @@ sncr.sections = {
 
 					// Update the title name
 					sncr.selection[i].setName(titleName);
+
+					// Unlock the section title
+					sncr.selection[i].setIsLocked(0);
 
 					// For logging purposes, get linked artboard object
 					var artboard = findLayerByID(sncr.selection[i].parentGroup(),linkedArtboard);
@@ -1749,21 +2016,21 @@ sncr.sections = {
 			var firstItem = selections[0],
 				secondItem = selections[1];
 
-			// If the first item is a symbol instance and symbol master name matches the provided name, and the second item is an artboard...
-			if (firstItem instanceof MSSymbolInstance && secondItem instanceof MSArtboardGroup) {
+			// If the first item is not an artboard and the second item is an artboard...
+			if (firstItem.class() != "MSArtboardGroup" && secondItem.class() == "MSArtboardGroup") {
 				return {
-					title: firstItem,
-					artboard: secondItem
+					title : firstItem,
+					artboard : secondItem
 				}
 			}
-			// If the first item is an artboard, and the second item is a symbol instance and symbol master name matches the provided name...
-			else if (firstItem instanceof MSArtboardGroup && secondItem instanceof MSSymbolInstance) {
+			// If the first item is an artboard and the second item is not an artboard
+			else if (firstItem.class() == "MSArtboardGroup" && secondItem.class() != "MSArtboardGroup") {
 				return {
-					title: secondItem,
-					artboard: firstItem
+					title : secondItem,
+					artboard : firstItem
 				}
 			}
-			// If the selections do not contain a section title symbol instance and artboard...
+			// If the selections are two artboards...
 			else {
 				// Display feedback
 				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
@@ -1778,6 +2045,19 @@ sncr.sections = {
 
 			return false;
 		}
+	},
+	getName: function(object) {
+		var name;
+
+		if (object.class() == "MSSymbolInstance" && object.overrides().allValues().firstObject()) {
+			name = sncr.sections.config.titleLinkPrefix + object.overrides().allValues().firstObject();
+		} else if (object.class() == "MSTextLayer") {
+			name = sncr.sections.config.titleLinkPrefix + object.stringValue();
+		} else {
+			name = sncr.sections.config.titleLinkPrefix + object.name().replace(sncr.sections.config.titleLinkPrefix,"");
+		}
+
+		return name;
 	},
 	selectAllOnPage: function(context) {
 		// Deselect everything in the current page
@@ -1836,12 +2116,12 @@ sncr.sections = {
 				layer.frame().setX(artboard.frame().x() + titleSettings.titleXOffset);
 				layer.frame().setY(artboard.frame().y() + titleSettings.titleYOffset - layer.frame().height());
 
-				var titleWidth = (titleSettings.titleWidth != "") ? titleSettings.titleWidth : layer.symbolMaster().frame().width();
+				if (titleSettings.titleWidth != "") {
+					layer.frame().setWidth(titleSettings.titleWidth);
+				}
 
-				layer.frame().setWidth(titleWidth);
-
-				// Set layer name
-				var layerName = (layer.overrides()) ? sncr.sections.config.titleLinkPrefix + layer.overrides().allValues()[0] : sncr.sections.config.titleLinkPrefix + artboard.name();
+				// Get layer name
+				var layerName = sncr.sections.getName(layer);
 
 				// Update the layer name
 				layer.setName(layerName);
@@ -1855,7 +2135,7 @@ sncr.sections = {
 				sncr.command.setValue_forKey_onLayer(nil,sncr.sections.config.titleLinkKey,layer);
 
 				// Set layer name
-				var layerName = (layer.overrides()) ? layer.overrides().allValues()[0] : layer.name().replace(sncr.sections.config.titleLinkPrefix,"");
+				var layerName = layer.name().replace(sncr.sections.config.titleLinkPrefix,"");
 
 				// Update the layer name
 				layer.setName(layerName);

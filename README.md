@@ -1,5 +1,25 @@
-Resources/# sncr-sketch-plugin
+# sncr-sketch-plugin
 A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.
+
+# Section Titles
+A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to manage linking section titles to  artboards. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
+
+## Link Selected Title and Artboard
+Links the selected section title and artboard, replacing any pre-existing artboard link for the section title. Linking a section title will automatically run "Update All Linked Titles on Page", which will orient the newly linked section title in relation to the linked artboard.
+
+The layer name of a linked section title will be updated to reflect that it has been linked. The layer name will display a "🔗" icon, followed by the first override if the section title is a symbol instance and has an override value, or the string value if the section title is a text layer, otherwise the remainder of the layer name will remain unchanged.
+
+## Unlink Selected Titles
+Removes links between selected section titles and linked artboards.
+
+## Select All Linked Titles on Page
+Selects all linked section titles on the current page.
+
+## Update All Linked Titles on Page
+Updates the position and layer name of all linked section titles on the current page. If a section title is linked to an artboard which no longer exists on the page, the section title will be unlinked.
+
+## Settings…
+Displays options for setting the width of linked section titles, as well as horizontal and vertical offsets.
 
 # Artboard Annotations
 
@@ -68,28 +88,7 @@ Lays out all artboards on current page into groupings determined by artboard nam
 
 ![Layout Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Layout%20Artboards.png)
 
-# Section Titles
-A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to designate a symbol to be used for section titles, and to insert and link a section title to an artboard. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
 
-A section title symbol is intended to contain one text layer which can be overridden within each instance, as this override will be used as the name of the symbol instance after section titles get updated.
-
-## Insert & Link Title to Selected Artboard
-Adds a section title instance above the selected artboard, and links it to the artboard. Once section title is inserted, user should apply an override to the section title instance. The override will become the layer name the next time "Update All Linked Titles on Page" is run (either manually or triggered when artboards have been moved on the canvas).
-
-## Link Selected Title and Artboard
-Links the selected section title and artboard together. Any pre-existing link for a section title will be replaced. Linking a section title will automatically run "Update All Linked Titles on Page", which will orient the newly linked section title in relation to the linked artboard.
-
-## Unlink Selected Titles
-Removes links for selected section titles, breaking their relationships to any artboards.
-
-## Select All Linked Titles on Page
-Selects all linked section titles on the current page, facilitating the ability to run another process against all selected section titles at once.
-
-## Update All Linked Titles on Page
-Updates all linked section titles on the current page. When a section title is updated, the layer name is updated to match the override name if one is applied (otherwise linked artboard name is used), each section title is re-oriented to the artboard for which it is linked (if the artboard no longer exists on the page, the link will be removed), and locks the section title instance prevent accidental modification.
-
-## Settings…
-Presents a list of all symbols in the document, allowing the user to select a symbol which is intended to be used for section titles. Also allows for width, and horizontal and vertical offsets to be defined, applied next time user inserts new, or updates existing, section titles.
 
 # Wireframe Tools
 

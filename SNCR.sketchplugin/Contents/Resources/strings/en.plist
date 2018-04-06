@@ -25,6 +25,12 @@
 	<string> annotation(s) updated</string>
 	<key>annotation-update-complete-unlinked</key>
 	<string> annotation(s) were unlinked due to missing artboards</string>
+	<key>annotation-settings</key>
+	<string>Layer Annotation Settings</string>
+	<key>annotation-settings-automatic</key>
+	<string><![CDATA[Generate and update annotations automatically
+when Sketch prototype links are created or
+updated.]]></string>
 	<!-- DESCRIPTIONS -->
 	<key>description-link-plugin</key>
 	<string>Link Artboard Description</string>
@@ -85,7 +91,7 @@
 	<key>section-link-plugin</key>
 	<string>Link Section Title</string>
 	<key>section-link-problem</key>
-	<string>Select one section title and one artboard to link.</string>
+	<string>Select one section title and one artboard to link. The section title cannot be an artboard itself.</string>
 	<key>section-link-complete</key>
 	<string> section title is now linked to </string>
 	<key>section-unlink-plugin</key>
