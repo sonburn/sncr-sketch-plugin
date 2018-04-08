@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.88</title>
+			<title>Version 0.89</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added functionality to automatically generate annotations from Sketch prototyping flow. Modified section titles functionality to allow a section title to be anything other than another artboard.</li>
+				<li>Updated settings windows for Section Titles and Artboard Titles, and improved documentation for both features.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.88" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.89" />
 		</item>
 	</channel>
 </rss>

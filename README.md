@@ -2,7 +2,7 @@
 A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.
 
 # Section Titles
-A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to manage linking section titles to  artboards. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
+A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to manage linking section titles to artboards. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
 
 ## Link Selected Title and Artboard
 Links the selected section title and artboard, replacing any pre-existing artboard link for the section title. Linking a section title will automatically run "Update All Linked Titles on Page", which will orient the newly linked section title in relation to the linked artboard.
@@ -20,6 +20,28 @@ Updates the position and layer name of all linked section titles on the current 
 
 ## Settings…
 Displays options for setting the width of linked section titles, as well as horizontal and vertical offsets.
+
+![Section Titles Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Titles%20Settings.png)
+
+# Artboard Titles
+While Sketch displays titles above each artboard on the canvas, these titles do not get exported in a slice encompassing an artboard (such as a wireframe slice). This group of functions will allow you to manage the creation of artboard titles, which are text layers containing the artboard name, placed on the background canvas and oriented to the respective artboard.
+
+## Create Titles for Artboards on Page
+Generates titles for all artboards (not precluded) on the current page. The text layers are positioned above the artboards by default, and on the background canvas. All titles are contained in a "Titles" group within the parent "SNCR" group at the top of the layers panel. If a "Titles" group already exists when this function is run, the group will be deleted and a new group will be created.
+
+## Include Selected Artboards
+Indicates the selected artboards should be included when new titles are created. This function is only necessary if the artboard was previously precluded.
+
+## Preclude Selected Artboards
+Indicates the selected artboards should not be included when new titles are created.
+
+## Settings…
+Displays an option for positioning the title above or below the artboard, as well as an offset distance.
+
+![Create Artboard Titles](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Create%20Artboard%20Titles.png)
+
+
+
 
 # Artboard Annotations
 
@@ -49,22 +71,7 @@ Selects all linked artboard descriptions on the current page, facilitating the a
 ## Update All Linked Descriptions on Page
 Updates all linked artboard descriptions on the current page; updates the layer name to match the linked artboard name, moves the artboard description to the SNCR > Descriptions directory, and re-orients the position in the case the artboards have been moved.
 
-# Artboard Titles
-Sketch displays titles above each artboard on the canvas, however these titles do not get exported when exporting slices which contain multiple artboards. The following functions assist in the creation of artboard titles, allowing them to be exported in wireframes.
 
-## Create Titles for Artboards on Page
-Generates text layers with the name of each artboard, for all artboards (not precluded) on the page. The text layers are positioned above the artboards (by default), and on the background canvas. All titles are contained in a "Titles" group within the parent "SNCR" group at the top of the layers panel.
-
-## Include Selected Artboards
-Indicates the selected artboards should be included when new titles are created. This function is only necessary of the artboard was previously precluded.
-
-## Preclude Selected Artboards
-Indicates the selected artboards should not be included when new titles are created.
-
-## Settings…
-Presents some controls over the location of the artboard titles, and an option to automatically create titles for all artboards (not precluded) on the page when artboards are moved, on all pages other than Symbols page.
-
-![Create Artboard Titles](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Create%20Artboard%20Titles.png)
 
 # Layout Artboards
 

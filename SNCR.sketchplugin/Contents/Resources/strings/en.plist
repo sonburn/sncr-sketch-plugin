@@ -111,7 +111,7 @@ updated.]]></string>
 	<key>section-settings-plugin</key>
 	<string>Section Title Settings</string>
 	<key>section-settings-width</key>
-	<string>Width (leave blank to use symbol size):</string>
+	<string>Width (leave blank to use existing size):</string>
 	<key>section-settings-offsetX</key>
 	<string>Horizontal offset:</string>
 	<key>section-settings-offsetY</key>

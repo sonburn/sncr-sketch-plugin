@@ -2189,26 +2189,27 @@ sncr.sections = {
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-width"]);
 
-			var titleWidth = createField(defaultSettings.sectionTitleWidth,NSMakeRect(0,0,60,20));
+			var titleWidth = createField(defaultSettings.sectionTitleWidth,NSMakeRect(0,0,60,24));
 			alertWindow.addAccessoryView(titleWidth);
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-offsetX"]);
 
-			var titleXOffset = createField(defaultSettings.sectionTitleXOffset,NSMakeRect(0,0,60,20));
+			var titleXOffset = createField(defaultSettings.sectionTitleXOffset,NSMakeRect(0,0,60,24));
 			alertWindow.addAccessoryView(titleXOffset);
 
 			alertWindow.addTextLabelWithValue(sncr.strings["section-settings-offsetY"]);
 
-			var titleYOffset = createField(defaultSettings.sectionTitleYOffset,NSMakeRect(0,0,60,20));
+			var titleYOffset = createField(defaultSettings.sectionTitleYOffset,NSMakeRect(0,0,60,24));
 			alertWindow.addAccessoryView(titleYOffset);
 
-			alertWindow.addButtonWithTitle("OK");
-			alertWindow.addButtonWithTitle("Cancel");
+			var buttonOK = alertWindow.addButtonWithTitle("OK");
+			var buttonCancel = alertWindow.addButtonWithTitle("Cancel");
 
 			setKeyOrder(alertWindow,[
 				titleWidth,
 				titleXOffset,
-				titleYOffset
+				titleYOffset,
+				buttonOK
 			]);
 
 			var responseCode = alertWindow.runModal();
@@ -2443,20 +2444,18 @@ sncr.titles = {
 
 			alertWindow.addTextLabelWithValue('Vertical offset:');
 
-			var titleOffset = createField(defaultSettings.artboardTitleOffset,NSMakeRect(0,0,60,20));
+			var titleOffset = createField(defaultSettings.artboardTitleOffset,NSMakeRect(0,0,60,24));
 			alertWindow.addAccessoryView(titleOffset);
 
-			// var onByDefault = createCheckbox({name:"When artboards are moved, automatically create\ntitles for all artboards (not precluded) on the\npage, on all pages other than Symbols page.",value:1},defaultSettings.artboardTitleAuto,NSMakeRect(0,0,300,54));
-			// alertWindow.addAccessoryView(onByDefault);
-
 			// Buttons
-			alertWindow.addButtonWithTitle('OK');
-			alertWindow.addButtonWithTitle('Cancel');
+			var buttonOK = alertWindow.addButtonWithTitle("OK");
+			var buttonCancel = alertWindow.addButtonWithTitle("Cancel");
 
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
 				titleType,
-				titleOffset
+				titleOffset,
+				buttonOK
 			]);
 
 			var responseCode = alertWindow.runModal();
@@ -2470,7 +2469,6 @@ sncr.titles = {
 					// Save new settings in new location
 					sncr.command.setValue_forKey_onLayer(titleType.selectedCell().tag(),"artboardTitleType",sncr.document.documentData());
 					sncr.command.setValue_forKey_onLayer(Number(titleOffset.stringValue()),"artboardTitleOffset",sncr.document.documentData());
-					//sncr.command.setValue_forKey_onLayer(onByDefault.state(),"artboardTitleAuto",sncr.document.documentData());
 				}
 				catch(err) {
 					log("Unable to save settings.");
@@ -2485,7 +2483,6 @@ sncr.titles = {
 			return {
 				titleType : defaultSettings.artboardTitleType,
 				titleOffset : defaultSettings.artboardTitleOffset
-				//onByDefault : defaultSettings.artboardTitleAuto
 			}
 		}
 	}
