@@ -20,7 +20,7 @@ Updates the position and layer name of all linked section titles on the current 
 ## Settings…
 Displays options for setting the width and vertical and horizontal offsets of section titles.
 
-![Section Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Title%20Settings.png?s=521)
+<img alt="Section Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Title%20Settings.png" width="50%">
 
 
 
@@ -39,7 +39,7 @@ Indicates the selected artboards should not be included when new titles are crea
 ## Settings…
 Displays an option for positioning the title above or below the artboard, as well as an offset distance.
 
-![Artboard Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png?s=521)
+<img alt="Artboard Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png" width="50%">
 
 
 
