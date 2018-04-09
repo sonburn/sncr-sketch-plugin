@@ -1,6 +1,8 @@
 # sncr-sketch-plugin
 A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.
 
+
+
 # Section Titles
 A section title is a visually defining element or text to help differentiate groups of artboards within a page. This group of functions will allow you to manage linking section titles to artboards. A section title which has been linked to an artboard will ensure it is always positioned properly on your canvas after artboards have been moved.
 
@@ -12,16 +14,15 @@ The layer name of a linked section title will be updated to reflect that it has 
 ## Unlink Selected Titles
 Removes links between selected section titles and linked artboards.
 
-## Select All Linked Titles on Page
-Selects all linked section titles on the current page.
-
 ## Update All Linked Titles on Page
 Updates the position and layer name of all linked section titles on the current page. If a section title is linked to an artboard which no longer exists on the page, the section title will be unlinked.
 
 ## Settings…
 Displays options for setting the width and vertical and horizontal offsets of section titles.
 
-![Section Titles Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Titles%20Settings.png)
+![Section Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Title%20Settings.png =521x)
+
+
 
 # Artboard Titles
 While Sketch displays titles above each artboard on the canvas, these titles do not get exported in a slice encompassing an artboard (such as a wireframe slice). This group of functions will allow you to manage the creation of artboard titles, which are text layers containing the artboard name, placed on the background canvas and oriented to the respective artboard.
@@ -38,7 +39,9 @@ Indicates the selected artboards should not be included when new titles are crea
 ## Settings…
 Displays an option for positioning the title above or below the artboard, as well as an offset distance.
 
-![Artboard Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png)
+![Artboard Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png =521x)
+
+
 
 # Artboard Descriptions
 An artboard description is a text layer oriented near an artboard, providing descriptive information about the artboard to which the description is linked. This group of functions will allow you to manage artboard descriptions.
@@ -56,9 +59,6 @@ The layer name of a linked artboard description will be updated to reflect that 
 ## Unlink Selected Descriptions
 Removes links between selected artboard descriptions and linked artboards.
 
-## Select All Linked Descriptions on Page
-Selects all linked artboard descriptions on the current page.
-
 ## Update All Linked Descriptions on Page
 Updates the position and layer name of all linked artboard descriptions on the current page. If an artboard description is linked to an artboard which no longer exists on the page, the artboard description will be unlinked.
 
@@ -69,19 +69,34 @@ Displays options for setting the width, position, and vertical and horizontal of
 
 
 
+# Artboard Layout
+
+## Layout Artboards on Page
+To do...
+
+## Include Selected Artboards
+To do...
+
+## Preclude Selected Artboards
+To do...
+
+## Enable Automatic Layout for Page
+To do...
+
+## Disable Automatic Layout for Page
+To do...
+
+## Settings for Page…
+Lays out all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "1.0.0 Splash Screen"). Options include the ability to choose number of artboards displayed per row, and if the groupings should be dense (multiple groups on a row when space allows for it) or loose (treat each group as a new row), as well as the ability to sort the layer list and artboards alphabetically. Lastly, you can also control the spacing between your artboards and artboard groups.
+
+![Artboard Layout Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Layout%20Settings.png)
 
 
 
+# Layer Annotations
 
-
-
-
-
-
-
-
-
-# Artboard Annotations
+## Create Annotations for Selected Artboards
+To do...
 
 ## Designate Selected Layers as Annotations
 To do...
@@ -92,33 +107,12 @@ To do...
 ## Update All Linked Annotations on Page
 To do...
 
-
-
-# Layout Artboards
-
-## Layout Artboards on Page
+## Settings…
 To do...
 
-## Include Selected Artboards
-To do...
-
-## Include Current Page
-To do...
-
-## Preclude Selected Artboards
-To do...
-
-## Preclude Current Page
-To do...
-
-## Settings for Page…
-Lays out all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "1.0.0 Splash Screen"). Options include the ability to choose number of artboards displayed per row, and if the groupings should be dense (multiple groups on a row when space allows for it) or loose (treat each group as a new row), as well as the ability to sort the layer list and artboards alphabetically. Lastly, you can also control the spacing between your artboards and artboard groups.
-
-![Layout Artboards](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Layout%20Artboards.png)
 
 
-
-# Wireframe Tools
+# Wireframes
 
 ## Create Artboard Slice…
 Creates a slice around your selected artboards, all artboards on the page, or all artboards on the page with additional padding for the intent of exporting as a wireframe (to accommodate a header and annotations). Additional options include the ability to set a slice density (.5x, 1x, 2x, 3x) and export format (JPG, PDF, PNG).
