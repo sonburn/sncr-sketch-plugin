@@ -3,12 +3,147 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : 0.90,
+	"version" : 0.91,
 	"identifier" : "com.sncr.sketch",
 	"compatibleVersion" : 3,
 	"bundleVersion" : 1,
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"commands" : [
+		{
+			"name" : "Link Selected Title and Artboard",
+			"identifier" : "sections-link",
+			"script" : "handlers.js",
+			"handler" : "sectionsLink",
+			"icon" : "icons/sections-link.png"
+		},
+		{
+			"name" : "Unlink Selected Titles",
+			"identifier" : "sections-unlink",
+			"script" : "handlers.js",
+			"handler" : "sectionsUnlink",
+			"icon" : "icons/sections-unlink.png"
+		},
+		{
+			"name" : "Update All Linked Titles on Page",
+			"identifier" : "sections-update",
+			"script" : "handlers.js",
+			"handler" : "sectionsUpdate",
+			"icon" : "icons/sections-update.png"
+		},
+		{
+			"name" : "Settings…",
+			"identifier" : "sections-settings",
+			"script" : "handlers.js",
+			"handler" : "sectionsSettings"
+		},
+		{
+			"name" : "Create Titles for Artboards on Page",
+			"identifier" : "titles-create",
+			"script" : "handlers.js",
+			"handler" : "titlesCreate",
+			"icon" : "icons/titles-create.png"
+		},
+		{
+			"name" : "Include Selected Artboards",
+			"identifier" : "titles-include",
+			"script" : "handlers.js",
+			"handler" : "titlesInclude",
+			"icon" : "icons/titles-include.png"
+		},
+		{
+			"name" : "Preclude Selected Artboards",
+			"identifier" : "titles-preclude",
+			"script" : "handlers.js",
+			"handler" : "titlesPreclude",
+			"icon" : "icons/titles-preclude.png"
+		},
+		{
+			"name" : "Settings…",
+			"identifier" : "titles-settings",
+			"script" : "handlers.js",
+			"handler" : "titlesSettings"
+		},
+		{
+			"name" : "Add/Edit Description on Selected Artboard",
+			"identifier" : "descriptions-set",
+			"script" : "handlers.js",
+			"handler" : "descriptionsSet",
+			"icon" : "icons/descriptions-set.png"
+		},
+		{
+			"name" : "Link Selected Description and Artboard",
+			"identifier" : "descriptions-link",
+			"script" : "handlers.js",
+			"handler" : "descriptionsLink",
+			"icon" : "icons/descriptions-link.png"
+		},
+		{
+			"name" : "Unlink Selected Descriptions",
+			"identifier" : "descriptions-unlink",
+			"script" : "handlers.js",
+			"handler" : "descriptionsUnlink",
+			"icon" : "icons/descriptions-unlink.png"
+		},
+		{
+			"name" : "Update All Linked Descriptions on Page",
+			"identifier" : "descriptions-update",
+			"script" : "handlers.js",
+			"handler" : "descriptionsUpdate",
+			"icon" : "icons/descriptions-update.png"
+		},
+		{
+			"name" : "Settings…",
+			"identifier" : "descriptions-settings",
+			"script" : "handlers.js",
+			"handler" : "descriptionsSettings"
+		},
+		{
+			"name" : "Layout Artboards on Page",
+			"identifier" : "layout-update",
+			"script" : "handlers.js",
+			"handlers" : {
+				"actions" : {
+					"run" : "layoutUpdate",
+					"LayersMoved.finish" : "layoutUpdate",
+					"ResizeArtboardToFit.finish" : "layoutUpdate"
+				}
+			},
+			"icon" : "icons/layout-update.png"
+		},
+		{
+			"name" : "Include Selected Artboards",
+			"identifier" : "layout-includeSelected",
+			"script" : "handlers.js",
+			"handler" : "layoutIncludeSelected",
+			"icon" : "icons/layout-include.png"
+		},
+		{
+			"name" : "Preclude Selected Artboards",
+			"identifier" : "layout-precludeSelected",
+			"script" : "handlers.js",
+			"handler" : "layoutPrecludeSelected",
+			"icon" : "icons/layout-preclude.png"
+		},
+		{
+			"name" : "Enable Automatic Layout for Page",
+			"identifier" : "layout-includePage",
+			"script" : "handlers.js",
+			"handler" : "layoutIncludePage",
+			"icon" : "icons/layout-include-page.png"
+		},
+		{
+			"name" : "Disable Automatic Layout for Page",
+			"identifier" : "layout-precludePage",
+			"script" : "handlers.js",
+			"handler" : "layoutPrecludePage",
+			"icon" : "icons/layout-preclude-page.png"
+		},
+		{
+			"name" : "Settings for Page…",
+			"identifier" : "layout-settings",
+			"script" : "handlers.js",
+			"handler" : "layoutSettings"
+		},
 		{
 			"name" : "Create Annotations for Selected Artboards",
 			"identifier" : "annotations-create",
@@ -56,155 +191,6 @@
 			"icon" : "icons/conditions-set.png"
 		},
 		{
-			"name" : "Add/Edit Description on Selected Artboard",
-			"identifier" : "descriptions-set",
-			"script" : "handlers.js",
-			"handler" : "descriptionsSet",
-			"icon" : "icons/descriptions-set.png"
-		},
-		{
-			"name" : "Link Selected Description and Artboard",
-			"identifier" : "descriptions-link",
-			"script" : "handlers.js",
-			"handler" : "descriptionsLink",
-			"icon" : "icons/descriptions-link.png"
-		},
-		{
-			"name" : "Unlink Selected Descriptions",
-			"identifier" : "descriptions-unlink",
-			"script" : "handlers.js",
-			"handler" : "descriptionsUnlink",
-			"icon" : "icons/descriptions-unlink.png"
-		},
-		{
-			"name" : "Select All Linked Descriptions on Page",
-			"identifier" : "descriptions-select",
-			"script" : "handlers.js",
-			"handler" : "descriptionsSelect",
-			"icon" : "icons/descriptions-select.png"
-		},
-		{
-			"name" : "Update All Linked Descriptions on Page",
-			"identifier" : "descriptions-update",
-			"script" : "handlers.js",
-			"handler" : "descriptionsUpdate",
-			"icon" : "icons/descriptions-update.png"
-		},
-		{
-			"name" : "Settings…",
-			"identifier" : "descriptions-settings",
-			"script" : "handlers.js",
-			"handler" : "descriptionsSettings"
-		},
-		{
-			"name" : "Create Titles for Artboards on Page",
-			"identifier" : "titles-create",
-			"script" : "handlers.js",
-			"handler" : "titlesCreate",
-			"icon" : "icons/titles-create.png"
-		},
-		{
-			"name" : "Include Selected Artboards",
-			"identifier" : "titles-include",
-			"script" : "handlers.js",
-			"handler" : "titlesInclude",
-			"icon" : "icons/titles-include.png"
-		},
-		{
-			"name" : "Preclude Selected Artboards",
-			"identifier" : "titles-preclude",
-			"script" : "handlers.js",
-			"handler" : "titlesPreclude",
-			"icon" : "icons/titles-preclude.png"
-		},
-		{
-			"name" : "Settings…",
-			"identifier" : "titles-settings",
-			"script" : "handlers.js",
-			"handler" : "titlesSettings"
-		},
-		{
-			"name" : "Layout Artboards on Page",
-			"identifier" : "layout-update",
-			"script" : "handlers.js",
-			"handlers" : {
-				"actions" : {
-					"run" : "layoutUpdate",
-					"LayersMoved.finish" : "layoutUpdate",
-					"ResizeArtboardToFit.finish" : "layoutUpdate"
-				}
-			},
-			"icon" : "icons/layout-update.png"
-		},
-		{
-			"name" : "Include Selected Artboards",
-			"identifier" : "layout-includeSelected",
-			"script" : "handlers.js",
-			"handler" : "layoutIncludeSelected",
-			"icon" : "icons/layout-include.png"
-		},
-		{
-			"name" : "Include Current Page",
-			"identifier" : "layout-includePage",
-			"script" : "handlers.js",
-			"handler" : "layoutIncludePage",
-			"icon" : "icons/layout-include-page.png"
-		},
-		{
-			"name" : "Preclude Selected Artboards",
-			"identifier" : "layout-precludeSelected",
-			"script" : "handlers.js",
-			"handler" : "layoutPrecludeSelected",
-			"icon" : "icons/layout-preclude.png"
-		},
-		{
-			"name" : "Preclude Current Page",
-			"identifier" : "layout-precludePage",
-			"script" : "handlers.js",
-			"handler" : "layoutPrecludePage",
-			"icon" : "icons/layout-preclude-page.png"
-		},
-		{
-			"name" : "Settings for Page…",
-			"identifier" : "layout-settings",
-			"script" : "handlers.js",
-			"handler" : "layoutSettings"
-		},
-		{
-			"name" : "Link Selected Title and Artboard",
-			"identifier" : "sections-link",
-			"script" : "handlers.js",
-			"handler" : "sectionsLink",
-			"icon" : "icons/sections-link.png"
-		},
-		{
-			"name" : "Unlink Selected Titles",
-			"identifier" : "sections-unlink",
-			"script" : "handlers.js",
-			"handler" : "sectionsUnlink",
-			"icon" : "icons/sections-unlink.png"
-		},
-		{
-			"name" : "Select All Linked Titles on Page",
-			"identifier" : "sections-select",
-			"script" : "handlers.js",
-			"handler" : "sectionsSelect",
-			"icon" : "icons/sections-select.png"
-		},
-		{
-			"name" : "Update All Linked Titles on Page",
-			"identifier" : "sections-update",
-			"script" : "handlers.js",
-			"handler" : "sectionsUpdate",
-			"icon" : "icons/sections-update.png"
-		},
-		{
-			"name" : "Settings…",
-			"identifier" : "sections-settings",
-			"script" : "handlers.js",
-			"handler" : "sectionsSettings"
-		},
-		{
 			"name" : "Add Wireframe Slice",
 			"identifier" : "wireframes-add",
 			"script" : "handlers.js",
@@ -248,7 +234,6 @@
 				"items" : [
 					"sections-link",
 					"sections-unlink",
-					"sections-select",
 					"sections-update",
 					"-",
 					"sections-settings"
@@ -271,10 +256,22 @@
 					"descriptions-set",
 					"descriptions-link",
 					"descriptions-unlink",
-					"descriptions-select",
 					"descriptions-update",
 					"-",
 					"descriptions-settings"
+				]
+			},
+			{
+				"title" : "Artboard Layout",
+				"items" : [
+					"layout-update",
+					"layout-includeSelected",
+					"layout-precludeSelected",
+					"-",
+					"layout-includePage",
+					"layout-precludePage",
+					"-",
+					"layout-settings"
 				]
 			},
 			"-",
@@ -287,19 +284,6 @@
 					"annotations-update",
 					"-",
 					"annotations-settings"
-				]
-			},
-			"-",
-			{
-				"title" : "Layout",
-				"items" : [
-					"layout-update",
-					"layout-includeSelected",
-					"layout-includePage",
-					"layout-precludeSelected",
-					"layout-precludePage",
-					"-",
-					"layout-settings"
 				]
 			},
 			"-",

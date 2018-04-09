@@ -78,6 +78,63 @@ var sncr = {
 
 		if (command) {
 			switch (command) {
+				case "sections-link" :
+					this.sections.linkSelected(context);
+					break;
+				case "sections-unlink" :
+					this.sections.unlinkSelected(context);
+					break;
+				case "sections-update" :
+					this.sections.updateAllOnPage(context);
+					break;
+				case "sections-settings" :
+					this.sections.settings(context);
+					break;
+				case "titles-create" :
+					this.titles.create(context,"create");
+					break;
+				case "titles-include" :
+					this.titles.include(context);
+					break;
+				case "titles-preclude" :
+					this.titles.preclude(context);
+					break;
+				case "titles-settings" :
+					this.titles.settings(context);
+					break;
+				case "descriptions-set" :
+					this.descriptions.addEdit(context);
+					break;
+				case "descriptions-link" :
+					this.descriptions.linkSelected(context);
+					break;
+				case "descriptions-unlink" :
+					this.descriptions.unlinkSelected(context);
+					break;
+				case "descriptions-update" :
+					this.descriptions.updateAllOnPage(context);
+					break;
+				case "descriptions-settings" :
+					this.descriptions.settings(context);
+					break;
+				case "layout-update" :
+					this.layout.update(context);
+					break;
+				case "layout-include-selected" :
+					this.layout.includeSelected(context);
+					break;
+				case "layout-preclude-selected" :
+					this.layout.precludeSelected(context);
+					break;
+				case "layout-include-page" :
+					this.layout.includePage(context);
+					break;
+				case "layout-preclude-page" :
+					this.layout.precludePage(context);
+					break;
+				case "layout-settings" :
+					this.layout.settings(context);
+					break;
 				case "annotations-create" :
 					this.annotations.createSelected(context);
 					break;
@@ -93,36 +150,6 @@ var sncr = {
 				case "annotations-settings" :
 					this.annotations.settings(context);
 					break;
-				case "descriptions-set" :
-					this.descriptions.addEdit(context);
-					break;
-				case "descriptions-link" :
-					this.descriptions.linkSelected(context);
-					break;
-				case "descriptions-unlink" :
-					this.descriptions.unlinkSelected(context);
-					break;
-				case "descriptions-select" :
-					this.descriptions.selectAllOnPage(context);
-					break;
-				case "descriptions-update" :
-					this.descriptions.updateAllOnPage(context);
-					break;
-				case "descriptions-settings" :
-					this.descriptions.settings(context);
-					break;
-				case "titles-create" :
-					this.titles.create(context,"create");
-					break;
-				case "titles-include" :
-					this.titles.include(context);
-					break;
-				case "titles-preclude" :
-					this.titles.preclude(context);
-					break;
-				case "titles-settings" :
-					this.titles.settings(context);
-					break;
 				case "wireframes-add" :
 					this.wireframes.addNew(context);
 					break;
@@ -134,42 +161,6 @@ var sncr = {
 					break;
 				case "wireframes-export" :
 					this.wireframes.export(context);
-					break;
-				case "layout-include-selected" :
-					this.layout.includeSelected(context);
-					break;
-				case "layout-include-page" :
-					this.layout.includePage(context);
-					break;
-				case "layout-preclude-selected" :
-					this.layout.precludeSelected(context);
-					break;
-				case "layout-preclude-page" :
-					this.layout.precludePage(context);
-					break;
-				case "layout-settings" :
-					this.layout.settings(context);
-					break;
-				case "layout-update" :
-					this.layout.update(context);
-					break;
-				case "sections-insert" :
-					this.sections.insertTitle(context);
-					break;
-				case "sections-link" :
-					this.sections.linkSelected(context);
-					break;
-				case "sections-unlink" :
-					this.sections.unlinkSelected(context);
-					break;
-				case "sections-select" :
-					this.sections.selectAllOnPage(context);
-					break;
-				case "sections-update" :
-					this.sections.updateAllOnPage(context);
-					break;
-				case "sections-settings" :
-					this.sections.settings(context);
 					break;
 				case "other-slice" :
 					this.other.createSlice(context);
@@ -1252,31 +1243,6 @@ sncr.descriptions = {
 			displayDialog(sncr.strings["description-unlink-plugin"],sncr.strings["description-unlink-problem"]);
 		}
 	},
-	selectAllOnPage : function(context) {
-		// Deselect everything in the current page
-		sncr.page.changeSelectionBySelectingLayers(nil);
-
-		// Set a counter
-		var count = 0;
-
-		// Get the descriptions and construct a loop
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkTypeKey + " == nil",sncr.pluginDomain),
-			layers = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			loop = layers.objectEnumerator(),
-			layer;
-
-		// Iterate through descriptions...
-		while (layer = loop.nextObject()) {
-			// Select the artboard description while maintaining other selections
-			layer.select_byExpandingSelection(true,true);
-
-			// Iterate the counter
-			count++;
-		}
-
-		// Display feedback
-		displayMessage(count + sncr.strings["description-selects-complete"]);
-	},
 	updateAllOnPage: function(context,command) {
 		// If function was invoked by action, set command
 		if (!command && context.actionContext) command = "action";
@@ -1485,6 +1451,152 @@ sncr.descriptions = {
 }
 
 sncr.layout = {
+	update: function(context) {
+		if (!context.actionContext) {
+			sncr.layout.includePage(context,false);
+		} else {
+			sncr.layout.sanitizePages(context);
+		}
+
+		if (sncr.command.valueForKey_onLayer_forPluginIdentifier(sncr.layout.config.featureKey,sncr.page,sncr.pluginDomain) != false) {
+			// Get artboards to layout
+			var predicate = NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.layout.config.featureKey + " != " + false,sncr.pluginDomain),
+				artboards = sncr.page.artboards().filteredArrayUsingPredicate(predicate),
+				artboardLoop = artboards.objectEnumerator(),
+				artboard;
+
+			// If there artboards to layout...
+			if (artboards.count()) {
+				// Reset page origin
+				sncr.page.setRulerBase(CGPointMake(0,0));
+
+				// Get layout settings
+				var layoutSettings = sncr.layout.settings(context,"update");
+
+				// If artboards should be sorted...
+				if (layoutSettings.sortOrder != 0) {
+					var sortByName = NSSortDescriptor.sortDescriptorWithKey_ascending("name",1),
+						artboards = artboards.sortedArrayUsingDescriptors([sortByName]);
+
+					var layoutLayers = (layoutSettings.sortOrder == 2) ? artboards.reverseObjectEnumerator().allObjects() : artboards;
+
+					sortLayerList(layoutLayers,sncr.page);
+				}
+
+				var firstBoard = artboards.objectAtIndex(0),
+					lastBoard = artboards.objectAtIndex(artboards.count() - 1),
+					lastBoardPrefix = 0,
+					groupType = parseInt(firstBoard.name()) == parseInt(lastBoard.name()) ? 0 : 1,
+					groupCount = 1,
+					groupLayout = [];
+
+				while (artboard = artboardLoop.nextObject()) {
+					var artboardName = artboard.name(),
+						thisBoardPrefix = (groupType == 0) ? parseFloat(artboardName) : parseInt(artboardName);
+
+					if (lastBoardPrefix != 0 && lastBoardPrefix != thisBoardPrefix) {
+						groupCount++;
+					}
+
+					groupLayout.push({
+						artboard : artboardName,
+						prefix : thisBoardPrefix,
+						group : groupCount
+					});
+
+					lastBoardPrefix = thisBoardPrefix;
+				}
+
+				var x = 0,
+					y = 0,
+					xPad = parseInt(layoutSettings.xPad),
+					yPad = parseInt(layoutSettings.yPad),
+					xCount = 0,
+					rowHeight = 0,
+					groupCount = 1;
+
+				for (var i = 0; i < groupLayout.length; i++) {
+					var artboard = artboards.objectAtIndex(i),
+						artboardFrame = artboard.frame();
+
+					// If starting a new group, reset x and calculate the y position of the next row
+					if (groupLayout[i]['group'] != groupCount) {
+						var nextGroupTotal = groupCounter(groupCount + 1,groupLayout),
+							rowSpace = layoutSettings.rowCount - (xCount + 1);
+
+						if (layoutSettings.rowDensity == 1 || rowSpace < nextGroupTotal) {
+							x = 0;
+							y += rowHeight + yPad;
+							rowHeight = 0;
+							xCount = 0;
+						} else {
+							x += artboardFrame.width() + xPad;
+							xCount++;
+						}
+
+						groupCount++;
+					}
+
+					// If new line is detected but is continuation of group, give smaller vertical padding
+					if (x == 0 && xCount != 0) {
+						y += yPad / 2;
+					}
+
+					// Position current artboard
+					artboardFrame.x = x;
+					artboardFrame.y = y;
+
+					// Keep track if this artboard is taller than previous artboards in row
+					if (artboardFrame.height() > rowHeight) {
+						rowHeight = artboardFrame.height();
+					}
+
+					// Determine if this is the last artboard the row, reset x and calculate the y position of the next row
+					if ((xCount + 1) % layoutSettings.rowCount == 0) {
+						x = 0;
+						y += rowHeight;
+						rowHeight = 0;
+					} else {
+						x += artboardFrame.width() + xPad;
+					}
+
+					xCount++;
+				}
+
+				if (layoutSettings.autoSections) sncr.sections.updateAllOnPage(context,"layout");
+				if (layoutSettings.autoTitles) sncr.titles.create(context,"layout");
+				if (layoutSettings.autoDescriptions) sncr.descriptions.updateAllOnPage(context,"layout");
+				if (layoutSettings.autoAnnotations) sncr.annotations.updateAllOnPage(context,"layout");
+
+				// Collapse everything if run manually
+				if (!context.actionContext) actionWithType(context,"MSCollapseAllGroupsAction").doPerformAction(nil);
+
+				// Feedback to user
+				displayMessage(sncr.strings["layout-artboards-complete"]);
+			}
+
+			function groupCounter(group,obj) {
+				var count = 0;
+
+				for (var i = 0; i < obj.length; ++i) {
+					if (obj[i]['group'] == group) {
+						count++;
+					}
+				}
+
+				return count;
+			}
+
+			function sortLayerList(artboards,output) {
+				var loop = artboards.objectEnumerator(), artboard;
+
+				while (artboard = loop.nextObject()) {
+					artboard.moveToLayer_beforeLayer(output,nil);
+					artboard.select_byExpandingSelection(false,true);
+				}
+			}
+		}
+	},
 	includeSelected: function(context) {
 		var count = 0;
 
@@ -1506,15 +1618,6 @@ sncr.layout = {
 			}
 		} else {
 			displayDialog(sncr.strings["layout-include-plugin"],sncr.strings["layout-include-problem"]);
-		}
-	},
-	includePage: function(context,feedback) {
-		sncr.layout.include(sncr.page);
-
-		sncr.layout.sanitizePages(context);
-
-		if (!feedback) {
-			displayMessage(sncr.page.name() + sncr.strings["layout-include-page-complete"]);
 		}
 	},
 	include: function(object) {
@@ -1543,6 +1646,18 @@ sncr.layout = {
 			displayDialog(sncr.strings["layout-preclude-plugin"],sncr.strings["layout-preclude-problem"]);
 		}
 	},
+	preclude: function(object) {
+		sncr.command.setValue_forKey_onLayer(false,sncr.layout.config.featureKey,object);
+	},
+	includePage: function(context,feedback) {
+		sncr.layout.include(sncr.page);
+
+		sncr.layout.sanitizePages(context);
+
+		if (!feedback) {
+			displayMessage(sncr.page.name() + sncr.strings["layout-include-page-complete"]);
+		}
+	},
 	precludePage: function(context) {
 		sncr.layout.preclude(sncr.page);
 
@@ -1550,8 +1665,152 @@ sncr.layout = {
 
 		displayMessage(sncr.page.name() + sncr.strings["layout-preclude-page-complete"]);
 	},
-	preclude: function(object) {
-		sncr.command.setValue_forKey_onLayer(false,sncr.layout.config.featureKey,object);
+	settings: function(context,command) {
+		// Type objects
+		var layoutTypes = ["Dense layout","Loose layout"],
+			sortTypes = ["Do not sort anything","Sort layers and artboards","Sort layers and artboards, reverse layer order"];
+
+		// Default settings
+		var defaultSettings = {};
+		defaultSettings.rowCount = 8;
+		defaultSettings.rowDensity = 0;
+		defaultSettings.sortOrder = 0;
+		defaultSettings.xPad = "400";
+		defaultSettings.yPad = "600";
+		defaultSettings.autoSections = 1;
+		defaultSettings.autoTitles = 1;
+		defaultSettings.autoDescriptions = 1;
+		defaultSettings.autoAnnotations = 1;
+
+		// Update default settings with cached settings
+		defaultSettings = getCachedSettings(context,sncr.page,defaultSettings,sncr.pluginDomain);
+
+		// Check for old artboardsPerRowDefault value
+		var artboardsPerRowDefault = sncr.command.valueForKey_onLayer_forPluginIdentifier("artboardsPerRowDefault",sncr.page,sncr.pluginDomain);
+
+		// If artboardsPerRowDefault value exists...
+		if (artboardsPerRowDefault) {
+			// Old artboardsPerRow object
+			var artboardsPerRow = ["4","6","8","10","12","14","100"];
+
+			// Overwrite default value with old artboardsPerRow value
+			defaultSettings.rowCount = artboardsPerRow[artboardsPerRowDefault];
+		}
+
+		// If a command is not passed, operate in config mode...
+		if (!command) {
+			var alertWindow = COSAlertWindow.new();
+			alertWindow.setMessageText(sncr.strings["layout-settings-title"]);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-artboard-count"]);
+
+			var rowCount = createField(defaultSettings.rowCount,NSMakeRect(0,0,60,22));
+			alertWindow.addAccessoryView(rowCount);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-layout-type"]);
+
+			var rowDensity = createRadioButtons(layoutTypes,defaultSettings.rowDensity);
+			alertWindow.addAccessoryView(rowDensity);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-sort-type"]);
+
+			var sortOrder = createRadioButtons(sortTypes,defaultSettings.sortOrder);
+			alertWindow.addAccessoryView(sortOrder);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-spacing-horizontal"]);
+
+			var xPad = createField(defaultSettings.xPad,NSMakeRect(0,0,60,22));
+			alertWindow.addAccessoryView(xPad);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-spacing-vertical"]);
+
+			var yPad = createField(defaultSettings.yPad,NSMakeRect(0,0,60,22));
+			alertWindow.addAccessoryView(yPad);
+
+			alertWindow.addTextLabelWithValue("");
+
+			var autoSections = createCheckbox({
+				name : "Automatically adjust section titles",
+				value: 1
+			},defaultSettings.autoSections,NSMakeRect(0,0,300,18));
+
+			alertWindow.addAccessoryView(autoSections);
+
+			var autoTitles = createCheckbox({
+				name : "Automatically adjust artboard titles",
+				value: 1
+			},defaultSettings.autoTitles,NSMakeRect(0,0,300,18));
+
+			alertWindow.addAccessoryView(autoTitles);
+
+			var autoDescriptions = createCheckbox({
+				name : "Automatically adjust artboard descriptions",
+				value: 1
+			},defaultSettings.autoDescriptions,NSMakeRect(0,0,300,18));
+
+			alertWindow.addAccessoryView(autoDescriptions);
+
+			var autoAnnotations = createCheckbox({
+				name : "Automatically adjust layer annotations",
+				value: 1
+			},defaultSettings.autoAnnotations,NSMakeRect(0,0,300,18));
+
+			alertWindow.addAccessoryView(autoAnnotations);
+
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
+
+			// Set key order and first responder
+			setKeyOrder(alertWindow,[
+				rowCount,
+				rowDensity,
+				sortOrder,
+				xPad,
+				yPad,
+				autoSections,
+				autoTitles,
+				autoDescriptions,
+				autoAnnotations,
+				buttonOK
+			]);
+
+			var responseCode = alertWindow.runModal();
+
+			if (responseCode == 1000) {
+				try {
+					if (artboardsPerRowDefault) sncr.command.setValue_forKey_onLayer(nil,"artboardsPerRowDefault",sncr.page);
+					sncr.command.setValue_forKey_onLayer(rowCount.stringValue(),"rowCount",sncr.page);
+					sncr.command.setValue_forKey_onLayer(rowDensity.selectedCell().tag(),"rowDensity",sncr.page);
+					sncr.command.setValue_forKey_onLayer(sortOrder.selectedCell().tag(),"sortOrder",sncr.page);
+					sncr.command.setValue_forKey_onLayer(xPad.stringValue(),"xPad",sncr.page);
+					sncr.command.setValue_forKey_onLayer(yPad.stringValue(),"yPad",sncr.page);
+					sncr.command.setValue_forKey_onLayer(autoSections.state(),"autoSections",sncr.page);
+					sncr.command.setValue_forKey_onLayer(autoTitles.state(),"autoTitles",sncr.page);
+					sncr.command.setValue_forKey_onLayer(autoDescriptions.state(),"autoDescriptions",sncr.page);
+					sncr.command.setValue_forKey_onLayer(autoAnnotations.state(),"autoAnnotations",sncr.page);
+				}
+				catch(err) {
+					log(sncr.strings["general-save-failed"]);
+				}
+
+				sncr.layout.update(context);
+			} else return false;
+		}
+		// Otherwise operate in run mode...
+		else {
+			// Return settings
+			return {
+				rowCount : defaultSettings.rowCount,
+				rowDensity : defaultSettings.rowDensity,
+				sortOrder : defaultSettings.sortOrder,
+				xPad : defaultSettings.xPad,
+				yPad : defaultSettings.yPad,
+				autoSections : defaultSettings.autoSections,
+				autoTitles : defaultSettings.autoTitles,
+				autoDescriptions : defaultSettings.autoDescriptions,
+				autoAnnotations : defaultSettings.autoAnnotations
+			}
+		}
 	},
 	sanitizePages: function(context) {
 		var loop = sncr.pages.objectEnumerator(),
@@ -1565,246 +1824,6 @@ sncr.layout = {
 				pageName = (sncr.command.valueForKey_onLayer(sncr.layout.config.featureKey,page) == true) ? sncr.layout.config.pageNamePrefix + page.name().replace(sncr.layout.config.pageNamePrefix,"") : page.name().replace(sncr.layout.config.pageNamePrefix,"");
 
 				page.setName(pageName);
-			}
-		}
-	},
-	update: function(context) {
-		if (!context.actionContext) {
-			sncr.layout.includePage(context,false);
-		} else {
-			sncr.layout.sanitizePages(context);
-		}
-
-		if (sncr.command.valueForKey_onLayer_forPluginIdentifier(sncr.layout.config.featureKey,sncr.page,sncr.pluginDomain) != false) {
-			var layoutArtboards = sncr.page.artboards().filteredArrayUsingPredicate(NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.layout.config.featureKey + " != " + false,sncr.pluginDomain)),
-				layoutArtboardCount = layoutArtboards.count();
-
-			// Run only if there are artboards
-			if (layoutArtboardCount) {
-				// Reset page origin
-				var pageOrigin = CGPointMake(0,0);
-				sncr.page.setRulerBase(pageOrigin);
-
-				// Get layout settings
-				var layoutSettings = sncr.layout.settings(context,"update");
-
-				// Layout the artboards
-				if (layoutSettings) {
-					if (layoutSettings.sortOrder != 0) {
-						var sortByName = [NSSortDescriptor sortDescriptorWithKey:"name" ascending:1];
-						layoutArtboards = [layoutArtboards sortedArrayUsingDescriptors:[sortByName]];
-
-						var layoutLayers = (layoutSettings.sortOrder == 2) ? [[layoutArtboards reverseObjectEnumerator] allObjects] : layoutArtboards;
-
-						sortLayerList(layoutLayers,sncr.page);
-					}
-
-					var firstBoard = layoutArtboards.objectAtIndex(0);
-					var lastBoard = layoutArtboards.objectAtIndex(layoutArtboardCount-1);
-					var lastBoardPrefix = 0;
-
-					var groupType = parseInt(firstBoard.name()) == parseInt(lastBoard.name()) ? 0 : 1;
-					var groupCount = 1;
-					var groupLayout = [];
-
-					for (var i = 0; i < layoutArtboardCount; i++) {
-						var artboard = layoutArtboards.objectAtIndex(i);
-						var artboardName = artboard.name();
-
-						var thisBoardPrefix = (groupType == 0) ? parseFloat(artboardName) : parseInt(artboardName);
-
-						if (lastBoardPrefix != 0 && lastBoardPrefix != thisBoardPrefix) {
-							groupCount++;
-						}
-
-						groupLayout.push({
-							artboard: artboardName,
-							prefix: thisBoardPrefix,
-							group: groupCount
-						});
-
-						lastBoardPrefix = thisBoardPrefix;
-					}
-
-					var rowCount = layoutSettings.rowCount;
-					var rowDensity = layoutSettings.rowDensity;
-					var rowHeight = 0;
-					var x = 0;
-					var y = 0;
-					var xPad = parseInt(layoutSettings.xPad);
-					var yPad = parseInt(layoutSettings.yPad);
-					var xCount = 0;
-
-					var groupCount = 1;
-
-					for (var i = 0; i < groupLayout.length; i++) {
-						var artboard = layoutArtboards.objectAtIndex(i);
-						var artboardFrame = artboard.frame();
-
-						// If starting a new group, reset x and calculate the y position of the next row
-						if (groupLayout[i]['group'] != groupCount) {
-							var nextGroupTotal = groupCounter(groupCount+1,groupLayout);
-							var rowSpace = rowCount - (xCount+1);
-
-							if (rowDensity == 1 || rowSpace < nextGroupTotal) {
-								x = 0;
-								y += rowHeight + yPad;
-								rowHeight = 0;
-								xCount = 0;
-							} else {
-								x += artboardFrame.width() + xPad;
-								xCount++;
-							}
-
-							groupCount++;
-						}
-
-						// If new line is detected but is continuation of group, give smaller vertical padding
-						if (x == 0 && xCount != 0) {
-							y += yPad/2;
-						}
-
-						// Position current artboard
-						artboardFrame.x = x;
-						artboardFrame.y = y;
-
-						// Keep track if this artboard is taller than previous artboards in row
-						if (artboardFrame.height() > rowHeight) {
-							rowHeight = artboardFrame.height();
-						}
-
-						// Determine if this is the last artboard the row, reset x and calculate the y position of the next row
-						if ((xCount + 1) % rowCount == 0) {
-							x = 0;
-							y += rowHeight;
-							rowHeight = 0;
-						} else {
-							x += artboardFrame.width() + xPad;
-						}
-
-						xCount++;
-					}
-
-					sncr.sections.updateAllOnPage(context,"layout");
-					sncr.titles.create(context,"layout");
-					sncr.descriptions.updateAllOnPage(context,"layout");
-					sncr.annotations.updateAllOnPage(context,"layout");
-
-					// Collapse everything if run manually
-					if (!context.actionContext) actionWithType(context,"MSCollapseAllGroupsAction").doPerformAction(nil);
-
-					// Feedback to user
-					displayMessage(sncr.strings["layout-artboards-complete"]);
-				}
-			}
-
-			function groupCounter(group,obj) {
-				var count = 0;
-
-				for (var i = 0; i < obj.length; ++i) {
-					if (obj[i]['group'] == group) {
-						count++;
-					}
-				}
-
-				return count;
-			}
-
-			function sortLayerList(artboards,output) {
-				var loop = artboards.objectEnumerator(), artboard;
-
-				while (artboard = loop.nextObject()) {
-					artboard.moveToLayer_beforeLayer(output,nil);
-					artboard.select_byExpandingSelection(false,true);
-				}
-			}
-		}
-	},
-	settings: function(context,command) {
-		var artboardsPerRow = ['4','6','8','10','12','14','100'];
-
-		// Setting variables
-		var defaultSettings = {};
-		defaultSettings.artboardsPerRowDefault = 2;
-		defaultSettings.rowDensity = 0;
-		defaultSettings.sortOrder = 0;
-		defaultSettings.xPad = '400';
-		defaultSettings.yPad = '600';
-
-		// Update default settings with cached settings
-		defaultSettings = getCachedSettings(context,sncr.page,defaultSettings,sncr.pluginDomain);
-
-		// If a command is not passed, operate in config mode...
-		if (!command) {
-			var alertWindow = COSAlertWindow.new();
-			alertWindow.setMessageText(sncr.strings["layout-artboards-plugin"]);
-
-			alertWindow.addTextLabelWithValue('How many artboards per row?');
-
-			var perRow = createSelect(artboardsPerRow,defaultSettings.artboardsPerRowDefault,NSMakeRect(0,0,80,25));
-			alertWindow.addAccessoryView(perRow);
-
-			alertWindow.addTextLabelWithValue('Choose a layout type:');
-
-			var rowDensity = createRadioButtons(['Dense layout','Loose layout'],defaultSettings.rowDensity);
-			alertWindow.addAccessoryView(rowDensity);
-
-			alertWindow.addTextLabelWithValue('Choose a sort type:');
-
-			var sortOrder = createRadioButtons(['Do not sort anything','Sort layers and artboards','Sort layers and artboards, reverse layer order'],defaultSettings.sortOrder);
-			alertWindow.addAccessoryView(sortOrder);
-
-			alertWindow.addAccessoryView(createLabel('Advanced Settings',NSMakeRect(0,0,160,25)));
-
-			alertWindow.addTextLabelWithValue('Horizontal spacing:');
-
-			var xPad = createField(defaultSettings.xPad);
-			alertWindow.addAccessoryView(xPad);
-
-			alertWindow.addTextLabelWithValue('Vertical spacing:');
-
-			var yPad = createField(defaultSettings.yPad);
-			alertWindow.addAccessoryView(yPad);
-
-			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
-			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
-
-			// Set key order and first responder
-			setKeyOrder(alertWindow,[
-				perRow,
-				rowDensity,
-				sortOrder,
-				xPad,
-				yPad,
-				buttonOK
-			]);
-
-			var responseCode = alertWindow.runModal();
-
-			if (responseCode == 1000) {
-				try {
-					sncr.command.setValue_forKey_onLayer(perRow.indexOfSelectedItem(),"artboardsPerRowDefault",sncr.page);
-					sncr.command.setValue_forKey_onLayer(rowDensity.selectedCell().tag(),"rowDensity",sncr.page);
-					sncr.command.setValue_forKey_onLayer(sortOrder.selectedCell().tag(),"sortOrder",sncr.page);
-					sncr.command.setValue_forKey_onLayer(xPad.stringValue(),"xPad",sncr.page);
-					sncr.command.setValue_forKey_onLayer(yPad.stringValue(),"yPad",sncr.page);
-				}
-				catch(err) {
-					log(sncr.strings["general-save-failed"]);
-				}
-
-				sncr.layout.update(context);
-			} else return false;
-		}
-		// Otherwise operate in run mode...
-		else {
-			// Return updated settings
-			return {
-				rowCount : artboardsPerRow[defaultSettings.artboardsPerRowDefault],
-				rowDensity : defaultSettings.rowDensity,
-				sortOrder : defaultSettings.sortOrder,
-				xPad : defaultSettings.xPad,
-				yPad : defaultSettings.yPad
 			}
 		}
 	}
@@ -2096,84 +2115,6 @@ sncr.sections = {
 			displayDialog(sncr.strings["section-unlink-plugin"],sncr.strings["section-unlink-problem"]);
 		}
 	},
-	validateSelected: function(context) {
-		// Get latest selections, as they may have been changed by Insert
-		var selections = sncr.page.selectedLayers().layers();
-
-		// If there are two selections...
-		if (selections.count() == 2) {
-			// Selection variables
-			var firstItem = selections[0],
-				secondItem = selections[1];
-
-			// If the first item is not an artboard and the second item is an artboard...
-			if (firstItem.class() != "MSArtboardGroup" && secondItem.class() == "MSArtboardGroup") {
-				return {
-					title : firstItem,
-					artboard : secondItem
-				}
-			}
-			// If the first item is an artboard and the second item is not an artboard
-			else if (firstItem.class() == "MSArtboardGroup" && secondItem.class() != "MSArtboardGroup") {
-				return {
-					title : secondItem,
-					artboard : firstItem
-				}
-			}
-			// If the selections are two artboards...
-			else {
-				// Display feedback
-				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
-
-				return false;
-			}
-		}
-		// If there are not two selections...
-		else {
-			// Display feedback
-			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
-
-			return false;
-		}
-	},
-	getName: function(object) {
-		var name;
-
-		if (object.class() == "MSSymbolInstance" && object.overrides().allValues().firstObject()) {
-			name = sncr.sections.config.titleLinkPrefix + object.overrides().allValues().firstObject();
-		} else if (object.class() == "MSTextLayer") {
-			name = sncr.sections.config.titleLinkPrefix + object.stringValue();
-		} else {
-			name = sncr.sections.config.titleLinkPrefix + object.name().replace(sncr.sections.config.titleLinkPrefix,"");
-		}
-
-		return name;
-	},
-	selectAllOnPage: function(context) {
-		// Deselect everything in the current page
-		sncr.page.changeSelectionBySelectingLayers(nil);
-
-		// Set a counter
-		count = 0;
-
-		// Get the section titles and construct a loop
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.sections.config.titleLinkKey + " != nil",sncr.pluginDomain),
-			layers = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			loop = layers.objectEnumerator(),
-			layer;
-
-		// Iterate through section titles...
-		while (layer = loop.nextObject()) {
-			// Select the section title while maintaining other selections
-			layer.select_byExpandingSelection(true,true);
-
-			// Iterate the counter
-			count++;
-		}
-
-		// Display feedback
-		displayMessage(count + sncr.strings["section-titles-selected"]);
-	},
 	updateAllOnPage: function(context,command) {
 		// If function was invoked by action, set command
 		if (!command && context.actionContext) command = "action";
@@ -2326,60 +2267,64 @@ sncr.sections = {
 				titleYOffset : defaultSettings.sectionTitleYOffset
 			}
 		}
-	}
+	},
+	validateSelected: function(context) {
+		// Get latest selections, as they may have been changed by Insert
+		var selections = sncr.page.selectedLayers().layers();
+
+		// If there are two selections...
+		if (selections.count() == 2) {
+			// Selection variables
+			var firstItem = selections[0],
+				secondItem = selections[1];
+
+			// If the first item is not an artboard and the second item is an artboard...
+			if (firstItem.class() != "MSArtboardGroup" && secondItem.class() == "MSArtboardGroup") {
+				return {
+					title : firstItem,
+					artboard : secondItem
+				}
+			}
+			// If the first item is an artboard and the second item is not an artboard
+			else if (firstItem.class() == "MSArtboardGroup" && secondItem.class() != "MSArtboardGroup") {
+				return {
+					title : secondItem,
+					artboard : firstItem
+				}
+			}
+			// If the selections are two artboards...
+			else {
+				// Display feedback
+				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+
+				return false;
+			}
+		}
+		// If there are not two selections...
+		else {
+			// Display feedback
+			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+
+			return false;
+		}
+	},
+	getName: function(object) {
+		var name;
+
+		if (object.class() == "MSSymbolInstance" && object.overrides().allValues().firstObject()) {
+			name = sncr.sections.config.titleLinkPrefix + object.overrides().allValues().firstObject();
+		} else if (object.class() == "MSTextLayer") {
+			name = sncr.sections.config.titleLinkPrefix + object.stringValue();
+		} else {
+			name = sncr.sections.config.titleLinkPrefix + object.name().replace(sncr.sections.config.titleLinkPrefix,"");
+		}
+
+		return name;
+	},
+
 }
 
 sncr.titles = {
-	include: function(context) {
-		var count = 0;
-
-		if (sncr.selection.count()) {
-			for (var i = 0; i < sncr.selection.count(); i++) {
-				if (sncr.selection[i] instanceof MSArtboardGroup) {
-					sncr.command.setValue_forKey_onLayer(true,sncr.titles.config.featureKey,sncr.selection[i]);
-
-					count++;
-
-					log(sncr.selection[i].name() + sncr.strings["title-include-complete"]);
-				}
-			}
-
-			sncr.titles.create(context,"include");
-
-			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["title-include-complete"]);
-			} else {
-				displayMessage(count + sncr.strings["title-includes-complete"]);
-			}
-		} else {
-			displayDialog(sncr.strings["title-include-plugin"],sncr.strings["title-include-problem"]);
-		}
-	},
-	preclude: function(context) {
-		var count = 0;
-
-		if (sncr.selection.count()) {
-			for (var i = 0; i < sncr.selection.count(); i++) {
-				if (sncr.selection[i] instanceof MSArtboardGroup) {
-					sncr.command.setValue_forKey_onLayer(false,sncr.titles.config.featureKey,sncr.selection[i]);
-
-					count++;
-
-					log(sncr.selection[i].name() + sncr.strings["title-preclude-complete"]);
-				}
-			}
-
-			sncr.titles.create(context,"preclude");
-
-			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["title-preclude-complete"]);
-			} else {
-				displayMessage(count + sncr.strings["title-precludes-complete"]);
-			}
-		} else {
-			displayDialog(sncr.strings["title-preclude-plugin"],sncr.strings["title-preclude-problem"]);
-		}
-	},
 	create: function(context,command) {
 		// If function was invoked by action, set command
 		if (!command && context.actionContext) command = "action";
@@ -2512,6 +2457,56 @@ sncr.titles = {
 						break;
 				}
 			}
+		}
+	},
+	include: function(context) {
+		var count = 0;
+
+		if (sncr.selection.count()) {
+			for (var i = 0; i < sncr.selection.count(); i++) {
+				if (sncr.selection[i] instanceof MSArtboardGroup) {
+					sncr.command.setValue_forKey_onLayer(true,sncr.titles.config.featureKey,sncr.selection[i]);
+
+					count++;
+
+					log(sncr.selection[i].name() + sncr.strings["title-include-complete"]);
+				}
+			}
+
+			sncr.titles.create(context,"include");
+
+			if (sncr.selection.count() == 1) {
+				displayMessage(sncr.selection[0].name() + sncr.strings["title-include-complete"]);
+			} else {
+				displayMessage(count + sncr.strings["title-includes-complete"]);
+			}
+		} else {
+			displayDialog(sncr.strings["title-include-plugin"],sncr.strings["title-include-problem"]);
+		}
+	},
+	preclude: function(context) {
+		var count = 0;
+
+		if (sncr.selection.count()) {
+			for (var i = 0; i < sncr.selection.count(); i++) {
+				if (sncr.selection[i] instanceof MSArtboardGroup) {
+					sncr.command.setValue_forKey_onLayer(false,sncr.titles.config.featureKey,sncr.selection[i]);
+
+					count++;
+
+					log(sncr.selection[i].name() + sncr.strings["title-preclude-complete"]);
+				}
+			}
+
+			sncr.titles.create(context,"preclude");
+
+			if (sncr.selection.count() == 1) {
+				displayMessage(sncr.selection[0].name() + sncr.strings["title-preclude-complete"]);
+			} else {
+				displayMessage(count + sncr.strings["title-precludes-complete"]);
+			}
+		} else {
+			displayDialog(sncr.strings["title-preclude-plugin"],sncr.strings["title-preclude-problem"]);
 		}
 	},
 	settings: function(context,command) {

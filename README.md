@@ -72,22 +72,22 @@ Displays options for setting the width, position, and vertical and horizontal of
 # Artboard Layout
 
 ## Layout Artboards on Page
-To do...
+Organizes and presents all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "*1.0.0* Splash Screen"). For layout options, see Settings.
 
 ## Include Selected Artboards
-To do...
+Indicates the selected artboards should be included when artboard layout is run. This function is only necessary if the artboard was previously precluded.
 
 ## Preclude Selected Artboards
-To do...
+Indicates the selected artboards should not be included when artboard layout is run.
 
 ## Enable Automatic Layout for Page
-To do...
+Indicates that artboards on the current page should automatically layout when an object is moved on the canvas, or when an artboard has been "Resized to Fit". This feature is disabled by default. Any page that has been opted into automatic layout will have a "🔷" icon pre-pended to the page name.
 
 ## Disable Automatic Layout for Page
-To do...
+Indicates that artboards on the current page should not automatically layout.
 
 ## Settings for Page…
-Lays out all artboards on current page into groupings determined by artboard names (best used with numeric artboard prefixes, i.e. "1.0.0 Splash Screen"). Options include the ability to choose number of artboards displayed per row, and if the groupings should be dense (multiple groups on a row when space allows for it) or loose (treat each group as a new row), as well as the ability to sort the layer list and artboards alphabetically. Lastly, you can also control the spacing between your artboards and artboard groups.
+Displays page-specific options for artboard layout such as number of artboards to display per row, display type ("Dense" places multiple groups on a row when space allows, "Loose" treats each group as a new row), layer list sorting, and artboards and group spacing. In addition, granular options are provided for choosing which additional elements should be re-adjusted when auto layout is triggered.
 
 ![Artboard Layout Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Layout%20Settings.png)
 
