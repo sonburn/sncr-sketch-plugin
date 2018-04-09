@@ -20,7 +20,7 @@ Updates the position and layer name of all linked section titles on the current 
 ## Settings…
 Displays options for setting the width and vertical and horizontal offsets of section titles.
 
-<img alt="Section Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Title%20Settings.png" width="50%">
+<img alt="Section Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Title%20Settings.png" width="520">
 
 
 
@@ -39,7 +39,7 @@ Indicates the selected artboards should not be included when new titles are crea
 ## Settings…
 Displays an option for positioning the title above or below the artboard, as well as an offset distance.
 
-<img alt="Artboard Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png" width="50%">
+<img alt="Artboard Title Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png" width="520">
 
 
 
@@ -49,7 +49,7 @@ An artboard description is a text layer oriented near an artboard, providing des
 ## Add/Edit Description on Selected Artboard
 Adds a new artboard description to the selected artboard, or edits an existing description if one already exists. The description will be automatically linked to the artboard, positioned near the artboard in accordance to feature settings, and apply the artboard description style.
 
-![Artboard Description Add](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Add.png)
+<img alt="Artboard Description Add" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Add.png">
 
 ## Link Selected Description and Artboard
 Links the selected artboard description and artboard, replacing any pre-existing artboard link for the artboard description. Linked artboard descriptions will be moved to the "Descriptions" group within the parent "SNCR" group at the top of the layers panel.
@@ -65,7 +65,7 @@ Updates the position and layer name of all linked artboard descriptions on the c
 ## Settings…
 Displays options for setting the width, position, and vertical and horizontal offsets of artboard descriptions.
 
-![Artboard Description Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Settings.png)
+<img alt="Artboard Description Settings" src="https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Settings.png">
 
 
 
