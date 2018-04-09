@@ -40,6 +40,10 @@ var descriptionsUpdate = function(context) {
 	sncr.init(context,"descriptions-update");
 }
 
+var descriptionsSettings = function(context) {
+	sncr.init(context,"descriptions-settings");
+}
+
 var layoutIncludeSelected = function(context) {
 	sncr.init(context,"layout-include-selected");
 }

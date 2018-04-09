@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- GENERAL -->
+	<key>general-button-ok</key>
+	<string>OK</string>
+	<key>general-button-cancel</key>
+	<string>Cancel</string>
+	<key>general-save-failed</key>
+	<string>Unable to save settings.</string>
 	<!-- ANNOTATIONS -->
 	<key>annotation-designate-plugin</key>
 	<string>Designate Selected Annotations</string>
@@ -60,6 +67,16 @@ updated.]]></string>
 	<string> artboard description(s) updated</string>
 	<key>description-updates-complete-unlinked</key>
 	<string> artboard description(s) were unlinked due to missing artboards</string>
+	<key>description-settings-title</key>
+	<string>Artboard Description Settings</string>
+	<key>description-settings-width</key>
+	<string>Width (leave blank to use artboard width):</string>
+	<key>description-settings-position</key>
+	<string>Position:</string>
+	<key>description-settings-offsetX</key>
+	<string>Horizontal offset:</string>
+	<key>description-settings-offsetY</key>
+	<string>Vertical offset:</string>
 	<!-- LAYOUT -->
 	<key>layout-preclude-plugin</key>
 	<string>Preclude Selected Artboards</string>

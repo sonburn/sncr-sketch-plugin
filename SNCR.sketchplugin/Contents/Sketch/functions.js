@@ -108,6 +108,9 @@ var sncr = {
 				case "descriptions-update" :
 					this.descriptions.updateAllOnPage(context);
 					break;
+				case "descriptions-settings" :
+					this.descriptions.settings(context);
+					break;
 				case "titles-create" :
 					this.titles.create(context,"create");
 					break;
@@ -908,8 +911,8 @@ sncr.annotations = {
 
 			alertWindow.addAccessoryView(autoAnnotate);
 
-			var buttonOK = alertWindow.addButtonWithTitle('OK');
-			var buttonCancel = alertWindow.addButtonWithTitle('Cancel');
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
@@ -924,7 +927,7 @@ sncr.annotations = {
 					sncr.command.setValue_forKey_onLayer(autoAnnotate.state(),"autoAnnotate",sncr.document.documentData());
 				}
 				catch(err) {
-					log("Unable to save settings.");
+					log(sncr.strings["general-save-failed"]);
 				}
 			} else return false;
 		}
@@ -1006,8 +1009,8 @@ sncr.conditions = {
 		alertWindow.addAccessoryView(createLabel("New Condition ",NSMakeRect(0,0,160,16)));
 		alertWindow.addAccessoryView(createField("",NSMakeRect(0,0,300,20)));
 
-		alertWindow.addButtonWithTitle("OK");
-		alertWindow.addButtonWithTitle("Cancel");
+		alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+		alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 		alertWindow.addButtonWithTitle("Add Condition");
 
 		var responseCode = alertWindow.runModal();
@@ -1027,31 +1030,28 @@ sncr.conditions = {
 }
 
 sncr.descriptions = {
-	addEdit: function(context) {
+	addEdit : function(context) {
 		// If there is one artboard selected...
 		if (sncr.selection.count() == 1 && sncr.selection[0] instanceof MSArtboardGroup) {
 			// Artboard variable
 			var artboard = sncr.selection[0];
 
-			// Initial artboard description value
-			var artboardDescValue = "";
-
 			// Get existing artboard description for selected artboard
 			var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkKey + " == '" + artboard.objectID() + "'",sncr.pluginDomain),
-				linkedArtboardDesc = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
+				linkedDescription = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
 
-			// If artboard description exists, update artboard description value
-			if (linkedArtboardDesc) artboardDescValue = linkedArtboardDesc.stringValue();
+			// Determine the initial artboard description value
+			var artboardDescription = (linkedDescription) ? linkedDescription.stringValue() : "";
 
 			// Present add/edit window with artboard description value
-			var artboardDescText = artboardDescText(artboard.name(),artboardDescValue);
+			artboardDescription = getArtboardDescription(artboard.name(),artboardDescription);
 
 			// If artboard description value was returned
-			if (artboardDescText) {
+			if (artboardDescription) {
 				// If artboard description already existed...
-				if (linkedArtboardDesc) {
+				if (linkedDescription) {
 					// Update the artboard description with new value
-					linkedArtboardDesc.setStringValue(artboardDescText.stringValue);
+					linkedDescription.setStringValue(artboardDescription);
 
 					// Display feedback
 					displayMessage(sncr.strings["description-update-complete"]);
@@ -1069,7 +1069,7 @@ sncr.descriptions = {
 
 					// Create new artboard description text layer
 					var artboardDesc = MSTextLayer.new();
-					artboardDesc.setStringValue(artboardDescText.stringValue);
+					artboardDesc.setStringValue(artboardDescription);
 					artboardDesc.setName(sncr.descriptions.config.descriptionLinkPrefix + artboard.name());
 					artboardDesc.setStyle(artboardDescStyle.newInstance());
 					artboardDesc.setTextBehaviour(1);
@@ -1096,27 +1096,28 @@ sncr.descriptions = {
 				}
 			}
 
-			function artboardDescText(artboardName,artboardDescValue) {
+			function getArtboardDescription(artboardName,descriptionVal) {
 				var alertWindow = COSAlertWindow.new();
 
 				alertWindow.setMessageText(sncr.strings["description-set-plugin"]);
 
-				alertWindow.addTextLabelWithValue('For ' + artboardName + ':');
-				alertWindow.addAccessoryView(createField(artboardDescValue,NSMakeRect(0,0,300,120)));
+				alertWindow.addTextLabelWithValue("For " + artboardName + ":");
 
-				alertWindow.addButtonWithTitle('OK');
-				alertWindow.addButtonWithTitle('Cancel');
+				var descriptionText = createField(descriptionVal,NSMakeRect(0,0,300,120));
+				alertWindow.addAccessoryView(descriptionText);
 
-				// Set first responder and key order
-				var fieldOne = alertWindow.viewAtIndex(1);
-				alertWindow.alert().window().setInitialFirstResponder(fieldOne);
+				var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+				var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
+
+				setKeyOrder(alertWindow,[
+					descriptionText,
+					buttonOK
+				]);
 
 				var responseCode = alertWindow.runModal();
 
 				if (responseCode == 1000) {
-					return {
-						stringValue : [[alertWindow viewAtIndex:1] stringValue]
-					}
+					return descriptionText.stringValue();
 				} else return false;
 			}
 		}
@@ -1126,7 +1127,7 @@ sncr.descriptions = {
 			displayDialog(sncr.strings["description-set-plugin"],sncr.strings["description-set-problem"]);
 		}
 	},
-	linkSelected: function(context) {
+	linkSelected : function(context) {
 		// Take action on selections...
 		switch (sncr.selection.count()) {
 			// If there are two selections...
@@ -1203,7 +1204,7 @@ sncr.descriptions = {
 			displayMessage(layerName + sncr.strings["description-link-complete"] + artboard.name());
 		}
 	},
-	unlinkSelected: function(context) {
+	unlinkSelected : function(context) {
 		// If there are selections...
 		if (sncr.selection.count() > 0) {
 			// Set a counter
@@ -1251,7 +1252,7 @@ sncr.descriptions = {
 			displayDialog(sncr.strings["description-unlink-plugin"],sncr.strings["description-unlink-problem"]);
 		}
 	},
-	selectAllOnPage: function(context) {
+	selectAllOnPage : function(context) {
 		// Deselect everything in the current page
 		sncr.page.changeSelectionBySelectingLayers(nil);
 
@@ -1281,6 +1282,8 @@ sncr.descriptions = {
 		if (!command && context.actionContext) command = "action";
 
 		logFunctionStart("Artboard Descriptions: Update",command);
+
+		var settings = sncr.descriptions.settings(context,"update");
 
 		// Get descriptions on current page
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.descriptions.config.descriptionLinkTypeKey + " == nil",sncr.pluginDomain),
@@ -1313,12 +1316,26 @@ sncr.descriptions = {
 
 				// If artboard object exists...
 				if (artboard) {
-					// Set artboard description x/y in relation to artboard, with offsets
-					layer.absoluteRect().setX(artboard.frame().x() + sncr.descriptions.config.descriptionXOffset);
-					layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + sncr.descriptions.config.descriptionYOffset);
+					// Determine layer width
+					var layerWidth = (settings.descriptionWidth && settings.descriptionWidth != "") ? settings.descriptionWidth : artboard.frame().width();
 
 					// Set artboard description width
-					layer.frame().setWidth(artboard.frame().width());
+					layer.frame().setWidth(layerWidth);
+
+					// Set artboard description x/y in relation to artboard, with offsets
+					if (settings.descriptionPosition == 1) { // Right
+						layer.absoluteRect().setX(artboard.frame().x() + artboard.frame().width() + settings.descriptionXOffset);
+						layer.absoluteRect().setY(artboard.frame().y() + settings.descriptionYOffset);
+					} else if (settings.descriptionPosition == 2) { // Bottom
+						layer.absoluteRect().setX(artboard.frame().x() + settings.descriptionXOffset);
+						layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + settings.descriptionYOffset);
+					} else if (settings.descriptionPosition == 3) { // Left
+						layer.absoluteRect().setX(artboard.frame().x() + settings.descriptionXOffset - layerWidth);
+						layer.absoluteRect().setY(artboard.frame().y() + settings.descriptionYOffset);
+					} else { // Top
+						layer.absoluteRect().setX(artboard.frame().x() + settings.descriptionXOffset);
+						layer.absoluteRect().setY(artboard.frame().y() + settings.descriptionYOffset - layer.frame().height());
+					}
 
 					// If the artboard description is not in the description group...
 					if (layer.parentGroup() != descGroup) {
@@ -1391,6 +1408,77 @@ sncr.descriptions = {
 					// Display feedback
 					displayMessage(updateCount + sncr.strings["description-updates-complete"]);
 				}
+			}
+		}
+	},
+	settings : function(context,command) {
+		var descriptionPositions = ["Top","Right","Bottom","Left"];
+
+		// Setting variables
+		var settings = {};
+		settings.descriptionWidth = "";
+		settings.descriptionPosition = 2;
+		settings.descriptionXOffset = sncr.descriptions.config.descriptionXOffset;
+		settings.descriptionYOffset = sncr.descriptions.config.descriptionYOffset;
+
+		settings = getCachedSettings(context,sncr.document.documentData(),settings,sncr.pluginDomain);
+
+		if (!command) {
+			var alertWindow = COSAlertWindow.new();
+			alertWindow.setMessageText(sncr.strings["description-settings-title"]);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["description-settings-width"]);
+
+			var descriptionWidth = createField(settings.descriptionWidth,NSMakeRect(0,0,60,24));
+			alertWindow.addAccessoryView(descriptionWidth);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["description-settings-position"]);
+
+			var descriptionPosition = createSelect(descriptionPositions,settings.descriptionPosition,NSMakeRect(0,0,80,28));
+			alertWindow.addAccessoryView(descriptionPosition);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["description-settings-offsetX"]);
+
+			var descriptionXOffset = createField(settings.descriptionXOffset,NSMakeRect(0,0,60,24));
+			alertWindow.addAccessoryView(descriptionXOffset);
+
+			alertWindow.addTextLabelWithValue(sncr.strings["description-settings-offsetY"]);
+
+			var descriptionYOffset = createField(settings.descriptionYOffset,NSMakeRect(0,0,60,24));
+			alertWindow.addAccessoryView(descriptionYOffset);
+
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
+
+			setKeyOrder(alertWindow,[
+				descriptionWidth,
+				descriptionPosition,
+				descriptionXOffset,
+				descriptionYOffset,
+				buttonOK
+			]);
+
+			var responseCode = alertWindow.runModal();
+
+			if (responseCode == 1000) {
+				try {
+					sncr.command.setValue_forKey_onLayer(descriptionWidth.stringValue(),"descriptionWidth",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(descriptionPosition.indexOfSelectedItem(),"descriptionPosition",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(Number(descriptionXOffset.stringValue()),"descriptionXOffset",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(Number(descriptionYOffset.stringValue()),"descriptionYOffset",sncr.document.documentData());
+				}
+				catch(err) {
+					log(sncr.strings["general-save-failed"]);
+				}
+
+				sncr.descriptions.updateAllOnPage(context,"settings");
+			} else return false;
+		} else {
+			return {
+				descriptionWidth : settings.descriptionWidth,
+				descriptionPosition : settings.descriptionPosition,
+				descriptionXOffset : settings.descriptionXOffset,
+				descriptionYOffset : settings.descriptionYOffset
 			}
 		}
 	}
@@ -1678,8 +1766,8 @@ sncr.layout = {
 			var yPad = createField(defaultSettings.yPad);
 			alertWindow.addAccessoryView(yPad);
 
-			alertWindow.addButtonWithTitle('OK');
-			alertWindow.addButtonWithTitle('Cancel');
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
@@ -1687,7 +1775,8 @@ sncr.layout = {
 				rowDensity,
 				sortOrder,
 				xPad,
-				yPad
+				yPad,
+				buttonOK
 			]);
 
 			var responseCode = alertWindow.runModal();
@@ -1701,7 +1790,7 @@ sncr.layout = {
 					sncr.command.setValue_forKey_onLayer(yPad.stringValue(),"yPad",sncr.page);
 				}
 				catch(err) {
-					log("Unable to save settings.");
+					log(sncr.strings["general-save-failed"]);
 				}
 
 				sncr.layout.update(context);
@@ -1862,15 +1951,16 @@ sncr.other = {
 			var sliceFormatSelect = createSelect(defaultSettings.exportFormats,defaultSettings.exportFormat,NSMakeRect(0,0,100,25))
 			alertWindow.addAccessoryView(sliceFormatSelect);
 
-			alertWindow.addButtonWithTitle('OK');
-			alertWindow.addButtonWithTitle('Cancel');
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
 				sliceTypeRadio,
 				sliceMarginSize,
 				sliceExportSelect,
-				sliceFormatSelect
+				sliceFormatSelect,
+				buttonOK
 			]);
 
 			var responseCode = alertWindow.runModal();
@@ -1883,7 +1973,7 @@ sncr.other = {
 					context.command.setValue_forKey_onLayer(sliceFormatSelect.indexOfSelectedItem(),"exportFormat",sncr.document.documentData());
 				}
 				catch(err) {
-					log("Unable to save settings.");
+					log(sncr.strings["general-save-failed"]);
 				}
 
 				return {
@@ -2202,8 +2292,8 @@ sncr.sections = {
 			var titleYOffset = createField(defaultSettings.sectionTitleYOffset,NSMakeRect(0,0,60,24));
 			alertWindow.addAccessoryView(titleYOffset);
 
-			var buttonOK = alertWindow.addButtonWithTitle("OK");
-			var buttonCancel = alertWindow.addButtonWithTitle("Cancel");
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 			setKeyOrder(alertWindow,[
 				titleWidth,
@@ -2221,7 +2311,7 @@ sncr.sections = {
 					sncr.command.setValue_forKey_onLayer(Number(titleYOffset.stringValue()),"sectionTitleYOffset",sncr.document.documentData());
 				}
 				catch(err) {
-					log("Unable to save settings.");
+					log(sncr.strings["general-save-failed"]);
 				}
 
 				sncr.sections.updateAllOnPage(context,"settings");
@@ -2448,8 +2538,8 @@ sncr.titles = {
 			alertWindow.addAccessoryView(titleOffset);
 
 			// Buttons
-			var buttonOK = alertWindow.addButtonWithTitle("OK");
-			var buttonCancel = alertWindow.addButtonWithTitle("Cancel");
+			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
@@ -2471,7 +2561,7 @@ sncr.titles = {
 					sncr.command.setValue_forKey_onLayer(Number(titleOffset.stringValue()),"artboardTitleOffset",sncr.document.documentData());
 				}
 				catch(err) {
-					log("Unable to save settings.");
+					log(sncr.strings["general-save-failed"]);
 				}
 
 				sncr.titles.create(context,"settings");
@@ -2658,8 +2748,8 @@ sncr.wireframes = {
 
 		alertWindow.addTextLabelWithValue(sncr.strings["wireframe-export-outro"]);
 
-		alertWindow.addButtonWithTitle('OK');
-		alertWindow.addButtonWithTitle('Cancel');
+		var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
+		var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
 
 		var responseCode = alertWindow.runModal();
 
@@ -2872,6 +2962,7 @@ function getParentGroup(scope,name) {
 		group.setName(name);
 		group.frame().setX(0);
 		group.frame().setY(0);
+		group.setIsLocked(1);
 
 		scope.addLayers([group]);
 	}

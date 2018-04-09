@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : 0.89,
+	"version" : 0.90,
 	"identifier" : "com.sncr.sketch",
 	"compatibleVersion" : 3,
 	"bundleVersion" : 1,
@@ -89,6 +89,12 @@
 			"script" : "handlers.js",
 			"handler" : "descriptionsUpdate",
 			"icon" : "icons/descriptions-update.png"
+		},
+		{
+			"name" : "Settings…",
+			"identifier" : "descriptions-settings",
+			"script" : "handlers.js",
+			"handler" : "descriptionsSettings"
 		},
 		{
 			"name" : "Create Titles for Artboards on Page",
@@ -266,7 +272,9 @@
 					"descriptions-link",
 					"descriptions-unlink",
 					"descriptions-select",
-					"descriptions-update"
+					"descriptions-update",
+					"-",
+					"descriptions-settings"
 				]
 			},
 			"-",

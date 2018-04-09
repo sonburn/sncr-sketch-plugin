@@ -19,7 +19,7 @@ Selects all linked section titles on the current page.
 Updates the position and layer name of all linked section titles on the current page. If a section title is linked to an artboard which no longer exists on the page, the section title will be unlinked.
 
 ## Settings…
-Displays options for setting the width of linked section titles, as well as horizontal and vertical offsets.
+Displays options for setting the width and vertical and horizontal offsets of section titles.
 
 ![Section Titles Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Section%20Titles%20Settings.png)
 
@@ -38,7 +38,45 @@ Indicates the selected artboards should not be included when new titles are crea
 ## Settings…
 Displays an option for positioning the title above or below the artboard, as well as an offset distance.
 
-![Create Artboard Titles](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Create%20Artboard%20Titles.png)
+![Artboard Title Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Title%20Settings.png)
+
+# Artboard Descriptions
+An artboard description is a text layer oriented near an artboard, providing descriptive information about the artboard to which the description is linked. This group of functions will allow you to manage artboard descriptions.
+
+## Add/Edit Description on Selected Artboard
+Adds a new artboard description to the selected artboard, or edits an existing description if one already exists. The description will be automatically linked to the artboard, positioned near the artboard in accordance to feature settings, and apply the artboard description style.
+
+![Artboard Description Add](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Add.png)
+
+## Link Selected Description and Artboard
+Links the selected artboard description and artboard, replacing any pre-existing artboard link for the artboard description. Linked artboard descriptions will be moved to the "Descriptions" group within the parent "SNCR" group at the top of the layers panel.
+
+The layer name of a linked artboard description will be updated to reflect that it has been linked. The layer name will display a "🔗" icon, followed by the name of the artboard to which the description has been linked.
+
+## Unlink Selected Descriptions
+Removes links between selected artboard descriptions and linked artboards.
+
+## Select All Linked Descriptions on Page
+Selects all linked artboard descriptions on the current page.
+
+## Update All Linked Descriptions on Page
+Updates the position and layer name of all linked artboard descriptions on the current page. If an artboard description is linked to an artboard which no longer exists on the page, the artboard description will be unlinked.
+
+## Settings…
+Displays options for setting the width, position, and vertical and horizontal offsets of artboard descriptions.
+
+![Artboard Description Settings](https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/Resources/Artboard%20Description%20Settings.png)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -53,23 +91,6 @@ To do...
 
 ## Update All Linked Annotations on Page
 To do...
-
-# Artboard Descriptions
-
-## Add/Edit Description on Selected Artboard
-Adds a new artboard description to the selected artboard, or edits an existing description if one exists. Will automatically position the description below the artboard, link the description to the artboard, and apply the artboard description style.
-
-## Link Selected Description and Artboard
-Links the selected artboard description and artboard together, which is useful for pre-existing artboard descriptions. Any link created between an artboard description and artboard will replace any previous link, if one existed.
-
-## Unlink Selected Descriptions
-Removes links for selected artboard descriptions, to break their relationships to any artboards.
-
-## Select All Linked Descriptions on Page
-Selects all linked artboard descriptions on the current page, facilitating the ability to run another process against all selected artboard descriptions at once.
-
-## Update All Linked Descriptions on Page
-Updates all linked artboard descriptions on the current page; updates the layer name to match the linked artboard name, moves the artboard description to the SNCR > Descriptions directory, and re-orients the position in the case the artboards have been moved.
 
 
 
