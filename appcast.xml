@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.91</title>
+			<title>Version 0.92</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added granular options to Artboard Layout Settings window for choosing which additional elements should be re-adjusted when auto layout is triggered, and improved documentation for the feature.</li>
+				<li>Updates to support Sketch 50.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.91" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.92" />
 		</item>
 	</channel>
 </rss>

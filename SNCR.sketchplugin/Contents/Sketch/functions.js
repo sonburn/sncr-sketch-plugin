@@ -2925,9 +2925,8 @@ function getObjectByName(haystack,needle) {
 }
 
 function getTextStyle(styleName,styleData) {
-	var layerTextStyles = MSDocument.currentDocument().documentData().layerTextStyles();
-
-	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
+	var textStyles = MSDocument.currentDocument().documentData().layerTextStyles(),
+		textStyle = getObjectByName(textStyles.objects(),styleName);
 
 	if (!textStyle) {
 		var textLayer = MSTextLayer.alloc().initWithFrame(nil);
@@ -2936,17 +2935,21 @@ function getTextStyle(styleName,styleData) {
 		textLayer.setTextAlignment(styleData.textAlignment);
 		textLayer.setFontPostscriptName(styleData.fontFace);
 
-		textStyle = layerTextStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
+		if (textStyles.addSharedStyleWithName_firstInstance) {
+			textStyle = textStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
+		} else {
+			textStyle = textStyles.addSharedObject(MSSharedStyle.alloc().initWithName_firstInstance(styleName,textLayer.style()));
+		}
 	}
 
 	return textStyle;
 }
 
 function deleteTextStyle(styleName) {
-	var layerTextStyles = MSDocument.currentDocument().documentData().layerTextStyles();
-	var textStyle = getObjectByName(layerTextStyles.objects(),styleName);
+	var textStyles = MSDocument.currentDocument().documentData().layerTextStyles(),
+		textStyle = getObjectByName(textStyles.objects(),styleName);
 
-	if (textStyle) layerTextStyles.removeSharedStyle(textStyle);
+	if (textStyle) textStyles.removeSharedStyle(textStyle);
 }
 
 function getParentGroup(scope,name) {
