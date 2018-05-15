@@ -2938,7 +2938,9 @@ function getTextStyle(styleName,styleData) {
 		if (textStyles.addSharedStyleWithName_firstInstance) {
 			textStyle = textStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
 		} else {
-			textStyle = textStyles.addSharedObject(MSSharedStyle.alloc().initWithName_firstInstance(styleName,textLayer.style()));
+			textStyle = MSSharedStyle.alloc().initWithName_firstInstance(styleName,textLayer.style());
+
+			textStyles.addSharedObject(textStyle);
 		}
 	}
 
