@@ -1,14 +1,5 @@
 {
-	"name" : "SNCR Plugins",
-	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
-	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : 0.93,
-	"identifier" : "com.sncr.sketch",
-	"compatibleVersion" : 3,
-	"bundleVersion" : 1,
-	"icon" : "icon.png",
-	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"commands" : [
 		{
 			"name" : "Link Selected Title and Artboard",
@@ -305,5 +296,12 @@
 				]
 			}
 		]
-	}
+	},
+	"identifier" : "com.sncr.sketch",
+	"version" : "0.94",
+	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
+	"authorEmail" : "jason.burns@synchronoss.com",
+	"name" : "SNCR Plugins",
+	"icon" : "icon.png",
+	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml"
 }
