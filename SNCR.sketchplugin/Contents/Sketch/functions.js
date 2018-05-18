@@ -3064,6 +3064,7 @@ function drawShapes(connections,output) {
 		// Draw the circle
 		linkRect = NSInsetRect(NSMakeRect(startPoint.x, startPoint.y, 0, 0), -3, -3);
 		path = NSBezierPath.bezierPathWithOvalInRect(linkRect);
+		path = MSPath.pathWithBezierPath(path);
 		hitAreaLayer = MSShapeGroup.shapeWithBezierPath(path);
 		hitAreaLayer.style().addStylePartOfType(0).setColor(hitAreaBorderColor);
 		output.addLayers([hitAreaLayer]);
@@ -3072,6 +3073,7 @@ function drawShapes(connections,output) {
 		linePath = NSBezierPath.bezierPath();
 		linePath.moveToPoint(startPoint);
 		linePath.curveToPoint_controlPoint1_controlPoint2(dropPoint, controlPoint1, NSMakePoint(dropPoint.x - controlPoint2OffsetX, dropPoint.y + controlPoint2OffsetY));
+		linePath = MSPath.pathWithBezierPath(linePath);
 		lineLayer = MSShapeGroup.shapeWithBezierPath(linePath);
 		hitAreaBorder = lineLayer.style().addStylePartOfType(1);
 		hitAreaBorder.setColor(hitAreaBorderColor);
@@ -3087,6 +3089,7 @@ function drawShapes(connections,output) {
 		path.lineToPoint(NSMakePoint(dropPoint.x-(arrowSize*0.6), dropPoint.y));
 		path.lineToPoint(NSMakePoint(dropPoint.x-arrowSize, dropPoint.y-(arrowSize*0.6)));
 		path.closePath();
+		path = MSPath.pathWithBezierPath(path);
 		var arrow = MSShapeGroup.shapeWithBezierPath(path);
 		arrow.style().addStylePartOfType(0).setColor(hitAreaBorderColor);
 		arrow.setRotation(-arrowRotation);

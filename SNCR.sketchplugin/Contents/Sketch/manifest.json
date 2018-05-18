@@ -298,7 +298,7 @@
 		]
 	},
 	"identifier" : "com.sncr.sketch",
-	"version" : "0.94",
+	"version" : "0.95",
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"authorEmail" : "jason.burns@synchronoss.com",
 	"name" : "SNCR Plugins",

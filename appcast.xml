@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.94</title>
+			<title>Version 0.95</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Updated manifest to address update notification issues.</li>
+				<li>Fix for deprecation of NSPath in Sketch 50.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.94" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.95" />
 		</item>
 	</channel>
 </rss>
