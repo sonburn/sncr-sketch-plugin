@@ -303,5 +303,6 @@
 	"authorEmail" : "jason.burns@synchronoss.com",
 	"name" : "SNCR Plugins",
 	"icon" : "icon.png",
-	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml"
+	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
+	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin"
 }
