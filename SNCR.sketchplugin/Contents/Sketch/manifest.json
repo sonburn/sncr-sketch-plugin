@@ -137,7 +137,7 @@
 			"handler" : "layoutSettings"
 		},
 		{
-			"name" : "Create Annotations for Selected Artboards",
+			"name" : "Create Annotations for Selections",
 			"identifier" : "annotations-create",
 			"script" : "handlers.js",
 			"handlers" : {
@@ -271,7 +271,6 @@
 				"title" : "Layer Annotations",
 				"items" : [
 					"annotations-create",
-					"annotations-designate",
 					"annotations-link",
 					"annotations-update",
 					"-",
@@ -298,7 +297,7 @@
 		]
 	},
 	"identifier" : "com.sncr.sketch",
-	"version" : "0.95",
+	"version" : "0.96",
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"authorEmail" : "jason.burns@synchronoss.com",
 	"name" : "SNCR Plugins",

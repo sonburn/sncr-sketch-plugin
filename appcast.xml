@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.95</title>
+			<title>Version 0.96</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fix for deprecation of NSPath in Sketch 50.</li>
+				<li>New method for creating annotation arrows. Overhauled annotation functions and improved Annotate Selected. Descriptions can now be linked to artboards and symbols.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.95" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.96" />
 		</item>
 	</channel>
 </rss>

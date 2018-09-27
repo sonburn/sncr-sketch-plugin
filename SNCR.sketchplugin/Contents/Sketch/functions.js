@@ -32,13 +32,21 @@ var sncr = {
 			annotationParentKey : "linkedParentArtboard",
 			annotationLinkPrefix : "🔗 ",
 			annotationStyleData : {
-				fontFace : "SF UI Text",
+				fontFace : "Helvetica Neue",
 				fontSize : 14,
+				fontColor : "#000000",
 				lineHeight : 18,
 				textAlignment : 0
 			},
-			annotationArrowXOffset : -12,
-			annotationArrowYOffset : 9 // Half annotationStyleData lineHeight
+			annotationArrowName : "Arrow",
+			annotationArrowStrokeWidth : 1,
+			annotationArrowStrokeColor : "#00AEEF",
+			annotationArrowStartType : 4, // 0 = None, 1 = Angled Arrow, 2 = Solid Arrow, 3 = Line, 4 = Empty Circle, 5 = Solid Circle, 6 = Empty Square, 7 = Solid Square
+			annotationArrowStartXOffset : 0,
+			annotationArrowStartYOffset : 0,
+			annotationArrowEndType : 2, // 0 = None, 1 = Angled Arrow, 2 = Solid Arrow, 3 = Line, 4 = Empty Circle, 5 = Solid Circle, 6 = Empty Square, 7 = Solid Square
+			annotationArrowEndXOffset : -12,
+			annotationArrowEndYOffset : 9 // Half annotationStyleData lineHeight
 		}
 
 		this.descriptions.config = {
@@ -136,16 +144,16 @@ var sncr = {
 					this.layout.settings(context);
 					break;
 				case "annotations-create" :
-					this.annotations.createSelected(context);
+					this.annotations.annotateSelected(context);
 					break;
 				case "annotations-designate" :
-					this.annotations.designateSelected(context);
+					this.annotations.designateSelected();
 					break;
 				case "annotations-link" :
 					this.annotations.linkSelected(context);
 					break;
 				case "annotations-update" :
-					this.annotations.updateAllOnPage(context);
+					this.annotations.updateAnnotations(context);
 					break;
 				case "annotations-settings" :
 					this.annotations.settings(context);
@@ -171,58 +179,128 @@ var sncr = {
 }
 
 sncr.annotations = {
-	createSelected: function(context) {
+	annotateSelected: function(context) {
+		// This function can be called by AddFlow.finish, which is only triggered if user applies a flow directly to an
+		// object (not by updating the flow of a nested hotspot). In this case, context.actionContext will be present.
 		if (context.actionContext) {
 			if (sncr.annotations.settings(context,"create").autoAnnotate == 1) {
+				// Wait a couple seconds for processing to complete
 				COScript.currentCOScript().scheduleWithInterval_jsFunction(2, function() {
-					var selections = context.actionContext.document.selectedLayers().layers(),
-						selectionLoop = selections.objectEnumerator(),
-						selection;
-
-					while (selection = selectionLoop.nextObject()) {
-						createFlowAnnotation(selection);
-					}
+					annotateSelections(context.actionContext.document.selectedLayers().layers());
 				});
-			}
+			} else return;
 		} else {
-			var selections = sncr.selection,
-				selectionLoop = selections.objectEnumerator(),
-				selection;
+			var selections = sncr.selection;
 
-			if (selections.count() == 0) {
-				displayMessage('Nothing is selected');
+			if (!selections.length) {
+				displayMessage("Nothing is selected");
 
 				return;
 			}
 
-			while (selection = selectionLoop.nextObject()) {
-				if (selection instanceof MSArtboardGroup) {
-					var predicate = NSPredicate.predicateWithFormat("flow != nil"),
-						flowLayers = selection.children().filteredArrayUsingPredicate(predicate),
-						flowLayerLoop = flowLayers.objectEnumerator(),
-						flowLayer;
-
-					while (flowLayer = flowLayerLoop.nextObject()) {
-						createFlowAnnotation(flowLayer);
-					}
-				} else {
-					if (selection.flow()) {
-						createFlowAnnotation(selection);
-					}
-				}
-			}
+			annotateSelections(selections);
 		}
 
-		function createFlowAnnotation(flowLayer) {
-			var destinationArtboardID = flowLayer.flow().destinationArtboardID(),
-				destinationArtboardName = (destinationArtboardID == "back") ? "Back to originating screen" : sncr.document.documentData().artboardWithID_(destinationArtboardID).name()),
-				parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
+		function annotateSelections(layers) {
+			var updatedArtboards = NSMutableArray.array();
+
+			layers.forEach(function(layer) {
+				var artboardID = layer.parentArtboard().objectID();
+
+				if (!updatedArtboards.containsObject(artboardID)) {
+					updatedArtboards.addObject(artboardID);
+				}
+
+				if (layer.flow() && layer.flow().destinationArtboardID() != "") {
+					createAnnotation(layer,layer.flow().destinationArtboardID());
+				}
+
+				// If context.actionContext present (called by AddFlow.finish), don't bother drilling deeper as the
+				// action is not triggered by updating the flow of a nested hotspot.
+				if (!context.actionContext) {
+					if (layer instanceof MSSymbolInstance && layer.overrides()) {
+						var overrides = layer.availableOverrides();
+
+						overrides.forEach(function(override) {
+							var overridePoint = override.overridePoint(),
+								overrideValue = override.overrideValue();
+
+							if (overridePoint.property() == "flowDestination" && overrideValue && overrideValue != "") {
+								createAnnotation(layer,overrideValue,overridePoint.layerID());
+							}
+
+							// if (overridePoint.property() == "symbolID") {
+							// 	var nestedOverrides = layer.symbolMaster().layerWithID(overridePoint.layerID()).availableOverrides();
+							//
+							// 	nestedOverrides.forEach(function(nestedOverride) {
+							// 		var nestedOverridePoint = nestedOverride.overridePoint(),
+							// 			nestedOverrideValue = nestedOverride.overrideValue();
+							//
+							// 		if (nestedOverridePoint.property() == "flowDestination" && nestedOverrideValue != "") {
+							// 			createAnnotation(layer,nestedOverrideValue,nestedOverridePoint.layerID(),layer.symbolMaster());
+							// 		}
+							// 	});
+							// }
+						});
+					}
+
+					if (layer.containsLayers()) {
+						annotateSelections(layer.layers());
+					}
+				}
+			});
+
+			updatedArtboards.forEach(function(artboardID){
+				sncr.annotations.updateAnnotations(context,artboardID);
+			});
+		}
+
+		function createAnnotation(linkedObject,destinationArtboardID,flowObjectID) {
+			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
 				noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
-			var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + flowLayer.objectID() + "'",sncr.pluginDomain),
-				existingNote = noteGroup.children().filteredArrayUsingPredicate(predicate).firstObject();
+			var destinationArtboardName;
 
-			if (existingNote) {
+			if (destinationArtboardID == "back") {
+				destinationArtboardName = "Back to originating screen";
+			} else if (sncr.document.documentData().layerWithID(destinationArtboardID)) {
+				destinationArtboardName = sncr.document.documentData().layerWithID(destinationArtboardID).name();
+			} else {
+				destinationArtboardName = "Unknown";
+			}
+
+			var artboardAnnotations = sncr.annotations.getAnnotations(linkedObject.parentArtboard().objectID());
+
+			var predicate;
+
+			if (flowObjectID) {
+				predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == '" + flowObjectID + "'",sncr.pluginDomain,sncr.pluginDomain);
+			} else {
+				predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == nil",sncr.pluginDomain,sncr.pluginDomain);
+			}
+
+			var existingNote = artboardAnnotations.filteredArrayUsingPredicate(predicate).firstObject();
+
+			if (!existingNote) {
+				var annotation = MSTextLayer.new();
+				annotation.setStringValue(destinationArtboardName);
+				annotation.setName(destinationArtboardName);
+				annotation.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+				annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+				annotation.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
+				annotation.setTextBehaviour(1);
+				annotation.frame().setWidth(sncr.annotations.config.annotationWidth);
+
+				noteGroup.addLayers([annotation]);
+
+				sncr.command.setValue_forKey_onLayer(linkedObject.objectID(),sncr.annotations.config.annotationLinkKey,annotation);
+				sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,annotation);
+				sncr.command.setValue_forKey_onLayer(linkedObject.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,annotation);
+
+				if (flowObjectID) {
+					sncr.command.setValue_forKey_onLayer(flowObjectID,"flowObjectID",annotation);
+				}
+			} else {
 				var existingString = existingNote.stringValue();
 
 				if (existingString.indexOf("\n") != -1 || existingString.indexOf("\r") != -1) {
@@ -252,207 +330,288 @@ sncr.annotations = {
 						newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
 
 					existingNote.setStringValue(newString);
-					existingNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
+					existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
 
 					var rangeBegin = newString.indexOf("\n") + 1,
 						rangeEnd = newString.length - rangeBegin,
 						range = NSMakeRange(rangeBegin,rangeEnd),
-						rangeFont = NSFont.fontWithName_size("Helvetica Neue",14);
+						rangeFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace,sncr.annotations.config.annotationStyleData.fontSize);
 
 					existingNote.addAttribute_value_forRange(NSFontAttributeName,rangeFont,range);
 				} else {
 					existingNote.setStringValue(destinationArtboardName);
-					existingNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
+					existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
 				}
 
 				existingNote.setName(destinationArtboardName);
-				existingNote.setLineHeight(18);
-				existingNote.setTextColor(MSImmutableColor.colorWithSVGString("#000000"));
+				existingNote.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+				existingNote.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
 				existingNote.setTextBehaviour(1);
-				existingNote.frame().setWidth(256);
-
-				sncr.annotations.linkNoteToObject(context,existingNote,flowLayer);
-			} else {
-				var newNote = MSTextLayer.new();
-				newNote.setStringValue(destinationArtboardName);
-				newNote.setName(destinationArtboardName);
-				newNote.setFont(NSFont.fontWithName_size("HelveticaNeue-Bold",14));
-				newNote.setLineHeight(18);
-				newNote.setTextColor(MSImmutableColor.colorWithSVGString("#000000"));
-				newNote.setTextBehaviour(1);
-				newNote.frame().setWidth(256);
-
-				noteGroup.addLayers([newNote]);
-
-				sncr.annotations.linkNoteToObject(context,newNote,flowLayer);
+				existingNote.frame().setWidth(sncr.annotations.config.annotationWidth);
 			}
 		}
 	},
-	designateSelected: function(context,textLayer) {
-		if (textLayer) {
-			var noteName;
+	designateSelected: function(annotation) {
+		if (annotation) {
+			sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,annotation);
 
-			sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,textLayer);
+			var annotationName = annotation.name().split(/\r\n|\r|\n/g)[0];
 
-			noteName = textLayer.name().split(/\r\n|\r|\n/g)[0];
+			log(annotationName + sncr.strings["annotation-designate-complete"]);
 
-			log(noteName + sncr.strings["annotation-designate-complete"]);
-
-			displayMessage(noteName + sncr.strings["annotation-designate-complete"]);
+			displayMessage(annotationName + sncr.strings["annotation-designate-complete"]);
 		} else {
-			var count = 0;
-
-			if (sncr.selection.count()) {
-				var noteName;
-
-				for (var i = 0; i < sncr.selection.count(); i++) {
-					if (sncr.selection[i] instanceof MSTextLayer) {
-						sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,sncr.selection[i]);
-
-						count++;
-
-						noteName = sncr.selection[i].name().split(/\r\n|\r|\n/g)[0];
-
-						log(noteName + sncr.strings["annotation-designate-complete"]);
-					}
-				}
-
-				if (sncr.selection.count() == 1) {
-					displayMessage(noteName + sncr.strings["annotation-designate-complete"]);
-				} else {
-					displayMessage(count + sncr.strings["annotation-designates-complete"]);
-				}
-			} else {
+			if (!sncr.selection) {
 				displayDialog(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
+
+				return;
 			}
+
+			var selectionLoop = sncr.selection.objectEnumerator(),
+				selection,
+				annotationName,
+				count = 0;
+
+			while (selection = selectionLoop.nextObject()) {
+				if (selection instanceof MSTextLayer) {
+					sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,selection);
+
+					annotationName = selection.name().split(/\r\n|\r|\n/g)[0];
+
+					log(annotationName + sncr.strings["annotation-designate-complete"]);
+
+					count++;
+				}
+			}
+
+			displayMessage(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
 		}
+	},
+	getAnnotations: function(artboardID) {
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
+			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName),
+			predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + artboardID + "'",sncr.pluginDomain);
+
+		return noteGroup.children().filteredArrayUsingPredicate(predicate);
 	},
 	linkSelected: function(context) {
-		// Take action on selections...
-		switch (sncr.selection.count()) {
-			// If there are two selections...
-			case 2:
-				// Selection variables
-				var firstItem = sncr.selection[0],
-					secondItem = sncr.selection[1];
+		// If nothing is selected, or two objects are not selected...
+		if (!sncr.selection || sncr.selection.count() != 2) {
+			// Display feedback
+			displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
 
-				// If the first item is a text layer with a linkType of annotation...
-				if (firstItem.class() == "MSTextLayer" && secondItem.class() != "MSTextLayer") {
-					// Designate the text layer as an annotation
-					sncr.annotations.designateSelected(context,firstItem);
-
-					sncr.annotations.linkNoteToObject(context,firstItem,secondItem);
-				}
-				// If the second is a text layer with a linkType of annotation...
-				else if (firstItem.class() != "MSTextLayer" && secondItem.class() == "MSTextLayer") {
-					// Designate the text layer as an annotation
-					sncr.annotations.designateSelected(context,secondItem);
-
-					sncr.annotations.linkNoteToObject(context,secondItem,firstItem);
-				}
-				// If the selections do not contain a text layer with a linkType of annotation...
-				else {
-					// Display feedback
-					displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-textlayer"]);
-				}
-
-				break;
-			// If there are not two selections...
-			default:
-				// Display feedback
-				displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
+			return;
 		}
+
+		// Selection variables
+		var firstObject = sncr.selection.firstObject(),
+			lastObject = sncr.selection.lastObject(),
+			annotation,
+			source;
+
+		// If only the first object is a text layer...
+		if (firstObject.class() == "MSTextLayer" && lastObject.class() != "MSTextLayer") {
+			annotation = firstObject;
+			source = lastObject;
+		}
+		// If only the second object is a text layer...
+		else if (firstObject.class() != "MSTextLayer" && lastObject.class() == "MSTextLayer") {
+			annotation = lastObject;
+			source = firstObject;
+		}
+		// If neither object is a text layer, or both are...
+		else {
+			// Display feedback
+			displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-textlayer"]);
+
+			return;
+		}
+
+		// Set values on annotation
+		sncr.command.setValue_forKey_onLayer(source.objectID(),sncr.annotations.config.annotationLinkKey,annotation);
+		sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,annotation);
+		sncr.command.setValue_forKey_onLayer(source.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,annotation);
+
+		// Update annotations for source parent artboard
+		sncr.annotations.updateAnnotations(context,source.parentArtboard().objectID());
+
+		// Determine annotation name
+		var annotationName = sncr.annotations.config.annotationLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
+
+		// Create a log event
+		log(annotationName + sncr.strings["annotation-link-complete"] + source.name());
+
+		// Display feedback
+		displayMessage(annotationName + sncr.strings["annotation-link-complete"] + source.name());
 	},
-	linkNoteToObject: function(context,note,object) {
-		// Set parent group
-		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+	updateAnnotations: function(context,artboardID) {
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
+			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
+			annotationLoop = annotations.objectEnumerator(),
+			annotation,
+			parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
+			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName),
+			updateCount = 0,
+			removeCount = 0,
+			artboardsWithAnnotations = NSMutableArray.array();
 
-		// Set annotation group
-		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
-
-		// Set stored values on annotation
-		sncr.command.setValue_forKey_onLayer(object.objectID(),sncr.annotations.config.annotationLinkKey,note);
-		sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,note);
-		sncr.command.setValue_forKey_onLayer(object.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,note);
-
-		// Determine max X of artboard, or parent artboard
-		var artboardMaxX = (object.class() != "MSArtboardGroup") ? CGRectGetMaxX(object.parentArtboard().rect()) : CGRectGetMaxX(object.rect());
-
-		// Set annotation position including offsets
-		note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
-		note.absoluteRect().setY(object.absoluteRect().y() + object.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
-
-		// Set annotation width
-		note.frame().setWidth(sncr.annotations.config.annotationWidth);
-
-		// Set annotation font information
-		note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
-		note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-		note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
-
-		// If the annotation is not in the annotation group...
-		if (note.parentGroup() != noteGroup) {
-			// Move the annotation to the annotation group
-			note.moveToLayer_beforeLayer(noteGroup,nil);
-
-			// Deselect the annotation (moveToLayer_beforeLayer selects it)
-			note.select_byExpandingSelection(false,true);
-		}
-
-		// Get siblings for parent
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + object.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-			siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
-
-		// If more than one sibling...
-		if (siblings && siblings.count() > 1) {
-			// Sort the siblings by Y position
-			var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-			siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
-
-			// Iterate through the siblings...
-			for (var j = 0; j < siblings.length; j++) {
-				// If there is a next sibling...
-				if (j+1 < siblings.length) {
-					// Sibling variables
-					var thisSibling = siblings[j];
-					var nextSibling = siblings[j+1];
-
-					// If this sibling and the next intersect...
-					if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-						// Adjust the Y coordinate of the next sibling
-						nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
-					}
-				}
+		// If there are no annotations...
+		if (annotations.count() == 0) {
+			// If the function was not invoked by action...
+			if (!context.actionContext) {
+				// Display feedback
+				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
 			}
 		}
 
-		// Deselect the annotation and object
-		note.select_byExpandingSelection(false,true);
-		object.select_byExpandingSelection(false,true);
+		// Loop through annotations...
+		while (annotation = annotationLoop.nextObject()) {
+			// Get linked object
+			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
+				linkedObjectPredicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,sncr.pluginDomain),
+				linkedObject = sncr.page.children().filteredArrayUsingPredicate(linkedObjectPredicate).firstObject();
 
-		// Resize annotation and parent groups to account for children
-		noteGroup.resizeToFitChildrenWithOption(0);
-		parentGroup.resizeToFitChildrenWithOption(0);
+			// If linked object exists...
+			if (linkedObject) {
+				var artboardWithAnnotation = linkedObject.parentArtboard().objectID();
 
-		// Determine note name
-		var noteName = sncr.annotations.config.annotationLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
+				if (!artboardID || artboardID == artboardWithAnnotation) {
+					// If annotation links to a flow layer...
+					if (sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain)) {
+						// Determine annotation Y position
+						var flowLayerRect = createNewRectForFlowLayer(linkedObject,sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain)),
+							annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
+					}
+					// If annotation links to an object...
+					else {
+						// Determine annotation Y position
+						var annotationY = linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
+					}
 
-		// Update the annotation layer name
-		note.setName(sncr.annotations.config.annotationLinkPrefix + object.name());
+					// Get max X of artboard, or parent artboard
+					var artboardMaxX = CGRectGetMaxX(linkedObject.parentArtboard().rect());
 
-		// Create a log event
-		log(noteName + sncr.strings["annotation-link-complete"] + object.name());
+					// Update annotation position
+					annotation.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
+					annotation.absoluteRect().setY(annotationY);
 
-		// Update all sibling connections
-		sncr.annotations.updateAllSiblings(context,object.parentArtboard());
+					// Update annotation width
+					annotation.frame().setWidth(sncr.annotations.config.annotationWidth);
 
-		// Display feedback
-		displayMessage(noteName + sncr.strings["annotation-link-complete"] + object.name());
+					// Update annotation style
+					annotation.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
+					annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+					annotation.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
+
+					// Update annotation layer name
+					annotation.setName(sncr.annotations.config.annotationLinkPrefix + linkedObject.name());
+
+					// If the annotation is not in the annotation group...
+					if (annotation.parentGroup() != noteGroup) {
+						// Move the annotation to the annotation group
+						annotation.moveToLayer_beforeLayer(noteGroup,nil);
+
+						// Deselect the annotation (moveToLayer_beforeLayer selects it)
+						annotation.select_byExpandingSelection(false,true);
+					}
+
+					// Iterate counter
+					updateCount++;
+
+					if (!artboardsWithAnnotations.containsObject(artboardWithAnnotation)) {
+						artboardsWithAnnotations.addObject(artboardWithAnnotation);
+					}
+				}
+			}
+			// If linked object does not exist...
+			else {
+				// Remove stored values for linked artboard
+				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,annotation);
+				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,annotation);
+				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,annotation);
+				sncr.command.setValue_forKey_onLayer(nil,"flowObjectID",annotation);
+
+				// Create annotation name
+				var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,""));
+
+				// Update annotation layer name
+				annotation.setName(annotationName);
+
+				// Iterate counters
+				updateCount++;
+				removeCount++;
+
+				// Create a log event
+				log(annotationName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
+			}
+		}
+
+		// If annotation group is not empty...
+		if (noteGroup.layers().count() > 0) {
+			artboardsWithAnnotations.forEach(function(artboardID){
+				var siblings = sncr.annotations.getAnnotations(artboardID);
+
+				if (siblings.count() > 1) {
+					var siblingSort = NSSortDescriptor.sortDescriptorWithKey_ascending("absoluteRect.y",1);
+						siblings = siblings.sortedArrayUsingDescriptors([siblingSort]);
+
+					// Iterate through the siblings...
+					for (var i = 0; i < siblings.length; i++) {
+						// If there is a next sibling...
+						if (i + 1 < siblings.length) {
+							// Sibling variables
+							var thisSibling = siblings[i],
+								nextSibling = siblings[i+1];
+
+							// If this sibling and the next intersect...
+							if (CGRectGetMaxY(thisSibling.rect()) >= CGRectGetMinY(nextSibling.rect())) {
+								// Adjust the Y coordinate of the next sibling
+								nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
+							}
+						}
+					}
+				}
+			});
+
+			// Resize annotation and parent groups to account for children
+			noteGroup.resizeToFitChildrenWithOption(0);
+			parentGroup.resizeToFitChildrenWithOption(0);
+
+			// Redraw all connections
+			sncr.annotations.updateConnections();
+		}
+		// If annotation group is empty...
+		else {
+			// Remove the annotation group
+			noteGroup.removeFromParent();
+
+			// Resize parent group to account for children
+			parentGroup.resizeToFitChildrenWithOption(0);
+		}
+
+		// Move parent group to the top of the layer list
+		parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
+
+		// Deselect parent group (moveToLayer_beforeLayer selects it)
+		parentGroup.select_byExpandingSelection(false,true);
+
+		// If the function was not invoked by action...
+		if (!context.actionContext) {
+			// If any annotation links were removed
+			if (removeCount > 0) {
+				// Display feedback
+				displayMessage(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
+			} else {
+				// Display feedback
+				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
+			}
+		}
 	},
-	redraw: function(context) {
-		// Set connections group
+	updateConnections: function() {
+		// Connections variables
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.connectionsGroupKey + " == true", sncr.pluginDomain),
-			connectionsGroup = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
+			connectionsGroup = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject(),
+			connections = [];
 
 		// If connections group exists...
 		if (connectionsGroup) {
@@ -460,33 +619,44 @@ sncr.annotations = {
 			connectionsGroup.removeFromParent();
 		}
 
-		// Construct loop of annotations
+		// Create annotations loop
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil", sncr.pluginDomain),
 			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			loop = annotations.objectEnumerator(),
-			note;
+			annotationLoop = annotations.objectEnumerator(),
+			annotation;
 
-		// Initiate connections array
-		var connections = [];
+		// Loop through annotations...
+		while (annotation = annotationLoop.nextObject()) {
+			// Get ID for linked object
+			var linkedObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier(sncr.annotations.config.annotationLinkKey,annotation,sncr.pluginDomain);
 
-		// Iterate through the annotations...
-		while (note = loop.nextObject()) {
-			// Get stored value for linked object
-			var linkedObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier(sncr.annotations.config.annotationLinkKey,note,sncr.pluginDomain);
-
-			// Get linked object if it resides on the page
+			// Get linked object on current page
 			var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID),
 				linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
 
 			// If linked object exists...
 			if (linkedObject) {
-				// Create connection object
-				var connection = {
-					linkRect : linkedObject.parentArtboard() ? CGRectIntersection(linkedObject.absoluteRect().rect(),linkedObject.parentArtboard().absoluteRect().rect()) : linkedObject.absoluteRect().rect(),
-					linkID : note.objectID(),
-					dropPoint : {
-						x : note.absoluteRect().x() + sncr.annotations.config.annotationArrowXOffset,
-						y : note.absoluteRect().y() + sncr.annotations.config.annotationArrowYOffset
+				var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain);
+
+				if (linkedObject.class() == "MSSymbolInstance" && flowObjectID) {
+					// Create connection object
+					var connection = {
+						linkID : annotation.objectID(),
+						linkRect : createNewRectForFlowLayer(linkedObject,flowObjectID),
+						endPoint : {
+							x : annotation.absoluteRect().x(),
+							y : annotation.absoluteRect().y()
+						}
+					}
+				} else {
+					// Create connection object
+					var connection = {
+						linkID : annotation.objectID(),
+						linkRect : linkedObject.parentArtboard() ? CGRectIntersection(linkedObject.absoluteRect().rect(),linkedObject.parentArtboard().absoluteRect().rect()) : linkedObject.absoluteRect().rect(),
+						endPoint : {
+							x : annotation.absoluteRect().x(),
+							y : annotation.absoluteRect().y()
+						}
 					}
 				}
 
@@ -504,8 +674,38 @@ sncr.annotations = {
 		// Create new connections group
 		connectionsGroup = MSLayerGroup.new();
 
-		// Get connection shape layers, and add to connections group
-		drawShapes(connections,connectionsGroup);
+		// Iterate through the connections...
+		connections.forEach(function(connection){
+			var linkRect = connection.linkRect,
+				startPoint = NSMakePoint(CGRectGetMaxX(linkRect) + sncr.annotations.config.annotationArrowStartXOffset,CGRectGetMidY(linkRect) + sncr.annotations.config.annotationArrowStartYOffset),
+				endPoint = NSMakePoint(connection.endPoint.x + sncr.annotations.config.annotationArrowEndXOffset,connection.endPoint.y + sncr.annotations.config.annotationArrowEndYOffset);
+
+			var linePath = NSBezierPath.bezierPath();
+			linePath.moveToPoint(startPoint);
+
+			if (startPoint.y == endPoint.y) {
+				linePath.lineToPoint(endPoint);
+			} else {
+				var controlPoint1Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 100),
+					controlPoint2Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 100),
+					controlPoint1 = NSMakePoint(startPoint.x + controlPoint1Offset, startPoint.y),
+					controlPoint2 = NSMakePoint(endPoint.x - controlPoint2Offset, endPoint.y);
+
+				linePath.curveToPoint_controlPoint1_controlPoint2(endPoint,controlPoint1,controlPoint2);
+			}
+
+			var lineLayer = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(linePath));
+			lineLayer.setName(sncr.annotations.config.annotationArrowName);
+			lineLayer.style().setStartMarkerType(sncr.annotations.config.annotationArrowStartType);
+			lineLayer.style().setEndMarkerType(sncr.annotations.config.annotationArrowEndType);
+
+			var lineStyle = lineLayer.style().addStylePartOfType(1);
+			lineStyle.setColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationArrowStrokeColor).newMutableCounterpart());
+			lineStyle.setThickness(sncr.annotations.config.annotationArrowStrokeWidth);
+			lineStyle.setPosition(0);
+
+			connectionsGroup.addLayers([lineLayer]);
+		});
 
 		// Move connections group to annotation group
 		connectionsGroup.moveToLayer_beforeLayer(noteGroup,nil);
@@ -524,362 +724,6 @@ sncr.annotations = {
 
 		// Set stored value on connections group
 		sncr.command.setValue_forKey_onLayer_forPluginIdentifier(true,sncr.annotations.config.connectionsGroupKey,connectionsGroup,sncr.pluginDomain);
-	},
-	updateAllOnPage: function(context) {
-		// Construct loop of annotations
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			loop = annotations.objectEnumerator(),
-			note;
-
-		// Set counters
-		var updateCount = 0;
-		var removeCount = 0;
-
-		// Initiate array of parents with siblings
-		var parentsWithSiblings = [];
-
-		// If there are annotations...
-		if (annotations.count()) {
-			// Set parent group
-			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
-
-			// Set annotation group
-			var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
-
-			// Iterate through annotations...
-			while (note = loop.nextObject()) {
-				// Get stored value for linked object
-				var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,note);
-
-				// Get linked object if it resides on the page
-				var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,sncr.pluginDomain),
-					linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
-
-				// If linked object exists...
-				if (linkedObject) {
-					// If linked object has a parent...
-					if (linkedObject.parentArtboard()) {
-						// Get siblings for this linked object (figure out how to exclude current object)
-						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
-
-						// If there are siblings...
-						if (siblings.count() > 1) {
-							// Add parent objectID to array of parents with siblings
-							parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
-						}
-					}
-
-					// Determine max X of artboard, or parent artboard
-					var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
-
-					// Set annotation position including offsets
-					note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
-					note.absoluteRect().setY(linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
-
-					// Set annotation width
-					note.frame().setWidth(sncr.annotations.config.annotationWidth);
-
-					// Set annotation font information
-					note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
-					note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-					note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
-
-					// If the annotation is not in the annotation group...
-					if (note.parentGroup() != noteGroup) {
-						// Move the annotation to the annotation group
-						note.moveToLayer_beforeLayer(noteGroup,nil);
-
-						// Deselect the annotation (moveToLayer_beforeLayer selects it)
-						note.select_byExpandingSelection(false,true);
-					}
-
-					// Update the annotation layer name
-					note.setName(sncr.annotations.config.annotationLinkPrefix + linkedObject.name());
-
-					// Iterate counter
-					updateCount++;
-				}
-				// If object does not exist...
-				else {
-					// Remove stored values for linked artboard
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,note);
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,note);
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,note);
-
-					// Set annotation name
-					var noteName = note.name().replace(sncr.annotations.config.annotationLinkPrefix,""));
-
-					// Update the layer name
-					note.setName(noteName);
-
-					// Iterate counters
-					updateCount++;
-					removeCount++;
-
-					// Create a log event
-					log(noteName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
-				}
-			}
-
-			// If annotation group is not empty...
-			if (noteGroup.layers().count() > 0) {
-				// If any parents have siblings...
-				if (parentsWithSiblings) {
-					// Filter duplicates from parents with siblings array
-					var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
-						return parentsWithSiblings.indexOf(item) == pos;
-					});
-
-					// Iterate through the parents...
-					for (var i = 0; i < parentsWithSiblings.length; i++) {
-						// Get siblings for parent
-						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
-
-						// Sort the siblings by Y position
-						var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-						siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
-
-						// Iterate through the siblings...
-						for (var j = 0; j < siblings.length; j++) {
-							// If there is a next sibling...
-							if (j+1 < siblings.length) {
-								// Sibling variables
-								var thisSibling = siblings[j];
-								var nextSibling = siblings[j+1];
-
-								// If this sibling and the next intersect...
-								if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-									// Adjust the Y coordinate of the next sibling
-									nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
-								}
-							}
-						}
-					}
-				}
-
-				// Resize annotation and parent groups to account for children
-				noteGroup.resizeToFitChildrenWithOption(0);
-				parentGroup.resizeToFitChildrenWithOption(0);
-
-				// Redraw all connections
-				sncr.annotations.redraw(context);
-			}
-			// If annotation group is empty...
-			else {
-				// Remove the annotation group
-				noteGroup.removeFromParent();
-
-				// Resize parent group to account for children
-				parentGroup.resizeToFitChildrenWithOption(0);
-			}
-
-			// Move parent group to the top of the layer list
-			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
-
-			// Deselect parent group (moveToLayer_beforeLayer selects it)
-			parentGroup.select_byExpandingSelection(false,true);
-
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// If any annotation links were removed
-				if (removeCount > 0) {
-					// Display feedback
-					displayMessage(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
-				} else {
-					// Display feedback
-					displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
-				}
-			}
-		}
-		// If there are no annotations...
-		else {
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// Display feedback
-				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
-			}
-		}
-	},
-	updateAllSiblings: function(context,artboard) {
-		// Construct loop of annotations
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + artboard.objectID() + "'",sncr.pluginDomain),
-			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			loop = annotations.objectEnumerator(),
-			note;
-
-		// Set counters
-		var updateCount = 0;
-		var removeCount = 0;
-
-		// Initiate array of parents with siblings
-		var parentsWithSiblings = [];
-
-		// If there are annotations...
-		if (annotations.count()) {
-			// Set parent group
-			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
-
-			// Set annotation group
-			var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
-
-			// Iterate through annotations...
-			while (note = loop.nextObject()) {
-				// Get stored value for linked object
-				var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,note);
-
-				// Get linked object if it resides on the page
-				var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,sncr.pluginDomain),
-					linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
-
-				// If linked object exists...
-				if (linkedObject) {
-					// If linked object has a parent...
-					if (linkedObject.parentArtboard()) {
-						// Get siblings for this linked object (figure out how to exclude current object)
-						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + linkedObject.parentArtboard().objectID() + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
-
-						// If there are siblings...
-						if (siblings.count() > 1) {
-							// Add parent objectID to array of parents with siblings
-							parentsWithSiblings.push(linkedObject.parentArtboard().objectID());
-						}
-					}
-
-					// Determine max X of artboard, or parent artboard
-					var artboardMaxX = linkedObject.parentArtboard() ? CGRectGetMaxX(linkedObject.parentArtboard().rect()) : CGRectGetMaxX(linkedObject.rect());
-
-					// Set annotation position including offsets
-					note.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
-					note.absoluteRect().setY(linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2);
-
-					// Set annotation width
-					note.frame().setWidth(sncr.annotations.config.annotationWidth);
-
-					// Set annotation font information
-					note.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
-					note.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-					note.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
-
-					// If the annotation is not in the annotation group...
-					if (note.parentGroup() != noteGroup) {
-						// Move the annotation to the annotation group
-						note.moveToLayer_beforeLayer(noteGroup,nil);
-
-						// Deselect the annotation (moveToLayer_beforeLayer selects it)
-						note.select_byExpandingSelection(false,true);
-					}
-
-					// Update the annotation layer name
-					note.setName(sncr.annotations.config.annotationLinkPrefix + linkedObject.name());
-
-					// Iterate counter
-					updateCount++;
-				}
-				// If object does not exist...
-				else {
-					// Remove stored values for linked artboard
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,note);
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,note);
-					sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,note);
-
-					// Set annotation name
-					var noteName = note.name().replace(sncr.annotations.config.annotationLinkPrefix,""));
-
-					// Update the layer name
-					note.setName(noteName);
-
-					// Iterate counters
-					updateCount++;
-					removeCount++;
-
-					// Create a log event
-					log(noteName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
-				}
-			}
-
-			// If annotation group is not empty...
-			if (noteGroup.layers().count() > 0) {
-				// If any parents have siblings...
-				if (parentsWithSiblings) {
-					// Filter duplicates from parents with siblings array
-					var parentsWithSiblings = parentsWithSiblings.filter(function(item,pos) {
-						return parentsWithSiblings.indexOf(item) == pos;
-					});
-
-					// Iterate through the parents...
-					for (var i = 0; i < parentsWithSiblings.length; i++) {
-						// Get siblings for parent
-						var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + parentsWithSiblings[i] + "' && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-							siblings = noteGroup.children().filteredArrayUsingPredicate(predicate);
-
-						// Sort the siblings by Y position
-						var sortByTopPosition = [NSSortDescriptor sortDescriptorWithKey:"absoluteRect.y" ascending:1];
-						siblings = [siblings sortedArrayUsingDescriptors:[sortByTopPosition]];
-
-						// Iterate through the siblings...
-						for (var j = 0; j < siblings.length; j++) {
-							// If there is a next sibling...
-							if (j+1 < siblings.length) {
-								// Sibling variables
-								var thisSibling = siblings[j];
-								var nextSibling = siblings[j+1];
-
-								// If this sibling and the next intersect...
-								if (CGRectGetMaxY(thisSibling.rect()) > CGRectGetMinY(nextSibling.rect())) {
-									// Adjust the Y coordinate of the next sibling
-									nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
-								}
-							}
-						}
-					}
-				}
-
-				// Resize annotation and parent groups to account for children
-				noteGroup.resizeToFitChildrenWithOption(0);
-				parentGroup.resizeToFitChildrenWithOption(0);
-
-				// Redraw all connections
-				sncr.annotations.redraw(context);
-			}
-			// If annotation group is empty...
-			else {
-				// Remove the annotation group
-				noteGroup.removeFromParent();
-
-				// Resize parent group to account for children
-				parentGroup.resizeToFitChildrenWithOption(0);
-			}
-
-			// Move parent group to the top of the layer list
-			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
-
-			// Deselect parent group (moveToLayer_beforeLayer selects it)
-			parentGroup.select_byExpandingSelection(false,true);
-
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// If any annotation links were removed
-				if (removeCount > 0) {
-					// Display feedback
-					displayMessage(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
-				} else {
-					// Display feedback
-					displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
-				}
-			}
-		}
-		// If there are no annotations...
-		else {
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// Display feedback
-				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
-			}
-		}
 	},
 	settings: function(context,command) {
 		// Setting variables
@@ -1023,7 +867,7 @@ sncr.conditions = {
 sncr.descriptions = {
 	addEdit : function(context) {
 		// If there is one artboard selected...
-		if (sncr.selection.count() == 1 && sncr.selection[0] instanceof MSArtboardGroup) {
+		if (sncr.selection.count() == 1 && (sncr.selection[0] instanceof MSArtboardGroup || sncr.selection[0] instanceof MSSymbolMaster)) {
 			// Artboard variable
 			var artboard = sncr.selection[0];
 
@@ -1566,7 +1410,7 @@ sncr.layout = {
 				if (layoutSettings.autoSections) sncr.sections.updateAllOnPage(context,"layout");
 				if (layoutSettings.autoTitles) sncr.titles.create(context,"layout");
 				if (layoutSettings.autoDescriptions) sncr.descriptions.updateAllOnPage(context,"layout");
-				if (layoutSettings.autoAnnotations) sncr.annotations.updateAllOnPage(context,"layout");
+				if (layoutSettings.autoAnnotations) sncr.annotations.updateAnnotations(context,"layout");
 
 				// Collapse everything if run manually
 				if (!context.actionContext) actionWithType(context,"MSCollapseAllGroupsAction").doPerformAction(nil);
@@ -2272,35 +2116,33 @@ sncr.sections = {
 		// Get latest selections, as they may have been changed by Insert
 		var selections = sncr.page.selectedLayers().layers();
 
-		// If there are two selections...
-		if (selections.count() == 2) {
-			// Selection variables
-			var firstItem = selections[0],
-				secondItem = selections[1];
+		// If two objects are not selected...
+		if (selections.count() != 2) {
+			// Display feedback
+			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
 
-			// If the first item is not an artboard and the second item is an artboard...
-			if (firstItem.class() != "MSArtboardGroup" && secondItem.class() == "MSArtboardGroup") {
-				return {
-					title : firstItem,
-					artboard : secondItem
-				}
-			}
-			// If the first item is an artboard and the second item is not an artboard
-			else if (firstItem.class() == "MSArtboardGroup" && secondItem.class() != "MSArtboardGroup") {
-				return {
-					title : secondItem,
-					artboard : firstItem
-				}
-			}
-			// If the selections are two artboards...
-			else {
-				// Display feedback
-				displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+			return false;
+		}
 
-				return false;
+		// Selection variables
+		var firstObject = selections.firstObject(),
+			lastObject = selections.lastObject();
+
+		// If the first item is not an artboard and the second item is an artboard...
+		if ((firstObject.class() != "MSArtboardGroup" || firstObject.class() != "MSSymbolMaster") && (lastObject.class() == "MSArtboardGroup" || lastObject.class() == "MSSymbolMaster")) {
+			return {
+				title : firstObject,
+				artboard : lastObject
 			}
 		}
-		// If there are not two selections...
+		// If the first item is an artboard and the second item is not an artboard
+		else if ((firstObject.class() == "MSArtboardGroup" || firstObject.class() == "MSSymbolMaster") && (lastObject.class() != "MSArtboardGroup" || lastObject.class() != "MSSymbolMaster")) {
+			return {
+				title : lastObject,
+				artboard : firstObject
+			}
+		}
+		// If the selections are two artboards...
 		else {
 			// Display feedback
 			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
@@ -3013,93 +2855,20 @@ function getCachedSettings(context,location,settings,domain) {
 	}
 }
 
-function drawShapes(connections,output) {
-	var strokeWidth = 1,
-		arrowRotation = 0,
-		arrowOffsetX = 0,
-		path,
-		hitAreaLayer,
-		linkRect,
-		dropPoint,
-		hitAreaBorder,
-		startPoint,
-		controlPoint1,
-		controlPoint1Offset,
-		controlPoint2OffsetX = 0,
-		controlPoint2OffsetY = 0,
-		linePath,
-		lineLayer,
-		hitAreaColor = MSImmutableColor.colorWithSVGString("#000000").newMutableCounterpart(),
-		hitAreaBorderColor = MSImmutableColor.colorWithSVGString("#00AEEF").newMutableCounterpart();
-
-	hitAreaColor.setAlpha(0);
-	hitAreaBorderColor.setAlpha(1);
-
-	for (var i=0; i < connections.length; i++) {
-		connection = connections[i];
-		linkRect = connection.linkRect;
-		dropPoint = NSMakePoint(connection.dropPoint.x, connection.dropPoint.y);
-
-		if (dropPoint.x < CGRectGetMinX(linkRect)) {
-			dropPoint = NSMakePoint(dropPoint.x + 18, dropPoint.y - 30 );
-			arrowRotation = 90;
-			arrowOffsetX = 2;
-			if (dropPoint.y < CGRectGetMinY(linkRect)) {
-				startPoint = NSMakePoint(CGRectGetMidX(linkRect), CGRectGetMinY(linkRect) + 5);
-				controlPoint1Offset = Math.max(Math.abs(dropPoint.y - startPoint.y)/2, 200);
-				controlPoint1 = NSMakePoint(startPoint.x, startPoint.y - controlPoint1Offset);
-			} else {
-				startPoint = NSMakePoint(CGRectGetMidX(linkRect), CGRectGetMaxY(linkRect) - 5);
-				controlPoint1Offset = Math.max(Math.abs(dropPoint.y - startPoint.y)/2, 200);
-				controlPoint1 = NSMakePoint(startPoint.x, startPoint.y + controlPoint1Offset);
-			}
-			controlPoint2OffsetY = -160;
-		} else {
-			startPoint = NSMakePoint(CGRectGetMaxX(linkRect) - 8, CGRectGetMidY(linkRect));
-			controlPoint1Offset = Math.max(Math.abs(dropPoint.x - startPoint.x)/2, 100);
-			controlPoint1 = NSMakePoint(startPoint.x + controlPoint1Offset, startPoint.y);
-			controlPoint2OffsetX = Math.max(Math.abs(dropPoint.x - startPoint.x)/2, 100);
-		}
-
-		// Draw the circle
-		linkRect = NSInsetRect(NSMakeRect(startPoint.x, startPoint.y, 0, 0), -3, -3);
-		path = NSBezierPath.bezierPathWithOvalInRect(linkRect);
-		path = MSPath.pathWithBezierPath(path);
-		hitAreaLayer = MSShapeGroup.shapeWithBezierPath(path);
-		hitAreaLayer.style().addStylePartOfType(0).setColor(hitAreaBorderColor);
-		output.addLayers([hitAreaLayer]);
-
-		// Draw the path
-		linePath = NSBezierPath.bezierPath();
-		linePath.moveToPoint(startPoint);
-		linePath.curveToPoint_controlPoint1_controlPoint2(dropPoint, controlPoint1, NSMakePoint(dropPoint.x - controlPoint2OffsetX, dropPoint.y + controlPoint2OffsetY));
-		linePath = MSPath.pathWithBezierPath(linePath);
-		lineLayer = MSShapeGroup.shapeWithBezierPath(linePath);
-		hitAreaBorder = lineLayer.style().addStylePartOfType(1);
-		hitAreaBorder.setColor(hitAreaBorderColor);
-		hitAreaBorder.setThickness(strokeWidth);
-		hitAreaBorder.setPosition(0);
-		output.addLayers([lineLayer]);
-
-		// Draw the arrow
-		var arrowSize = Math.max(8, strokeWidth*3);
-		path = NSBezierPath.bezierPath();
-		path.moveToPoint(NSMakePoint(dropPoint.x+(arrowSize*0.6), dropPoint.y));
-		path.lineToPoint(NSMakePoint(dropPoint.x-arrowSize, dropPoint.y+(arrowSize*0.6)));
-		path.lineToPoint(NSMakePoint(dropPoint.x-(arrowSize*0.6), dropPoint.y));
-		path.lineToPoint(NSMakePoint(dropPoint.x-arrowSize, dropPoint.y-(arrowSize*0.6)));
-		path.closePath();
-		path = MSPath.pathWithBezierPath(path);
-		var arrow = MSShapeGroup.shapeWithBezierPath(path);
-		arrow.style().addStylePartOfType(0).setColor(hitAreaBorderColor);
-		arrow.setRotation(-arrowRotation);
-		arrow.absoluteRect().setX(arrow.absoluteRect().x() + arrowOffsetX);
-		output.addLayers([arrow]);
-	}
-}
-
 function logFunctionStart(output,command) {
 	if (!command) command = "user";
 
 	log(output + " - Initiated by " + command);
+}
+
+function createNewRectForFlowLayer(linkedObject,flowObjectID) {
+	var layer = linkedObject.symbolMaster().layerWithID(flowObjectID),
+		offsetX = layer.absoluteRect().rect().origin.x - linkedObject.symbolMaster().absoluteRect().rect().origin.x,
+		offsetY = layer.absoluteRect().rect().origin.y - linkedObject.symbolMaster().absoluteRect().rect().origin.y,
+		offsetWidth = linkedObject.absoluteRect().rect().size.width - linkedObject.symbolMaster().absoluteRect().rect().size.width,
+		offsetHeight = linkedObject.absoluteRect().rect().size.height - linkedObject.symbolMaster().absoluteRect().rect().size.height,
+		newX = linkedObject.absoluteRect().rect().origin.x + offsetX + offsetWidth,
+		newY = linkedObject.absoluteRect().rect().origin.y + offsetY + offsetHeight;
+
+	return NSMakeRect(newX,newY,layer.rect().size.width,layer.rect().size.height);
 }
