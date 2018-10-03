@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.96</title>
+			<title>Version 0.97</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>New method for creating annotation arrows. Overhauled annotation functions and improved Annotate Selected. Descriptions can now be linked to artboards and symbols.</li>
+				<li>Fixes for Sketch 52; MSSharedStyle.initWithName_firstInstance and MSSharedStyle.newInstance were both phased out.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.96" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.97" />
 		</item>
 	</channel>
 </rss>

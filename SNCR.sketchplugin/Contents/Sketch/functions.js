@@ -906,8 +906,14 @@ sncr.descriptions = {
 					var artboardDesc = MSTextLayer.new();
 					artboardDesc.setStringValue(artboardDescription);
 					artboardDesc.setName(sncr.descriptions.config.descriptionLinkPrefix + artboard.name());
-					artboardDesc.setStyle(artboardDescStyle.newInstance());
 					artboardDesc.setTextBehaviour(1);
+
+					// Apply style to artboard description
+					if (artboardDescStyle.newInstance) {
+						artboardDesc.setStyle(artboardDescStyle.newInstance());
+					} else {
+						artboardDesc.setSharedStyle(artboardDescStyle);
+					}
 
 					// Add artboard description to annotation group
 					descGroup.addLayers([artboardDesc]);
@@ -2224,7 +2230,13 @@ sncr.titles = {
 					var screenTitle = MSTextLayer.new();
 					screenTitle.setStringValue(artboard.name());
 					screenTitle.setName(artboard.name());
-					screenTitle.setStyle(screenTitleStyle.newInstance());
+
+					// Apply style to screen title
+					if (screenTitle.newInstance) {
+						screenTitle.setStyle(screenTitleStyle.newInstance());
+					} else {
+						screenTitle.setSharedStyle(artboardDescStyle);
+					}
 
 					// Set screen title x/y position
 					screenTitle.frame().setX(artboard.frame().x());
@@ -2779,8 +2791,12 @@ function getTextStyle(styleName,styleData) {
 
 		if (textStyles.addSharedStyleWithName_firstInstance) {
 			textStyle = textStyles.addSharedStyleWithName_firstInstance(styleName,textLayer.style());
-		} else {
+		} else if (textStyles.initWithName_firstInstance) {
 			textStyle = MSSharedStyle.alloc().initWithName_firstInstance(styleName,textLayer.style());
+
+			textStyles.addSharedObject(textStyle);
+		} else {
+			textStyle = MSSharedStyle.alloc().initWithName_style(styleName,textLayer.style());
 
 			textStyles.addSharedObject(textStyle);
 		}
