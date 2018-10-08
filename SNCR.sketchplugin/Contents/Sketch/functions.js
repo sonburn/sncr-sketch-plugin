@@ -2235,7 +2235,7 @@ sncr.titles = {
 					if (screenTitle.newInstance) {
 						screenTitle.setStyle(screenTitleStyle.newInstance());
 					} else {
-						screenTitle.setSharedStyle(artboardDescStyle);
+						screenTitle.setSharedStyle(screenTitleStyle);
 					}
 
 					// Set screen title x/y position
