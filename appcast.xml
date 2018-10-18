@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 0.98</title>
+			<title>Version 0.99</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fixed variable typo within Create Titles for Artboards.</li>
+				<li>Fix for MSShapeGroup.shapeWithBezierPath being refactored to MSShapeGroup.layerWithPath in Sketch 52.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.98" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="0.99" />
 		</item>
 	</channel>
 </rss>

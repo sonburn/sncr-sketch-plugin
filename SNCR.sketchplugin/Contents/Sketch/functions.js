@@ -694,7 +694,7 @@ sncr.annotations = {
 				linePath.curveToPoint_controlPoint1_controlPoint2(endPoint,controlPoint1,controlPoint2);
 			}
 
-			var lineLayer = MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(linePath));
+			var lineLayer = (MSShapeGroup.shapeWithBezierPath) ? MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(linePath)) : MSShapeGroup.layerWithPath(MSPath.pathWithBezierPath(linePath));
 			lineLayer.setName(sncr.annotations.config.annotationArrowName);
 			lineLayer.style().setStartMarkerType(sncr.annotations.config.annotationArrowStartType);
 			lineLayer.style().setEndMarkerType(sncr.annotations.config.annotationArrowEndType);
