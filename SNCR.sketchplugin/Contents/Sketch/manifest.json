@@ -211,11 +211,37 @@
 			"icon" : "icons/wireframes-export.png"
 		},
 		{
-			"name" : "Create Artboard Slice…",
-			"identifier" : "other.slice",
-			"script" : "handlers.js",
-			"handler" : "otherSlice"
+			"name" : "Create Slice Around All…",
+			"identifier" : "artboards-create-slice-around-all",
+			"script" : "Artboards/create-slice-around.js",
+			"handler" : "sliceAll"
 		},
+		{
+			"name" : "Create Slice Around Selected…",
+			"identifier" : "artboards-create-slice-around-selected",
+			"script" : "Artboards/create-slice-around.js",
+			"handler" : "sliceSelected"
+		},
+		{
+			"name" : "Update Export Settings for All on Page",
+			"identifier" : "artboards-update-export-settings-for-all-on-page",
+			"script" : "Artboards/update-export-settings-for-all-on-page.js"
+		},
+		{
+			"name" : "Generate New ID",
+			"identifier" : "document-generate-new-id",
+			"script" : "Document/generate-new-id.js"
+		},
+		{
+			"name" : "Recreate and Remove Original",
+			"identifier" : "textlayers-recreate-and-remove-original",
+			"script" : "Text Layers/recreate-and-remove-original.js"
+		},
+		{
+			"name" : "Update Text to Match Style Name",
+			"identifier" : "textlayers-update-text-to-match-style-name",
+			"script" : "Text Layers/update-text-to-match-style-name.js"
+		}
 	],
 	"menu" : {
 		"isRoot" : false,
@@ -291,13 +317,33 @@
 			{
 				"title" : "Other",
 				"items" : [
-					"other.slice"
+					{
+						"title" : "Artboards",
+						"items" : [
+							"artboards-create-slice-around-all",
+							"artboards-create-slice-around-selected",
+							"artboards-update-export-settings-for-all-on-page"
+						]
+					},
+					{
+						"title" : "Document",
+						"items" : [
+							"document-generate-new-id"
+						]
+					},
+					{
+						"title" : "Text Layers",
+						"items" : [
+							"textlayers-recreate-and-remove-original",
+							"textlayers-update-text-to-match-style-name"
+						]
+					}
 				]
 			}
 		]
 	},
 	"identifier" : "com.sncr.sketch",
-	"version" : "0.99",
+	"version" : "0.100",
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"authorEmail" : "jason.burns@synchronoss.com",
 	"name" : "SNCR Plugins",

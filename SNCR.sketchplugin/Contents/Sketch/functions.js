@@ -170,9 +170,6 @@ var sncr = {
 				case "wireframes-export" :
 					this.wireframes.export(context);
 					break;
-				case "other-slice" :
-					this.other.createSlice(context);
-					break;
 			}
 		}
 	}
@@ -1679,205 +1676,6 @@ sncr.layout = {
 	}
 }
 
-sncr.other = {
-	createSlice: function(context) {
-		// Document variables
-		var doc = context.document;
-		var command = sncr.command;
-		var page = doc.currentPage();
-		var pages = doc.pages();
-		var artboards = page.artboards();
-		var layers = page.layers();
-
-		// Selection variables
-		var selection = context.selection;
-		var selectedCount = selection.count();
-
-		// User	variables
-		var sliceSettings = showSliceSettings();
-		var pageBounds = doc.currentPage().contentBounds();
-
-		// Set variables per bound type
-		if (sliceSettings.sliceType >= 0) {
-			if (sliceSettings.sliceType == 1) {
-				// Get layout values of selections
-				var selectionSize = getSelectionSize(artboards);
-
-				// Layout variables
-				var margin = sliceSettings.sliceMargin;
-				var sliceX = selectionSize.minX - margin;
-				var sliceY = selectionSize.minY - margin;
-				var sliceWidth = selectionSize.width + (margin*2);
-				var sliceHeight = selectionSize.height + (margin*2);
-
-				// Create slice
-				createSlice('Artboards',sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,false);
-
-				// Feedback to user
-				doc.showMessage("Slice created around selections!");
-			} else {
-				if (selectedCount < 2) {
-					var app = NSApplication.sharedApplication();
-					app.displayDialog_withTitle("Please select two or more artboards.","Create Artboard Slice")
-				} else {
-					// Get layout values of selections
-					var selectionSize = getSelectionSize(selection);
-
-					// Layout variables
-					var margin = 100;
-					var sliceX = selectionSize.minX - margin;
-					var sliceY = selectionSize.minY - margin;
-					var sliceWidth = selectionSize.width + (margin*2);
-					var sliceHeight = selectionSize.height + (margin*2);
-
-					// Create slice
-					createSlice('Selections',sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,false,false);
-
-					// Feedback to user
-					doc.showMessage("Slice created around selections!");
-				}
-			}
-		}
-
-		function createSlice(name,sliceWidth,sliceHeight,sliceX,sliceY,sliceSettings,isLocked,isUnique) {
-			// Slice variables
-			var sliceLayer;
-			var sliceName = name;
-			var sliceColor = MSColor.colorWithRed_green_blue_alpha(239/255,239/255,239/255,1.0);
-			var exportScale = sliceSettings.exportScale;
-			var exportFormat = sliceSettings.exportFormat.toLowerCase();
-
-			// If slice should be unique
-			if (isUnique) {
-				// Find slice with provided name
-				sliceLayer = findLayerByName(page,sliceName,MSSliceLayer);
-
-				// Delete slice if one already exists
-				if (sliceLayer) {
-					sliceLayer.parentGroup().removeLayer(sliceLayer);
-				}
-			}
-
-			// Create new slice
-			sliceLayer = [MSSliceLayer new];
-			sliceLayer.setName(sliceName);
-			sliceLayer.setBackgroundColor(sliceColor);
-			sliceLayer.setIsLocked(isLocked);
-			sliceLayer.hasBackgroundColor = true;
-
-			// Set slice dimensions
-			sliceLayer.frame().setX(sliceX);
-			sliceLayer.frame().setY(sliceY);
-			sliceLayer.frame().setWidth(sliceWidth);
-			sliceLayer.frame().setHeight(sliceHeight);
-
-			// Insert slice into page
-			doc.currentPage().addLayers([sliceLayer]);
-
-			// Select the slice and move it to the bottom of the layer list
-			sliceLayer.select_byExpandingSelection(true,false);
-			actionWithType(context,"MSMoveToBackAction").doPerformAction(nil);
-
-			// Replace default slice export format
-			sliceLayer.exportOptions().removeAllExportFormats();
-
-			var format = sliceLayer.exportOptions().addExportFormat();
-			format.setScale(exportScale);
-			format.setFileFormat(exportFormat);
-		}
-
-		function showSliceSettings() {
-			// Setting variables
-			var defaultSettings = {};
-			defaultSettings.sliceType = 1;
-			defaultSettings.sliceMargin = '100';
-			defaultSettings.exportScales = ['.5x','1x','2x','3x'];
-			defaultSettings.exportScale = 0;
-			defaultSettings.exportFormats = ['JPG','PDF','PNG'];
-			defaultSettings.exportFormat = 1;
-
-			// Update default settings with cached settings
-			defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
-
-			var alertWindow = COSAlertWindow.new();
-			alertWindow.setMessageText('Create Artboard Slice');
-
-			var sliceTypeRadio = createRadioButtons(["Create slice around selections","Create slice around all artboards"],defaultSettings.sliceType);
-			alertWindow.addAccessoryView(sliceTypeRadio);
-
-			alertWindow.addTextLabelWithValue('Slice margin:');
-
-			var sliceMarginSize = createField(defaultSettings.sliceMargin,NSMakeRect(0,0,60,20));
-			alertWindow.addAccessoryView(sliceMarginSize);
-
-			alertWindow.addTextLabelWithValue('Slice export density:');
-
-			var sliceExportSelect = createSelect(defaultSettings.exportScales,defaultSettings.exportScale,NSMakeRect(0,0,100,25))
-			alertWindow.addAccessoryView(sliceExportSelect);
-
-			alertWindow.addTextLabelWithValue('Slice export format:');
-
-			var sliceFormatSelect = createSelect(defaultSettings.exportFormats,defaultSettings.exportFormat,NSMakeRect(0,0,100,25))
-			alertWindow.addAccessoryView(sliceFormatSelect);
-
-			var buttonOK = alertWindow.addButtonWithTitle(sncr.strings["general-button-ok"]);
-			var buttonCancel = alertWindow.addButtonWithTitle(sncr.strings["general-button-cancel"]);
-
-			// Set key order and first responder
-			setKeyOrder(alertWindow,[
-				sliceTypeRadio,
-				sliceMarginSize,
-				sliceExportSelect,
-				sliceFormatSelect,
-				buttonOK
-			]);
-
-			var responseCode = alertWindow.runModal();
-
-			if (responseCode == 1000) {
-				try {
-					context.command.setValue_forKey_onLayer(sliceTypeRadio.selectedCell().tag(),"sliceType",sncr.document.documentData());
-					context.command.setValue_forKey_onLayer(sliceMarginSize.stringValue(),"sliceMargin",sncr.document.documentData());
-					context.command.setValue_forKey_onLayer(sliceExportSelect.indexOfSelectedItem(),"exportScale",sncr.document.documentData());
-					context.command.setValue_forKey_onLayer(sliceFormatSelect.indexOfSelectedItem(),"exportFormat",sncr.document.documentData());
-				}
-				catch(err) {
-					log(sncr.strings["general-save-failed"]);
-				}
-
-				return {
-					sliceType : sliceTypeRadio.selectedCell().tag(),
-					sliceMargin : sliceMarginSize.stringValue(),
-					exportScale : defaultSettings.exportScales[sliceExportSelect.indexOfSelectedItem()].slice(0,-1),
-					exportFormat : defaultSettings.exportFormats[sliceFormatSelect.indexOfSelectedItem()]
-				}
-			} else return false;
-		}
-
-		function getSelectionSize(selection) {
-			var minX,minY,maxX,maxY;
-			minX=minY=Number.MAX_VALUE;
-			maxX=maxY=-0xFFFFFFFF;
-
-			for (var i = 0; i < selection.count(); i++) {
-				var frame = selection.objectAtIndex(i).frame();
-
-				minX = Math.min(minX,frame.minX());
-				minY = Math.min(minY,frame.minY());
-				maxX = Math.max(maxX,frame.maxX());
-				maxY = Math.max(maxY,frame.maxY());
-			}
-
-			return {
-				width: maxX-minX,
-				height: maxY-minY,
-				minX: minX,
-				minY: minY
-			};
-		}
-	}
-}
-
 sncr.sections = {
 	linkSelected: function(context,command) {
 		// Validate the selections to link
@@ -2181,135 +1979,133 @@ sncr.titles = {
 
 		var titleSettings = sncr.titles.settings(context,"create");
 
-		if (sncr.page != sncr.symbolsPage) {
-			// Set parent group
-			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+		// Set parent group
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
 
-			// Find and remove screen titles group if it exists on the page (the old location)
-			sncr.page.removeLayer(findLayerByName(sncr.page,sncr.titlesGroupName));
+		// Find and remove screen titles group if it exists on the page (the old location)
+		sncr.page.removeLayer(findLayerByName(sncr.page,sncr.titlesGroupName));
 
-			// Find and remove screen titles group if it exists in the parent group (the new location)
-			parentGroup.removeLayer(findLayerByName(parentGroup,sncr.titlesGroupName));
+		// Find and remove screen titles group if it exists in the parent group (the new location)
+		parentGroup.removeLayer(findLayerByName(parentGroup,sncr.titlesGroupName));
 
-			// Get a filtered list of artboards
-			var predicate = NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.titles.config.featureKey + " != " + false,sncr.pluginDomain),
-				artboards = sncr.page.artboards().filteredArrayUsingPredicate(predicate),
-				loop = artboards.objectEnumerator(),
-				artboard;
+		// Get a filtered list of artboards
+		var predicate = NSPredicate.predicateWithFormat("userInfo == nil || function(userInfo,'valueForKeyPath:',%@)." + sncr.titles.config.featureKey + " != " + false,sncr.pluginDomain),
+			artboards = sncr.page.artboards().filteredArrayUsingPredicate(predicate),
+			loop = artboards.objectEnumerator(),
+			artboard;
 
-			// If artboards exist on the page...
-			if (artboards.length) {
-				// Screen title style
-				var screenTitleStyleName = "Wireframe/Screen Title";
-				var screenTitleStyleData = {
-					fontFace : "Neue Haas Grotesk Text Std 75 Bold",
-					fontSize : 18,
-					lineHeight : 48,
-					textAlignment : 0
-				}
-
-				// Screen title settings
-				var screenTitleOffset = parseInt(titleSettings.titleOffset);
-
-				// Remove screen title style (the old style)
-				deleteTextStyle('Layout/Screen Title');
-
-				// Get screen title style (will add style if it doesn't exist) (the new style)
-				var screenTitleStyle = getTextStyle(screenTitleStyleName,screenTitleStyleData);
-
-				// Create new screen title group
-				var titleGroup = MSLayerGroup.new();
-				titleGroup.setName(sncr.titlesGroupName);
-				titleGroup.frame().setX(0 - parentGroup.frame().x());
-				titleGroup.frame().setY(0 - parentGroup.frame().y());
-				titleGroup.setHasClickThrough(true);
-
-				// Iterate through the artboards...
-				while (artboard = loop.nextObject()) {
-					// Create a screen title
-					var screenTitle = MSTextLayer.new();
-					screenTitle.setStringValue(artboard.name());
-					screenTitle.setName(artboard.name());
-
-					// Apply style to screen title
-					if (screenTitle.newInstance) {
-						screenTitle.setStyle(screenTitleStyle.newInstance());
-					} else {
-						screenTitle.setSharedStyle(screenTitleStyle);
-					}
-
-					// Set screen title x/y position
-					screenTitle.frame().setX(artboard.frame().x());
-					screenTitle.frame().setY(artboard.frame().y() + artboard.frame().height() + screenTitleOffset);
-
-					// If user wants screen title below artboards...
-					if (titleSettings.titleType == 0) {
-						// Adjust screen title y position
-						screenTitle.frame().setY(artboard.frame().y() - (screenTitleStyleData.lineHeight + screenTitleOffset));
-					}
-
-					// Add screen title to title group
-					titleGroup.addLayers([screenTitle]);
-				}
-
-				// Add title group to parent group
-				parentGroup.addLayers([titleGroup]);
-
-				// Resize title and parents groups to account for children
-				titleGroup.resizeToFitChildrenWithOption(0);
-				parentGroup.resizeToFitChildrenWithOption(0);
-
-				// Collapse the parent group
-				parentGroup.setLayerListExpandedType(0);
-
-				// Move parent group to the top of the layer list
-				parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
-
-				// Deselect parent group (moveToLayer_beforeLayer selects it)
-				parentGroup.select_byExpandingSelection(false,true);
-
-				// Switch message and handling per method the function was invoked
-				switch (command) {
-					case "include":
-						break;
-					case "preclude":
-						break;
-					case "action":
-						break;
-					case "settings":
-						break;
-					case "layout":
-						break;
-					default:
-						// Lock the parent group
-						parentGroup.setIsLocked(1);
-
-						// Display feedback
-						displayMessage(sncr.strings["title-create-complete"]);
-
-						break;
-				}
+		// If artboards exist on the page...
+		if (artboards.length) {
+			// Screen title style
+			var screenTitleStyleName = "Wireframe/Screen Title";
+			var screenTitleStyleData = {
+				fontFace : "Neue Haas Grotesk Text Std 75 Bold",
+				fontSize : 18,
+				lineHeight : 48,
+				textAlignment : 0
 			}
-			// If no artboards exist on the page...
-			else {
-				// Switch message and handling per method the function was invoked
-				switch (command) {
-					case "include":
-						break;
-					case "preclude":
-						break;
-					case "action":
-						break;
-					case "settings":
-						break;
-					case "layout":
-						break;
-					default:
-						// Display feedback
-						displayDialog(sncr.strings["title-create-plugin"],sncr.strings["title-create-problem"]);
 
-						break;
+			// Screen title settings
+			var screenTitleOffset = parseInt(titleSettings.titleOffset);
+
+			// Remove screen title style (the old style)
+			deleteTextStyle('Layout/Screen Title');
+
+			// Get screen title style (will add style if it doesn't exist) (the new style)
+			var screenTitleStyle = getTextStyle(screenTitleStyleName,screenTitleStyleData);
+
+			// Create new screen title group
+			var titleGroup = MSLayerGroup.new();
+			titleGroup.setName(sncr.titlesGroupName);
+			titleGroup.frame().setX(0 - parentGroup.frame().x());
+			titleGroup.frame().setY(0 - parentGroup.frame().y());
+			titleGroup.setHasClickThrough(true);
+
+			// Iterate through the artboards...
+			while (artboard = loop.nextObject()) {
+				// Create a screen title
+				var screenTitle = MSTextLayer.new();
+				screenTitle.setStringValue(artboard.name());
+				screenTitle.setName(artboard.name());
+
+				// Apply style to screen title
+				if (screenTitle.newInstance) {
+					screenTitle.setStyle(screenTitleStyle.newInstance());
+				} else {
+					screenTitle.setSharedStyle(screenTitleStyle);
 				}
+
+				// Set screen title x/y position
+				screenTitle.frame().setX(artboard.frame().x());
+				screenTitle.frame().setY(artboard.frame().y() + artboard.frame().height() + screenTitleOffset);
+
+				// If user wants screen title below artboards...
+				if (titleSettings.titleType == 0) {
+					// Adjust screen title y position
+					screenTitle.frame().setY(artboard.frame().y() - (screenTitleStyleData.lineHeight + screenTitleOffset));
+				}
+
+				// Add screen title to title group
+				titleGroup.addLayers([screenTitle]);
+			}
+
+			// Add title group to parent group
+			parentGroup.addLayers([titleGroup]);
+
+			// Resize title and parents groups to account for children
+			titleGroup.resizeToFitChildrenWithOption(0);
+			parentGroup.resizeToFitChildrenWithOption(0);
+
+			// Collapse the parent group
+			parentGroup.setLayerListExpandedType(0);
+
+			// Move parent group to the top of the layer list
+			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
+
+			// Deselect parent group (moveToLayer_beforeLayer selects it)
+			parentGroup.select_byExpandingSelection(false,true);
+
+			// Switch message and handling per method the function was invoked
+			switch (command) {
+				case "include":
+					break;
+				case "preclude":
+					break;
+				case "action":
+					break;
+				case "settings":
+					break;
+				case "layout":
+					break;
+				default:
+					// Lock the parent group
+					parentGroup.setIsLocked(1);
+
+					// Display feedback
+					displayMessage(sncr.strings["title-create-complete"]);
+
+					break;
+			}
+		}
+		// If no artboards exist on the page...
+		else {
+			// Switch message and handling per method the function was invoked
+			switch (command) {
+				case "include":
+					break;
+				case "preclude":
+					break;
+				case "action":
+					break;
+				case "settings":
+					break;
+				case "layout":
+					break;
+				default:
+					// Display feedback
+					displayDialog(sncr.strings["title-create-plugin"],sncr.strings["title-create-problem"]);
+
+					break;
 			}
 		}
 	},

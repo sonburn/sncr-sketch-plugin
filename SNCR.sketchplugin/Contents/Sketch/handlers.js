@@ -111,7 +111,3 @@ var wireframesPreclude = function(context) {
 var wireframesExport = function(context) {
 	sncr.init(context,"wireframes-export");
 }
-
-var otherSlice = function(context) {
-	sncr.init(context,"other-slice");
-}
