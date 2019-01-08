@@ -10,7 +10,7 @@
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Add new function to toggle all hotspots within a document.</li>
+				<li>Fixes for prototype annotation issues. Fixes for description linking issues. Add new function to toggle all hotspots within a document.</li>
 				</ul>
 				]]>
 			</description>
