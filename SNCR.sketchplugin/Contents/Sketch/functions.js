@@ -7,8 +7,9 @@ var sncr = {
 		this.command = context.command;
 		this.pages = this.document.pages();
 		this.page = this.document.currentPage();
-		this.symbols = this.document.documentData().allSymbols();
-		this.symbolsPage = this.document.documentData().symbolsPage();
+		this.data = this.document.documentData();
+		this.symbols = this.data.allSymbols();
+		this.symbolsPage = this.data.symbolsPage();
 
 		this.localeID = "en";
 		this.stringsPath = context.plugin.urlForResourceNamed("strings/" + this.localeID + ".plist").path();
@@ -260,8 +261,8 @@ sncr.annotations = {
 
 			if (destinationArtboardID == "back") {
 				destinationArtboardName = "Back to originating screen";
-			} else if (sncr.document.documentData().layerWithID(destinationArtboardID)) {
-				destinationArtboardName = sncr.document.documentData().layerWithID(destinationArtboardID).name();
+			} else if (sncr.data.layerWithID(destinationArtboardID)) {
+				destinationArtboardName = sncr.data.layerWithID(destinationArtboardID).name();
 			} else {
 				destinationArtboardName = "Unknown";
 			}
@@ -386,10 +387,23 @@ sncr.annotations = {
 	},
 	getAnnotations: function(artboardID) {
 		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
-			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName),
-			predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationParentKey + " == '" + artboardID + "'",sncr.pluginDomain);
+			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
-		return noteGroup.children().filteredArrayUsingPredicate(predicate);
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
+			annotations = noteGroup.children().filteredArrayUsingPredicate(predicate);
+
+		var annotationArray = NSMutableArray.array();
+
+		annotations.forEach(function(annotation){
+			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
+				linkedObject = sncr.data.layerWithID(linkedObjectID);
+
+			if (linkedObject.parentArtboard().objectID() == artboardID) {
+				annotationArray.addObject(annotation);
+			}
+		});
+
+		return annotationArray;
 	},
 	linkSelected: function(context) {
 		// If nothing is selected, or two objects are not selected...
@@ -433,7 +447,7 @@ sncr.annotations = {
 		sncr.annotations.updateAnnotations(context,source.parentArtboard().objectID());
 
 		// Determine annotation name
-		var annotationName = sncr.annotations.config.annotationLinkPrefix + note.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
+		var annotationName = sncr.annotations.config.annotationLinkPrefix + annotation.name().split(/\r\n|\r|\n/g)[0].replace(sncr.annotations.config.annotationLinkPrefix,"");
 
 		// Create a log event
 		log(annotationName + sncr.strings["annotation-link-complete"] + source.name());
@@ -444,8 +458,6 @@ sncr.annotations = {
 	updateAnnotations: function(context,artboardID) {
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
 			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			annotationLoop = annotations.objectEnumerator(),
-			annotation,
 			parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
 			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName),
 			updateCount = 0,
@@ -462,22 +474,46 @@ sncr.annotations = {
 		}
 
 		// Loop through annotations...
-		while (annotation = annotationLoop.nextObject()) {
+		annotations.forEach(function(annotation){
 			// Get linked object
 			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
-				linkedObjectPredicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID,sncr.pluginDomain),
-				linkedObject = sncr.page.children().filteredArrayUsingPredicate(linkedObjectPredicate).firstObject();
+				linkedObject = sncr.data.layerWithID(linkedObjectID);
 
-			// If linked object exists...
-			if (linkedObject) {
+			// If linked object exists on current page...
+			if (linkedObject && linkedObject.parentPage() == sncr.page) {
 				var artboardWithAnnotation = linkedObject.parentArtboard().objectID();
 
 				if (!artboardID || artboardID == artboardWithAnnotation) {
+					var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain);
+
 					// If annotation links to a flow layer...
-					if (sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain)) {
-						// Determine annotation Y position
-						var flowLayerRect = createNewRectForFlowLayer(linkedObject,sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain)),
-							annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
+					if (flowObjectID) {
+						if (linkedObject.symbolMaster().layerWithID(flowObjectID)) {
+							// Determine annotation Y position
+							var flowLayerRect = createNewRectForFlowLayer(linkedObject,flowObjectID),
+								annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
+						} else {
+							// Remove stored values for linked artboard
+							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,annotation);
+							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,annotation);
+							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,annotation);
+							sncr.command.setValue_forKey_onLayer(nil,"flowObjectID",annotation);
+
+							// Create annotation name
+							var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,"");
+
+							// Update annotation layer name
+							annotation.setName(annotationName);
+
+							// Iterate counters
+							updateCount++;
+							removeCount++;
+
+							// Create a log event
+							log(annotationName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
+
+							return false;
+						}
 					}
 					// If annotation links to an object...
 					else {
@@ -509,7 +545,7 @@ sncr.annotations = {
 						annotation.moveToLayer_beforeLayer(noteGroup,nil);
 
 						// Deselect the annotation (moveToLayer_beforeLayer selects it)
-						annotation.select_byExpandingSelection(false,true);
+						annotation.select_byExtendingSelection(false,true);
 					}
 
 					// Iterate counter
@@ -519,6 +555,9 @@ sncr.annotations = {
 						artboardsWithAnnotations.addObject(artboardWithAnnotation);
 					}
 				}
+
+				// Remove stored values no longer used
+				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,annotation);
 			}
 			// If linked object does not exist...
 			else {
@@ -529,7 +568,7 @@ sncr.annotations = {
 				sncr.command.setValue_forKey_onLayer(nil,"flowObjectID",annotation);
 
 				// Create annotation name
-				var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,""));
+				var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,"");
 
 				// Update annotation layer name
 				annotation.setName(annotationName);
@@ -541,7 +580,7 @@ sncr.annotations = {
 				// Create a log event
 				log(annotationName + sncr.strings["annotation-unlink-complete"] + linkedObjectID);
 			}
-		}
+		});
 
 		// If annotation group is not empty...
 		if (noteGroup.layers().count() > 0) {
@@ -590,7 +629,7 @@ sncr.annotations = {
 		parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 		// Deselect parent group (moveToLayer_beforeLayer selects it)
-		parentGroup.select_byExpandingSelection(false,true);
+		parentGroup.select_byExtendingSelection(false,true);
 
 		// If the function was not invoked by action...
 		if (!context.actionContext) {
@@ -728,7 +767,7 @@ sncr.annotations = {
 		defaultSettings.autoAnnotate = 1;
 
 		// Update default settings with cached settings
-		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
+		defaultSettings = getCachedSettings(context,sncr.data,defaultSettings,sncr.pluginDomain);
 
 		// If a command is not passed, operate in config mode...
 		if (!command) {
@@ -756,7 +795,7 @@ sncr.annotations = {
 
 			if (responseCode == 1000) {
 				try {
-					sncr.command.setValue_forKey_onLayer(autoAnnotate.state(),"autoAnnotate",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(autoAnnotate.state(),"autoAnnotate",sncr.data);
 				}
 				catch(err) {
 					log(sncr.strings["general-save-failed"]);
@@ -780,6 +819,11 @@ sncr.common = {
 				sncr.command.setValue_forKey_onLayer(type,"linkType",layer);
 				sncr.command.setValue_forKey_onLayer(destination.objectID(),"linkedObject",layer);
 				sncr.command.setValue_forKey_onLayer(destination.parentArtboard().objectID(),"linkedParentArtboard",layer);
+
+				break;
+			case "description" :
+				sncr.command.setValue_forKey_onLayer(type,"linkType",layer);
+				sncr.command.setValue_forKey_onLayer(destination,sncr.descriptions.config.descriptionLinkKey,layer);
 
 				break;
 			case "section" :
@@ -966,39 +1010,13 @@ sncr.descriptions = {
 		}
 	},
 	linkSelected : function(context) {
-		// Take action on selections...
-		switch (sncr.selection.count()) {
-			// If there are two selections...
-			case 2:
-				// Selection variables
-				var firstItem = sncr.selection[0];
-				var secondItem = sncr.selection[1];
+		// Validate the selections to link
+		var selections = sncr.descriptions.validateSelected(context);
 
-				// If the first item is a text layer and text style name matches the provided name, and the second item is an artboard...
-				if ((firstItem instanceof MSTextLayer && firstItem.sharedObject() && firstItem.sharedObject().name() == sncr.descriptions.config.descriptionStyleName) && secondItem instanceof MSArtboardGroup) {
-					linkArtboardDesc(firstItem,secondItem);
-				}
-				// If the first item is an artboard, and the second item is a text layer and text style name matches the provided name...
-				else if (firstItem instanceof MSArtboardGroup && (secondItem instanceof MSTextLayer && secondItem.sharedObject() && secondItem.sharedObject().name() == sncr.descriptions.config.descriptionStyleName)) {
-					linkArtboardDesc(secondItem,firstItem);
-				}
-				// If the selections do not contain a artboard description text layer and artboard...
-				else {
-					// Display feedback
-					displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
-				}
-
-				break;
-			// If there are not two selections...
-			default:
-				// Display feedback
-				displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
-		}
-
-		// Function to link a artboard description to an artboard
-		function linkArtboardDesc(layer,artboard) {
+		// If selections are valid...
+		if (selections) {
 			// Set stored value for linked artboard
-			sncr.command.setValue_forKey_onLayer(artboard.objectID(),sncr.descriptions.config.descriptionLinkKey,layer);
+			sncr.common.linkObject(selections.description,selections.artboard.objectID(),"description");
 
 			// Set parent group
 			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
@@ -1007,39 +1025,39 @@ sncr.descriptions = {
 			var descGroup = getChildGroup(parentGroup,sncr.descriptionsGroupName);
 
 			// Set artboard description x/y in relation to artboard, with offsets
-			layer.absoluteRect().setX(artboard.frame().x() + sncr.descriptions.config.descriptionXOffset);
-			layer.absoluteRect().setY(artboard.frame().y() + artboard.frame().height() + sncr.descriptions.config.descriptionYOffset);
+			selections.description.absoluteRect().setX(selections.artboard.frame().x() + sncr.descriptions.config.descriptionXOffset);
+			selections.description.absoluteRect().setY(selections.artboard.frame().y() + selections.artboard.frame().height() + sncr.descriptions.config.descriptionYOffset);
 
 			// Set artboard description width
-			layer.frame().setWidth(artboard.frame().width());
+			selections.description.frame().setWidth(selections.artboard.frame().width());
 
 			// If the artboard description is not in the description group...
-			if (layer.parentGroup() != descGroup) {
+			if (selections.description.parentGroup() != descGroup) {
 				// Move the artboard description to the description group
-				layer.moveToLayer_beforeLayer(descGroup,nil);
+				selections.description.moveToLayer_beforeLayer(descGroup,nil);
 
 				// Deselect the artboard description (moveToLayer_beforeLayer selects it)
-				layer.select_byExpandingSelection(false,true);
+				selections.description.select_byExtendingSelection(false,true);
 			}
 
 			// Deselect the artboard
-			artboard.select_byExpandingSelection(false,true);
+			selections.artboard.select_byExtendingSelection(false,true);
 
 			// Resize description and parent groups to account for children
 			descGroup.resizeToFitChildrenWithOption(0);
 			parentGroup.resizeToFitChildrenWithOption(0);
 
 			// Set layer name
-			var layerName = sncr.descriptions.config.descriptionLinkPrefix + artboard.name();
+			var layerName = sncr.descriptions.config.descriptionLinkPrefix + selections.artboard.name();
 
 			// Update the layer name
-			layer.setName(layerName);
+			selections.description.setName(layerName);
 
 			// Create a log event
-			log(layerName + sncr.strings["description-link-complete"] + artboard.name());
+			log(layerName + sncr.strings["description-link-complete"] + selections.artboard.name());
 
 			// Display feedback
-			displayMessage(layerName + sncr.strings["description-link-complete"] + artboard.name());
+			displayMessage(layerName + sncr.strings["description-link-complete"] + selections.artboard.name());
 		}
 	},
 	unlinkSelected : function(context) {
@@ -1078,7 +1096,7 @@ sncr.descriptions = {
 				}
 
 				// Deselect current selection
-				sncr.selection[i].select_byExpandingSelection(false,true);
+				sncr.selection[i].select_byExtendingSelection(false,true);
 			}
 
 			// Display feedback
@@ -1156,7 +1174,7 @@ sncr.descriptions = {
 						layer.moveToLayer_beforeLayer(descGroup,nil);
 
 						// Deselect the artboard description (moveToLayer_beforeLayer selects it)
-						layer.select_byExpandingSelection(false,true);
+						layer.select_byExtendingSelection(false,true);
 					}
 
 					// Set layer name
@@ -1206,7 +1224,7 @@ sncr.descriptions = {
 			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 			// Deselect parent group
-			parentGroup.select_byExpandingSelection(false,true);
+			parentGroup.select_byExtendingSelection(false,true);
 
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
@@ -1234,7 +1252,7 @@ sncr.descriptions = {
 		settings.descriptionXOffset = sncr.descriptions.config.descriptionXOffset;
 		settings.descriptionYOffset = sncr.descriptions.config.descriptionYOffset;
 
-		settings = getCachedSettings(context,sncr.document.documentData(),settings,sncr.pluginDomain);
+		settings = getCachedSettings(context,sncr.data,settings,sncr.pluginDomain);
 
 		if (!command) {
 			var alertWindow = COSAlertWindow.new();
@@ -1275,10 +1293,10 @@ sncr.descriptions = {
 
 			if (responseCode == 1000) {
 				try {
-					sncr.command.setValue_forKey_onLayer(descriptionWidth.stringValue(),"descriptionWidth",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(descriptionPosition.indexOfSelectedItem(),"descriptionPosition",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(Number(descriptionXOffset.stringValue()),"descriptionXOffset",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(Number(descriptionYOffset.stringValue()),"descriptionYOffset",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(descriptionWidth.stringValue(),"descriptionWidth",sncr.data);
+					sncr.command.setValue_forKey_onLayer(descriptionPosition.indexOfSelectedItem(),"descriptionPosition",sncr.data);
+					sncr.command.setValue_forKey_onLayer(Number(descriptionXOffset.stringValue()),"descriptionXOffset",sncr.data);
+					sncr.command.setValue_forKey_onLayer(Number(descriptionYOffset.stringValue()),"descriptionYOffset",sncr.data);
 				}
 				catch(err) {
 					log(sncr.strings["general-save-failed"]);
@@ -1293,6 +1311,44 @@ sncr.descriptions = {
 				descriptionXOffset : settings.descriptionXOffset,
 				descriptionYOffset : settings.descriptionYOffset
 			}
+		}
+	},
+	validateSelected: function(context) {
+		// Get latest selections, as they may have been changed by Insert
+		var selections = sncr.page.selectedLayers().layers();
+
+		// If two objects are not selected...
+		if (selections.count() != 2) {
+			// Display feedback
+			displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
+
+			return false;
+		}
+
+		// Selection variables
+		var firstObject = selections.firstObject(),
+			lastObject = selections.lastObject();
+
+		// If the first item is not an artboard and the second item is an artboard...
+		if ((firstObject.class() != "MSArtboardGroup" || firstObject.class() != "MSSymbolMaster") && (lastObject.class() == "MSArtboardGroup" || lastObject.class() == "MSSymbolMaster")) {
+			return {
+				description : firstObject,
+				artboard : lastObject
+			}
+		}
+		// If the first item is an artboard and the second item is not an artboard
+		else if ((firstObject.class() == "MSArtboardGroup" || firstObject.class() == "MSSymbolMaster") && (lastObject.class() != "MSArtboardGroup" || lastObject.class() != "MSSymbolMaster")) {
+			return {
+				description : lastObject,
+				artboard : firstObject
+			}
+		}
+		// If the selections are two artboards...
+		else {
+			// Display feedback
+			displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
+
+			return false;
 		}
 	}
 }
@@ -1413,7 +1469,7 @@ sncr.layout = {
 				if (layoutSettings.autoSections) sncr.sections.updateAllOnPage(context,"layout");
 				if (layoutSettings.autoTitles) sncr.titles.create(context,"layout");
 				if (layoutSettings.autoDescriptions) sncr.descriptions.updateAllOnPage(context,"layout");
-				if (layoutSettings.autoAnnotations) sncr.annotations.updateAnnotations(context,"layout");
+				if (layoutSettings.autoAnnotations) sncr.annotations.updateAnnotations(context);
 
 				// Collapse everything if run manually
 				if (!context.actionContext) actionWithType(context,"MSCollapseAllGroupsAction").doPerformAction(nil);
@@ -1439,7 +1495,7 @@ sncr.layout = {
 
 				while (artboard = loop.nextObject()) {
 					artboard.moveToLayer_beforeLayer(output,nil);
-					artboard.select_byExpandingSelection(false,true);
+					artboard.select_byExtendingSelection(false,true);
 				}
 			}
 		}
@@ -1743,7 +1799,7 @@ sncr.sections = {
 				}
 
 				// Deselect current selection
-				sncr.selection[i].select_byExpandingSelection(false,true);
+				sncr.selection[i].select_byExtendingSelection(false,true);
 			}
 
 			// If there is only one selection...
@@ -1860,7 +1916,7 @@ sncr.sections = {
 		defaultSettings.sectionTitleXOffset = 0;
 		defaultSettings.sectionTitleYOffset = 0;
 
-		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
+		defaultSettings = getCachedSettings(context,sncr.data,defaultSettings,sncr.pluginDomain);
 
 		if (!command) {
 			var alertWindow = COSAlertWindow.new();
@@ -1895,9 +1951,9 @@ sncr.sections = {
 
 			if (responseCode == 1000) {
 				try {
-					sncr.command.setValue_forKey_onLayer(titleWidth.stringValue(),"sectionTitleWidth",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(Number(titleXOffset.stringValue()),"sectionTitleXOffset",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(Number(titleYOffset.stringValue()),"sectionTitleYOffset",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(titleWidth.stringValue(),"sectionTitleWidth",sncr.data);
+					sncr.command.setValue_forKey_onLayer(Number(titleXOffset.stringValue()),"sectionTitleXOffset",sncr.data);
+					sncr.command.setValue_forKey_onLayer(Number(titleYOffset.stringValue()),"sectionTitleYOffset",sncr.data);
 				}
 				catch(err) {
 					log(sncr.strings["general-save-failed"]);
@@ -2063,7 +2119,7 @@ sncr.titles = {
 			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 			// Deselect parent group (moveToLayer_beforeLayer selects it)
-			parentGroup.select_byExpandingSelection(false,true);
+			parentGroup.select_byExtendingSelection(false,true);
 
 			// Switch message and handling per method the function was invoked
 			switch (command) {
@@ -2167,7 +2223,7 @@ sncr.titles = {
 		defaultSettings.artboardTitleAuto = 0;
 
 		// Update default settings with cached settings
-		defaultSettings = getCachedSettings(context,sncr.document.documentData(),defaultSettings,sncr.pluginDomain);
+		defaultSettings = getCachedSettings(context,sncr.data,defaultSettings,sncr.pluginDomain);
 
 		// If a command is not passed, operate in config mode...
 		if (!command) {
@@ -2202,8 +2258,8 @@ sncr.titles = {
 					sncr.command.setValue_forKey_onLayer(nil,"titleOffset",sncr.page);
 
 					// Save new settings in new location
-					sncr.command.setValue_forKey_onLayer(titleType.selectedCell().tag(),"artboardTitleType",sncr.document.documentData());
-					sncr.command.setValue_forKey_onLayer(Number(titleOffset.stringValue()),"artboardTitleOffset",sncr.document.documentData());
+					sncr.command.setValue_forKey_onLayer(titleType.selectedCell().tag(),"artboardTitleType",sncr.data);
+					sncr.command.setValue_forKey_onLayer(Number(titleOffset.stringValue()),"artboardTitleOffset",sncr.data);
 				}
 				catch(err) {
 					log(sncr.strings["general-save-failed"]);
@@ -2252,7 +2308,7 @@ sncr.wireframes = {
 
 		sncr.page.addLayers([sliceLayer]);
 
-		sliceLayer.select_byExpandingSelection(true,false);
+		sliceLayer.select_byExtendingSelection(true,false);
 		actionWithType(context,"MSMoveToBackAction").doPerformAction(nil);
 
 		var format = sliceLayer.exportOptions().addExportFormat();

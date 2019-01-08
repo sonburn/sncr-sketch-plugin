@@ -1,5 +1,12 @@
 {
+	"name" : "SNCR Plugins",
+	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
+	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
+	"version" : "1.0",
+	"identifier" : "com.sncr.sketch",
+	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
+	"icon" : "icon.png",
 	"commands" : [
 		{
 			"name" : "Link Selected Title and Artboard",
@@ -233,6 +240,11 @@
 			"script" : "Document/generate-new-id.js"
 		},
 		{
+			"name" : "Toggle Hotspots",
+			"identifier" : "document-toggle-hotspots",
+			"script" : "Document/toggle-hotspots.js"
+		},
+		{
 			"name" : "Recreate and Remove Original",
 			"identifier" : "textlayers-recreate-and-remove-original",
 			"script" : "Text Layers/recreate-and-remove-original.js"
@@ -328,7 +340,8 @@
 					{
 						"title" : "Document",
 						"items" : [
-							"document-generate-new-id"
+							"document-generate-new-id",
+							"document-toggle-hotspots"
 						]
 					},
 					{
@@ -341,13 +354,5 @@
 				]
 			}
 		]
-	},
-	"identifier" : "com.sncr.sketch",
-	"version" : "0.100",
-	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
-	"authorEmail" : "jason.burns@synchronoss.com",
-	"name" : "SNCR Plugins",
-	"icon" : "icon.png",
-	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
-	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin"
+	}
 }

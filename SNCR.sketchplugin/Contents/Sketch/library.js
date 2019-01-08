@@ -76,6 +76,7 @@ function createAlertSelect(items,select,frame) {
 	comboBox.addItemsWithObjectValues(items);
 	comboBox.selectItemAtIndex(select);
 	comboBox.setNumberOfVisibleItems(16);
+	comboBox.setCompletes(1);
 
 	return comboBox;
 }
