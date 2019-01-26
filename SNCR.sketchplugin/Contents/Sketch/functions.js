@@ -1,3 +1,5 @@
+@import 'delegate.js';
+
 var sncr = {
 	init: function(context,command) {
 		this.pluginDomain = "com.sncr.sketch";
@@ -764,7 +766,7 @@ sncr.annotations = {
 	settings: function(context,command) {
 		// Setting variables
 		var defaultSettings = {};
-		defaultSettings.autoAnnotate = 1;
+		defaultSettings.autoAnnotate = 0;
 
 		// Update default settings with cached settings
 		defaultSettings = getCachedSettings(context,sncr.data,defaultSettings,sncr.pluginDomain);
@@ -1404,7 +1406,8 @@ sncr.layout = {
 					groupLayout.push({
 						artboard : artboardName,
 						prefix : thisBoardPrefix,
-						group : groupCount
+						group : groupCount,
+						width : artboard.frame().width()
 					});
 
 					lastBoardPrefix = thisBoardPrefix;
@@ -1415,6 +1418,7 @@ sncr.layout = {
 					xPad = parseInt(layoutSettings.xPad),
 					yPad = parseInt(layoutSettings.yPad),
 					xCount = 0,
+					rowCount = layoutSettings.rowCount,
 					rowHeight = 0,
 					groupCount = 1;
 
@@ -1424,17 +1428,28 @@ sncr.layout = {
 
 					// If starting a new group, reset x and calculate the y position of the next row
 					if (groupLayout[i]['group'] != groupCount) {
-						var nextGroupTotal = groupCounter(groupCount + 1,groupLayout),
-							rowSpace = layoutSettings.rowCount - (xCount + 1);
+						var nextGroupTotal = groupCounter(groupCount + 1,groupLayout);
 
-						if (layoutSettings.rowDensity == 1 || rowSpace < nextGroupTotal) {
-							x = 0;
-							y += rowHeight + yPad;
-							rowHeight = 0;
-							xCount = 0;
+						if (parseInt(layoutSettings.fitWidth)) {
+							if (layoutSettings.rowDensity == 1 || (rowCount - (xCount + 1)) < nextGroupTotal) {
+								x = 0;
+								y += rowHeight + yPad;
+								rowHeight = 0;
+								xCount = 0;
+							} else {
+								x += artboardFrame.width() + xPad;
+								xCount++;
+							}
 						} else {
-							x += artboardFrame.width() + xPad;
-							xCount++;
+							if (layoutSettings.rowDensity == 1 || (rowCount - (xCount + 1)) < nextGroupTotal) {
+								x = 0;
+								y += rowHeight + yPad;
+								rowHeight = 0;
+								xCount = 0;
+							} else {
+								x += artboardFrame.width() + xPad;
+								xCount++;
+							}
 						}
 
 						groupCount++;
@@ -1454,13 +1469,23 @@ sncr.layout = {
 						rowHeight = artboardFrame.height();
 					}
 
-					// Determine if this is the last artboard the row, reset x and calculate the y position of the next row
-					if ((xCount + 1) % layoutSettings.rowCount == 0) {
-						x = 0;
-						y += rowHeight;
-						rowHeight = 0;
+					if (parseInt(layoutSettings.fitWidth)) {
+						if (x + artboardFrame.width() + xPad * 2 > layoutSettings.fitWidth) {
+							x = 0;
+							y += rowHeight;
+							rowHeight = 0;
+						} else {
+							x += artboardFrame.width() + xPad;
+						}
 					} else {
-						x += artboardFrame.width() + xPad;
+						// Determine if this is the last artboard the row, reset x and calculate the y position of the next row
+						if ((xCount + 1) % rowCount == 0) {
+							x = 0;
+							y += rowHeight;
+							rowHeight = 0;
+						} else {
+							x += artboardFrame.width() + xPad;
+						}
 					}
 
 					xCount++;
@@ -1576,6 +1601,7 @@ sncr.layout = {
 		// Default settings
 		var defaultSettings = {};
 		defaultSettings.rowCount = 8;
+		defaultSettings.fitWidth = '';
 		defaultSettings.rowDensity = 0;
 		defaultSettings.sortOrder = 0;
 		defaultSettings.xPad = "400";
@@ -1609,6 +1635,23 @@ sncr.layout = {
 
 			var rowCount = createField(defaultSettings.rowCount,NSMakeRect(0,0,60,22));
 			alertWindow.addAccessoryView(rowCount);
+
+			alertWindow.addTextLabelWithValue('Fit pixel width:');
+
+			var fitWidth = createField(defaultSettings.fitWidth,NSMakeRect(0,0,60,22));
+			alertWindow.addAccessoryView(fitWidth);
+
+			var fitWidthDelegate = new MochaJSDelegate({
+				"controlTextDidChange:" : (function() {
+					if (fitWidth.stringValue() != '') {
+						rowCount.setEnabled(0);
+					} else {
+						rowCount.setEnabled(1);
+					}
+				})
+			});
+
+			fitWidth.setDelegate(fitWidthDelegate.getClassInstance());
 
 			alertWindow.addTextLabelWithValue(sncr.strings["layout-settings-layout-type"]);
 
@@ -1666,6 +1709,7 @@ sncr.layout = {
 			// Set key order and first responder
 			setKeyOrder(alertWindow,[
 				rowCount,
+				fitWidth,
 				rowDensity,
 				sortOrder,
 				xPad,
@@ -1683,6 +1727,7 @@ sncr.layout = {
 				try {
 					if (artboardsPerRowDefault) sncr.command.setValue_forKey_onLayer(nil,"artboardsPerRowDefault",sncr.page);
 					sncr.command.setValue_forKey_onLayer(rowCount.stringValue(),"rowCount",sncr.page);
+					sncr.command.setValue_forKey_onLayer(fitWidth.stringValue(),"fitWidth",sncr.page);
 					sncr.command.setValue_forKey_onLayer(rowDensity.selectedCell().tag(),"rowDensity",sncr.page);
 					sncr.command.setValue_forKey_onLayer(sortOrder.selectedCell().tag(),"sortOrder",sncr.page);
 					sncr.command.setValue_forKey_onLayer(xPad.stringValue(),"xPad",sncr.page);
@@ -1704,6 +1749,7 @@ sncr.layout = {
 			// Return settings
 			return {
 				rowCount : defaultSettings.rowCount,
+				fitWidth : defaultSettings.fitWidth,
 				rowDensity : defaultSettings.rowDensity,
 				sortOrder : defaultSettings.sortOrder,
 				xPad : defaultSettings.xPad,

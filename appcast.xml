@@ -6,11 +6,11 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.0</title>
+			<title>Version 1.1</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fixes for prototype annotation issues. Fixes for description linking issues. Add new function to toggle all hotspots within a document.</li>
+				<li>Added "Fit pixel width" option to Artboard Layout settings. Automatic generation of Layer Annotations now disabled by default.</li>
 				</ul>
 				]]>
 			</description>

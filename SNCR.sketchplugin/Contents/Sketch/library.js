@@ -1,4 +1,4 @@
-@import 'MochaJSDelegate.js';
+@import 'delegate.js';
 
 // Shared variables
 var sketch = require('sketch');
