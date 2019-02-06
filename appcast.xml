@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.1</title>
+			<title>Version 1.2</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added "Fit pixel width" option to Artboard Layout settings. Automatic generation of Layer Annotations now disabled by default.</li>
+				<li>Fixes for Sketch 53.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.0" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.2" />
 		</item>
 	</channel>
 </rss>

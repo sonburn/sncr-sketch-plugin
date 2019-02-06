@@ -1,5 +1,7 @@
 @import 'delegate.js';
 
+var sketch = require("sketch");
+
 var sncr = {
 	init: function(context,command) {
 		this.pluginDomain = "com.sncr.sketch";
@@ -547,7 +549,7 @@ sncr.annotations = {
 						annotation.moveToLayer_beforeLayer(noteGroup,nil);
 
 						// Deselect the annotation (moveToLayer_beforeLayer selects it)
-						annotation.select_byExtendingSelection(false,true);
+						annotation.select_byExtendingSelection(0,1);
 					}
 
 					// Iterate counter
@@ -612,8 +614,13 @@ sncr.annotations = {
 			});
 
 			// Resize annotation and parent groups to account for children
-			noteGroup.resizeToFitChildrenWithOption(0);
-			parentGroup.resizeToFitChildrenWithOption(0);
+			if (sketch.version.sketch > 52) {
+				noteGroup.fixGeometryWithOptions(0);
+				parentGroup.fixGeometryWithOptions(0);
+			} else {
+				noteGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
 
 			// Redraw all connections
 			sncr.annotations.updateConnections();
@@ -624,14 +631,18 @@ sncr.annotations = {
 			noteGroup.removeFromParent();
 
 			// Resize parent group to account for children
-			parentGroup.resizeToFitChildrenWithOption(0);
+			if (sketch.version.sketch > 52) {
+				parentGroup.fixGeometryWithOptions(0);
+			} else {
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
 		}
 
 		// Move parent group to the top of the layer list
 		parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 		// Deselect parent group (moveToLayer_beforeLayer selects it)
-		parentGroup.select_byExtendingSelection(false,true);
+		parentGroup.select_byExtendingSelection(0,1);
 
 		// If the function was not invoked by action...
 		if (!context.actionContext) {
@@ -749,7 +760,11 @@ sncr.annotations = {
 		connectionsGroup.moveToLayer_beforeLayer(noteGroup,nil);
 
 		// Resize connections group to account for children
-		connectionsGroup.resizeToFitChildrenWithOption(0);
+		if (sketch.version.sketch > 52) {
+			connectionsGroup.fixGeometryWithOptions(0);
+		} else {
+			connectionsGroup.resizeToFitChildrenWithOption(0);
+		}
 
 		// Deselection connections and annotations groups
 		connectionsGroup.deselectLayerAndParent();
@@ -969,8 +984,13 @@ sncr.descriptions = {
 					artboardDesc.frame().setWidth(artboard.frame().width());
 
 					// Resize description and parent groups to account for children
-					descGroup.resizeToFitChildrenWithOption(0);
-					parentGroup.resizeToFitChildrenWithOption(0);
+					if (sketch.version.sketch > 52) {
+						descGroup.fixGeometryWithOptions(0);
+						parentGroup.fixGeometryWithOptions(0);
+					} else {
+						descGroup.resizeToFitChildrenWithOption(0);
+						parentGroup.resizeToFitChildrenWithOption(0);
+					}
 
 					// Set stored value for linked artboard
 					sncr.command.setValue_forKey_onLayer(artboard.objectID(),sncr.descriptions.config.descriptionLinkKey,artboardDesc);
@@ -1039,15 +1059,20 @@ sncr.descriptions = {
 				selections.description.moveToLayer_beforeLayer(descGroup,nil);
 
 				// Deselect the artboard description (moveToLayer_beforeLayer selects it)
-				selections.description.select_byExtendingSelection(false,true);
+				selections.description.select_byExtendingSelection(0,1);
 			}
 
 			// Deselect the artboard
-			selections.artboard.select_byExtendingSelection(false,true);
+			selections.artboard.select_byExtendingSelection(0,1);
 
 			// Resize description and parent groups to account for children
-			descGroup.resizeToFitChildrenWithOption(0);
-			parentGroup.resizeToFitChildrenWithOption(0);
+			if (sketch.version.sketch > 52) {
+				descGroup.fixGeometryWithOptions(0);
+				parentGroup.fixGeometryWithOptions(0);
+			} else {
+				descGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
 
 			// Set layer name
 			var layerName = sncr.descriptions.config.descriptionLinkPrefix + selections.artboard.name();
@@ -1098,7 +1123,7 @@ sncr.descriptions = {
 				}
 
 				// Deselect current selection
-				sncr.selection[i].select_byExtendingSelection(false,true);
+				sncr.selection[i].select_byExtendingSelection(0,1);
 			}
 
 			// Display feedback
@@ -1176,7 +1201,7 @@ sncr.descriptions = {
 						layer.moveToLayer_beforeLayer(descGroup,nil);
 
 						// Deselect the artboard description (moveToLayer_beforeLayer selects it)
-						layer.select_byExtendingSelection(false,true);
+						layer.select_byExtendingSelection(0,1);
 					}
 
 					// Set layer name
@@ -1211,7 +1236,11 @@ sncr.descriptions = {
 			// If description group is not empty...
 			if (descGroup.layers().count() > 0) {
 				// Resize description group to account for children
-				descGroup.resizeToFitChildrenWithOption(0);
+				if (sketch.version.sketch > 52) {
+					descGroup.fixGeometryWithOptions(0);
+				} else {
+					descGroup.resizeToFitChildrenWithOption(0);
+				}
 			}
 			// If description group is empty...
 			else {
@@ -1220,13 +1249,17 @@ sncr.descriptions = {
 			}
 
 			// Resize parent group to account for children
-			parentGroup.resizeToFitChildrenWithOption(0);
+			if (sketch.version.sketch > 52) {
+				parentGroup.fixGeometryWithOptions(0);
+			} else {
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
 
 			// Move parent group to the top of the layer list
 			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 			// Deselect parent group
-			parentGroup.select_byExtendingSelection(false,true);
+			parentGroup.select_byExtendingSelection(0,1);
 
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
@@ -1520,7 +1553,7 @@ sncr.layout = {
 
 				while (artboard = loop.nextObject()) {
 					artboard.moveToLayer_beforeLayer(output,nil);
-					artboard.select_byExtendingSelection(false,true);
+					artboard.select_byExtendingSelection(0,1);
 				}
 			}
 		}
@@ -1845,7 +1878,7 @@ sncr.sections = {
 				}
 
 				// Deselect current selection
-				sncr.selection[i].select_byExtendingSelection(false,true);
+				sncr.selection[i].select_byExtendingSelection(0,1);
 			}
 
 			// If there is only one selection...
@@ -2155,8 +2188,13 @@ sncr.titles = {
 			parentGroup.addLayers([titleGroup]);
 
 			// Resize title and parents groups to account for children
-			titleGroup.resizeToFitChildrenWithOption(0);
-			parentGroup.resizeToFitChildrenWithOption(0);
+			if (sketch.version.sketch > 52) {
+				titleGroup.fixGeometryWithOptions(0);
+				parentGroup.fixGeometryWithOptions(0);
+			} else {
+				titleGroup.resizeToFitChildrenWithOption(0);
+				parentGroup.resizeToFitChildrenWithOption(0);
+			}
 
 			// Collapse the parent group
 			parentGroup.setLayerListExpandedType(0);
@@ -2165,7 +2203,7 @@ sncr.titles = {
 			parentGroup.moveToLayer_beforeLayer(sncr.page,nil);
 
 			// Deselect parent group (moveToLayer_beforeLayer selects it)
-			parentGroup.select_byExtendingSelection(false,true);
+			parentGroup.select_byExtendingSelection(0,1);
 
 			// Switch message and handling per method the function was invoked
 			switch (command) {
@@ -2354,7 +2392,7 @@ sncr.wireframes = {
 
 		sncr.page.addLayers([sliceLayer]);
 
-		sliceLayer.select_byExtendingSelection(true,false);
+		sliceLayer.select_byExtendingSelection(1,0);
 		actionWithType(context,"MSMoveToBackAction").doPerformAction(nil);
 
 		var format = sliceLayer.exportOptions().addExportFormat();
