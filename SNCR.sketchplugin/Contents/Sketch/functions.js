@@ -195,7 +195,7 @@ sncr.annotations = {
 			var selections = sncr.selection;
 
 			if (!selections.length) {
-				displayMessage("Nothing is selected");
+				sketch.UI.message("Nothing is selected");
 
 				return;
 			}
@@ -361,10 +361,10 @@ sncr.annotations = {
 
 			log(annotationName + sncr.strings["annotation-designate-complete"]);
 
-			displayMessage(annotationName + sncr.strings["annotation-designate-complete"]);
+			sketch.UI.message(annotationName + sncr.strings["annotation-designate-complete"]);
 		} else {
 			if (!sncr.selection) {
-				displayDialog(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
+				sketch.UI.alert(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
 
 				return;
 			}
@@ -386,7 +386,7 @@ sncr.annotations = {
 				}
 			}
 
-			displayMessage(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
+			sketch.UI.message(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
 		}
 	},
 	getAnnotations: function(artboardID) {
@@ -402,7 +402,7 @@ sncr.annotations = {
 			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
 				linkedObject = sncr.data.layerWithID(linkedObjectID);
 
-			if (linkedObject.parentArtboard().objectID() == artboardID) {
+			if (linkedObject && linkedObject.parentArtboard().objectID() == artboardID) {
 				annotationArray.addObject(annotation);
 			}
 		});
@@ -413,7 +413,7 @@ sncr.annotations = {
 		// If nothing is selected, or two objects are not selected...
 		if (!sncr.selection || sncr.selection.count() != 2) {
 			// Display feedback
-			displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
+			sketch.UI.alert(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-selection"]);
 
 			return;
 		}
@@ -437,7 +437,7 @@ sncr.annotations = {
 		// If neither object is a text layer, or both are...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-textlayer"]);
+			sketch.UI.alert(sncr.strings["annotation-link-plugin"],sncr.strings["annotation-link-problem-textlayer"]);
 
 			return;
 		}
@@ -457,7 +457,7 @@ sncr.annotations = {
 		log(annotationName + sncr.strings["annotation-link-complete"] + source.name());
 
 		// Display feedback
-		displayMessage(annotationName + sncr.strings["annotation-link-complete"] + source.name());
+		sketch.UI.message(annotationName + sncr.strings["annotation-link-complete"] + source.name());
 	},
 	updateAnnotations: function(context,artboardID) {
 		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
@@ -473,7 +473,7 @@ sncr.annotations = {
 			// If the function was not invoked by action...
 			if (!context.actionContext) {
 				// Display feedback
-				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
+				sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"]);
 			}
 		}
 
@@ -547,10 +547,16 @@ sncr.annotations = {
 					if (annotation.parentGroup() != noteGroup) {
 						// Move the annotation to the annotation group
 						annotation.moveToLayer_beforeLayer(noteGroup,nil);
-
-						// Deselect the annotation (moveToLayer_beforeLayer selects it)
-						annotation.select_byExtendingSelection(0,1);
 					}
+
+					// Select the annotation
+					annotation.select_byExtendingSelection(1,1);
+
+					// Move the annotation to the top of the annotation group
+					MSLayerMovement.moveToFront([annotation]);
+
+					// Deselect the annotation
+					annotation.select_byExtendingSelection(0,1);
 
 					// Iterate counter
 					updateCount++;
@@ -649,10 +655,10 @@ sncr.annotations = {
 			// If any annotation links were removed
 			if (removeCount > 0) {
 				// Display feedback
-				displayMessage(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
+				sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"] + ", " + removeCount + sncr.strings["annotation-update-complete-unlinked"]);
 			} else {
 				// Display feedback
-				displayMessage(updateCount + sncr.strings["annotation-update-complete"]);
+				sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"]);
 			}
 		}
 	},
@@ -861,7 +867,7 @@ sncr.conditions = {
 		var selection = sncr.selection.firstObject();
 
 		if (sncr.selection.count() != 1 || sncr.selection.count() == 1 && selection.class() == "MSArtboardGroup") {
-			displayMessage("Select one layer which is not an artboard");
+			sketch.UI.message("Select one layer which is not an artboard");
 
 			return;
 		}
@@ -947,7 +953,7 @@ sncr.descriptions = {
 					linkedDescription.setStringValue(artboardDescription);
 
 					// Display feedback
-					displayMessage(sncr.strings["description-update-complete"]);
+					sketch.UI.message(sncr.strings["description-update-complete"]);
 				}
 				// If artboard description did not exist...
 				else {
@@ -996,7 +1002,7 @@ sncr.descriptions = {
 					sncr.command.setValue_forKey_onLayer(artboard.objectID(),sncr.descriptions.config.descriptionLinkKey,artboardDesc);
 
 					// Display feedback
-					displayMessage(sncr.strings["description-set-complete"]);
+					sketch.UI.message(sncr.strings["description-set-complete"]);
 				}
 			}
 
@@ -1028,7 +1034,7 @@ sncr.descriptions = {
 		// If there is not one artboard selected...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["description-set-plugin"],sncr.strings["description-set-problem"]);
+			sketch.UI.alert(sncr.strings["description-set-plugin"],sncr.strings["description-set-problem"]);
 		}
 	},
 	linkSelected : function(context) {
@@ -1049,6 +1055,9 @@ sncr.descriptions = {
 			// Set artboard description x/y in relation to artboard, with offsets
 			selections.description.absoluteRect().setX(selections.artboard.frame().x() + sncr.descriptions.config.descriptionXOffset);
 			selections.description.absoluteRect().setY(selections.artboard.frame().y() + selections.artboard.frame().height() + sncr.descriptions.config.descriptionYOffset);
+
+			// Set artboard description text behavior
+			selections.description.setTextBehaviour(1);
 
 			// Set artboard description width
 			selections.description.frame().setWidth(selections.artboard.frame().width());
@@ -1084,7 +1093,7 @@ sncr.descriptions = {
 			log(layerName + sncr.strings["description-link-complete"] + selections.artboard.name());
 
 			// Display feedback
-			displayMessage(layerName + sncr.strings["description-link-complete"] + selections.artboard.name());
+			sketch.UI.message(layerName + sncr.strings["description-link-complete"] + selections.artboard.name());
 		}
 	},
 	unlinkSelected : function(context) {
@@ -1127,12 +1136,12 @@ sncr.descriptions = {
 			}
 
 			// Display feedback
-			displayMessage(count + sncr.strings["description-unlinks-complete"]);
+			sketch.UI.message(count + sncr.strings["description-unlinks-complete"]);
 		}
 		// If there are no selections...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["description-unlink-plugin"],sncr.strings["description-unlink-problem"]);
+			sketch.UI.alert(sncr.strings["description-unlink-plugin"],sncr.strings["description-unlink-problem"]);
 		}
 	},
 	updateAllOnPage: function(context,command) {
@@ -1176,6 +1185,9 @@ sncr.descriptions = {
 				if (artboard) {
 					// Determine layer width
 					var layerWidth = (settings.descriptionWidth && settings.descriptionWidth != "") ? settings.descriptionWidth : artboard.frame().width();
+
+					// Set artboard description text behavior
+					layer.setTextBehaviour(1);
 
 					// Set artboard description width
 					layer.frame().setWidth(layerWidth);
@@ -1269,10 +1281,10 @@ sncr.descriptions = {
 				// If any artboard links were removed
 				if (removeCount > 0) {
 					// Display feedback
-					displayMessage(updateCount + sncr.strings["description-updates-complete"] + ", " + removeCount + sncr.strings["description-updates-complete-unlinked"]);
+					sketch.UI.message(updateCount + sncr.strings["description-updates-complete"] + ", " + removeCount + sncr.strings["description-updates-complete-unlinked"]);
 				} else {
 					// Display feedback
-					displayMessage(updateCount + sncr.strings["description-updates-complete"]);
+					sketch.UI.message(updateCount + sncr.strings["description-updates-complete"]);
 				}
 			}
 		}
@@ -1355,7 +1367,7 @@ sncr.descriptions = {
 		// If two objects are not selected...
 		if (selections.count() != 2) {
 			// Display feedback
-			displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
+			sketch.UI.alert(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
 
 			return false;
 		}
@@ -1381,7 +1393,7 @@ sncr.descriptions = {
 		// If the selections are two artboards...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
+			sketch.UI.alert(sncr.strings["description-link-plugin"],sncr.strings["description-link-problem"]);
 
 			return false;
 		}
@@ -1533,7 +1545,7 @@ sncr.layout = {
 				if (!context.actionContext) actionWithType(context,"MSCollapseAllGroupsAction").doPerformAction(nil);
 
 				// Feedback to user
-				displayMessage(sncr.strings["layout-artboards-complete"]);
+				sketch.UI.message(sncr.strings["layout-artboards-complete"]);
 			}
 
 			function groupCounter(group,obj) {
@@ -1573,12 +1585,12 @@ sncr.layout = {
 			}
 
 			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["layout-include-complete"]);
+				sketch.UI.message(sncr.selection[0].name() + sncr.strings["layout-include-complete"]);
 			} else {
-				displayMessage(count + sncr.strings["layout-includes-complete"]);
+				sketch.UI.message(count + sncr.strings["layout-includes-complete"]);
 			}
 		} else {
-			displayDialog(sncr.strings["layout-include-plugin"],sncr.strings["layout-include-problem"]);
+			sketch.UI.alert(sncr.strings["layout-include-plugin"],sncr.strings["layout-include-problem"]);
 		}
 	},
 	include: function(object) {
@@ -1599,12 +1611,12 @@ sncr.layout = {
 			}
 
 			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["layout-preclude-complete"]);
+				sketch.UI.message(sncr.selection[0].name() + sncr.strings["layout-preclude-complete"]);
 			} else {
-				displayMessage(count + sncr.strings["layout-precludes-complete"]);
+				sketch.UI.message(count + sncr.strings["layout-precludes-complete"]);
 			}
 		} else {
-			displayDialog(sncr.strings["layout-preclude-plugin"],sncr.strings["layout-preclude-problem"]);
+			sketch.UI.alert(sncr.strings["layout-preclude-plugin"],sncr.strings["layout-preclude-problem"]);
 		}
 	},
 	preclude: function(object) {
@@ -1616,7 +1628,7 @@ sncr.layout = {
 		sncr.layout.sanitizePages(context);
 
 		if (!feedback) {
-			displayMessage(sncr.page.name() + sncr.strings["layout-include-page-complete"]);
+			sketch.UI.message(sncr.page.name() + sncr.strings["layout-include-page-complete"]);
 		}
 	},
 	precludePage: function(context) {
@@ -1624,7 +1636,7 @@ sncr.layout = {
 
 		sncr.layout.sanitizePages(context);
 
-		displayMessage(sncr.page.name() + sncr.strings["layout-preclude-page-complete"]);
+		sketch.UI.message(sncr.page.name() + sncr.strings["layout-preclude-page-complete"]);
 	},
 	settings: function(context,command) {
 		// Type objects
@@ -1834,7 +1846,7 @@ sncr.sections = {
 			sncr.sections.updateAllOnPage(context,"link");
 
 			// Display feedback
-			displayMessage(layerName + sncr.strings["section-link-complete"] + selections.artboard.name());
+			sketch.UI.message(layerName + sncr.strings["section-link-complete"] + selections.artboard.name());
 		}
 	},
 	unlinkSelected: function(context) {
@@ -1884,18 +1896,18 @@ sncr.sections = {
 			// If there is only one selection...
 			if (sncr.selection.count() == 1) {
 				// Display feedback
-				displayMessage(titleName + sncr.strings["section-unlink-complete"] + artboardName);
+				sketch.UI.message(titleName + sncr.strings["section-unlink-complete"] + artboardName);
 			}
 			// If there is more than one selection...
 			else {
 				// Display feedback
-				displayMessage(count + sncr.strings["section-unlinks-complete"]);
+				sketch.UI.message(count + sncr.strings["section-unlinks-complete"]);
 			}
 		}
 		// If there are no selections...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["section-unlink-plugin"],sncr.strings["section-unlink-problem"]);
+			sketch.UI.alert(sncr.strings["section-unlink-plugin"],sncr.strings["section-unlink-problem"]);
 		}
 	},
 	updateAllOnPage: function(context,command) {
@@ -1973,17 +1985,17 @@ sncr.sections = {
 				break;
 			case "settings":
 				// Display feedback
-				displayMessage(sncr.strings["section-titles-updated"]);
+				sketch.UI.message(sncr.strings["section-titles-updated"]);
 
 				break;
 			default:
 				// If any artboard links were removed
 				if (removeCount > 0) {
 					// Display feedback
-					displayMessage(sncr.strings["section-titles-updated"] + ", " + removeCount + sncr.strings["section-titles-updated-unlinked"]);
+					sketch.UI.message(sncr.strings["section-titles-updated"] + ", " + removeCount + sncr.strings["section-titles-updated-unlinked"]);
 				} else {
 					// Display feedback
-					displayMessage(sncr.strings["section-titles-updated"]);
+					sketch.UI.message(sncr.strings["section-titles-updated"]);
 				}
 
 				break;
@@ -2058,7 +2070,7 @@ sncr.sections = {
 		// If two objects are not selected...
 		if (selections.count() != 2) {
 			// Display feedback
-			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
 
 			return false;
 		}
@@ -2084,7 +2096,7 @@ sncr.sections = {
 		// If the selections are two artboards...
 		else {
 			// Display feedback
-			displayDialog(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
 
 			return false;
 		}
@@ -2222,7 +2234,7 @@ sncr.titles = {
 					parentGroup.setIsLocked(1);
 
 					// Display feedback
-					displayMessage(sncr.strings["title-create-complete"]);
+					sketch.UI.message(sncr.strings["title-create-complete"]);
 
 					break;
 			}
@@ -2243,7 +2255,7 @@ sncr.titles = {
 					break;
 				default:
 					// Display feedback
-					displayDialog(sncr.strings["title-create-plugin"],sncr.strings["title-create-problem"]);
+					sketch.UI.alert(sncr.strings["title-create-plugin"],sncr.strings["title-create-problem"]);
 
 					break;
 			}
@@ -2266,12 +2278,12 @@ sncr.titles = {
 			sncr.titles.create(context,"include");
 
 			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["title-include-complete"]);
+				sketch.UI.message(sncr.selection[0].name() + sncr.strings["title-include-complete"]);
 			} else {
-				displayMessage(count + sncr.strings["title-includes-complete"]);
+				sketch.UI.message(count + sncr.strings["title-includes-complete"]);
 			}
 		} else {
-			displayDialog(sncr.strings["title-include-plugin"],sncr.strings["title-include-problem"]);
+			sketch.UI.alert(sncr.strings["title-include-plugin"],sncr.strings["title-include-problem"]);
 		}
 	},
 	preclude: function(context) {
@@ -2291,12 +2303,12 @@ sncr.titles = {
 			sncr.titles.create(context,"preclude");
 
 			if (sncr.selection.count() == 1) {
-				displayMessage(sncr.selection[0].name() + sncr.strings["title-preclude-complete"]);
+				sketch.UI.message(sncr.selection[0].name() + sncr.strings["title-preclude-complete"]);
 			} else {
-				displayMessage(count + sncr.strings["title-precludes-complete"]);
+				sketch.UI.message(count + sncr.strings["title-precludes-complete"]);
 			}
 		} else {
-			displayDialog(sncr.strings["title-preclude-plugin"],sncr.strings["title-preclude-problem"]);
+			sketch.UI.alert(sncr.strings["title-preclude-plugin"],sncr.strings["title-preclude-problem"]);
 		}
 	},
 	settings: function(context,command) {
@@ -2401,7 +2413,7 @@ sncr.wireframes = {
 
 		sncr.wireframes.include(context);
 
-		displayMessage(sncr.strings["wireframe-add-complete"]);
+		sketch.UI.message(sncr.strings["wireframe-add-complete"]);
 
 		function getSelectionSize(selection) {
 			var minX,minY,maxX,maxY;
@@ -2431,18 +2443,18 @@ sncr.wireframes = {
 		if (selection.count() == 1 && selection[0] instanceof MSSliceLayer) {
 			sncr.command.setValue_forKey_onLayer(true,sncr.wireframes.config.featureKey,selection[0]);
 
-			displayMessage(selection[0].name() + sncr.strings["wireframe-include-complete"]);
+			sketch.UI.message(selection[0].name() + sncr.strings["wireframe-include-complete"]);
 		} else {
-			displayDialog(sncr.strings["wireframe-include-plugin"],sncr.strings["wireframe-include-problem"]);
+			sketch.UI.alert(sncr.strings["wireframe-include-plugin"],sncr.strings["wireframe-include-problem"]);
 		}
 	},
 	preclude: function(context) {
 		if (sncr.selection.count() == 1 && sncr.selection[0] instanceof MSSliceLayer) {
 			sncr.command.setValue_forKey_onLayer(false,sncr.wireframes.config.featureKey,sncr.selection[0]);
 
-			displayMessage(sncr.selection[0].name() + sncr.strings["wireframe-preclude-complete"]);
+			sketch.UI.message(sncr.selection[0].name() + sncr.strings["wireframe-preclude-complete"]);
 		} else {
-			displayDialog(sncr.strings["wireframe-preclude-plugin"],sncr.strings["wireframe-preclude-problem"]);
+			sketch.UI.alert(sncr.strings["wireframe-preclude-plugin"],sncr.strings["wireframe-preclude-problem"]);
 		}
 	},
 	export: function(context) {
@@ -2482,10 +2494,10 @@ sncr.wireframes = {
 					[doc saveArtboardOrSlice:exportList[i]['source'] toFile:exportList[i]['path']];
 				}
 
-				displayMessage(exportList.length + sncr.strings["wireframe-export-complete"]);
+				sketch.UI.message(exportList.length + sncr.strings["wireframe-export-complete"]);
 			}
 		} else {
-			displayDialog(sncr.strings["wireframe-export-plugin"],sncr.strings["wireframe-export-problem"]);
+			sketch.UI.alert(sncr.strings["wireframe-export-plugin"],sncr.strings["wireframe-export-problem"]);
 		}
 	},
 	confirm: function(wireframes) {
@@ -2682,14 +2694,6 @@ function findLayerByName(scope,layerName,type) {
 	}
 
 	return false;
-}
-
-function displayDialog(title,body) {
-	NSApplication.sharedApplication().displayDialog_withTitle(body,title);
-}
-
-function displayMessage(message) {
-	sncr.document.showMessage(message);
 }
 
 function getLayerIndex(layer) {
