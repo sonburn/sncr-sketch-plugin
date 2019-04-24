@@ -31,6 +31,19 @@ function createAlertLabel(text,frame) {
 	return textField;
 }
 
+function createAlertLabelBold(text,frame) {
+	var textField = NSTextField.alloc().initWithFrame(frame);
+
+	textField.setStringValue(text);
+	textField.setFont(NSFont.boldSystemFontOfSize(12))
+	textField.setBezeled(false);
+	textField.setDrawsBackground(false);
+	textField.setEditable(false);
+	textField.setSelectable(false);
+
+	return textField;
+}
+
 function createAlertRadios(options,selected,format,x,y) {
 	var rows = options.length;
 	var columns = 1;
