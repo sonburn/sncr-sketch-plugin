@@ -131,6 +131,12 @@ function getSelectionSize(selections) {
 	}
 }
 
+function performAction(action) {
+	var controller = document.sketchObject.actionsController();
+
+	controller.actionForID(action).doPerformAction(nil);
+}
+
 function setDocumentSettings(settings) {
 	var document = sketch.getSelectedDocument();
 

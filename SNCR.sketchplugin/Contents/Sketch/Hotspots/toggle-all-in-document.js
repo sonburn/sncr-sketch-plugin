@@ -18,7 +18,7 @@ var onRun = function(context) {
 		group.setIsVisible(!currentState);
 	});
 
-	var message = (currentState == 0) ? 'visible' : 'hidden';
+	var message = (currentState == 0) ? 'visible 🙉' : 'hidden 🙈';
 
-	sketch.UI.message('Hotspots are now ' + message);
+	sketch.UI.message('All document hotspots are now ' + message);
 }

@@ -1,12 +1,13 @@
 {
-	"name" : "SNCR Plugins",
+	"name" : "SNCR",
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.3",
+	"version" : "1.4",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
+	"suppliesData": true,
 	"commands" : [
 		{
 			"name" : "Link Selected Title and Artboard",
@@ -230,6 +231,11 @@
 			"handler" : "sliceSelected"
 		},
 		{
+			"name" : "Insert Mask in Selected",
+			"identifier" : "artboards-insert-mask-in-selected",
+			"script" : "Artboards/insert-mask-in.js"
+		},
+		{
 			"name" : "Update Export Settings for All on Page",
 			"identifier" : "artboards-update-export-settings-for-all-on-page",
 			"script" : "Artboards/update-export-settings-for-all-on-page.js"
@@ -240,9 +246,14 @@
 			"script" : "Document/generate-new-id.js"
 		},
 		{
-			"name" : "Toggle Hotspots",
-			"identifier" : "document-toggle-hotspots",
-			"script" : "Document/toggle-hotspots.js"
+			"name" : "Update Content Bounds",
+			"identifier" : "group-update-content-bounds",
+			"script" : "Groups/update-content-bounds.js"
+		},
+		{
+			"name" : "Toggle All Hotspots in Document",
+			"identifier" : "hotspots-toggle-all-in-document",
+			"script" : "Hotspots/toggle-all-in-document.js"
 		},
 		{
 			"name" : "Disable Style Overrides for All Symbols on Page",
@@ -258,7 +269,20 @@
 			"name" : "Update Text to Match Style Name",
 			"identifier" : "textlayers-update-text-to-match-style-name",
 			"script" : "Text Layers/update-text-to-match-style-name.js"
-		}
+		},
+		{
+			"script": "Data/script.js",
+			"handlers": {
+				"actions": {
+					"Startup" : "onStartup",
+					"Shutdown" : "onShutdown",
+					"SupplyTextFromFile" : "onSupplyTextFromFile",
+					"SupplyImageFromFolder" : "onSupplyImageFromFolder",
+					"SupplyRandomTextFromFile" : "onSupplyRandomTextFromFile",
+					"SupplyRandomImageFromFolder" : "onSupplyRandomImageFromFolder"
+				}
+			}
+		},
 	],
 	"menu" : {
 		"title" : "SNCR",
@@ -295,19 +319,6 @@
 					"descriptions-settings"
 				]
 			},
-			{
-				"title" : "Artboard Layout",
-				"items" : [
-					"layout-update",
-					"layout-includeSelected",
-					"layout-precludeSelected",
-					"-",
-					"layout-includePage",
-					"layout-precludePage",
-					"-",
-					"layout-settings"
-				]
-			},
 			"-",
 			{
 				"title" : "Layer Annotations",
@@ -317,6 +328,20 @@
 					"annotations-update",
 					"-",
 					"annotations-settings"
+				]
+			},
+			"-",
+			{
+				"title" : "Page Layout",
+				"items" : [
+					"layout-update",
+					"layout-includeSelected",
+					"layout-precludeSelected",
+					"-",
+					"layout-includePage",
+					"layout-precludePage",
+					"-",
+					"layout-settings"
 				]
 			},
 			"-",
@@ -338,14 +363,26 @@
 						"items" : [
 							"artboards-create-slice-around-all",
 							"artboards-create-slice-around-selected",
+							"artboards-insert-mask-in-selected",
 							"artboards-update-export-settings-for-all-on-page"
 						]
 					},
 					{
 						"title" : "Document",
 						"items" : [
-							"document-generate-new-id",
-							"document-toggle-hotspots"
+							"document-generate-new-id"
+						]
+					},
+					{
+						"title" : "Groups",
+						"items" : [
+							"group-update-content-bounds"
+						]
+					},
+					{
+						"title" : "Hotspots",
+						"items" : [
+							"hotspots-toggle-all-in-document"
 						]
 					},
 					{

@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.3</title>
+			<title>Version 1.4</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added function to disable all style overrides for symbols, annotation improvements, and fix for artboard description layers getting truncated.</li>
+				<li>Added data supplier for future enhancement, added artboard mask insertion function, added group update bounds function.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.3" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.4" />
 		</item>
 	</channel>
 </rss>
