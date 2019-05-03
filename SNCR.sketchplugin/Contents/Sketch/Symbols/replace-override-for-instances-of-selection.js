@@ -1,4 +1,5 @@
 @import '../library.js';
+@import '../delegate.js';
 
 const document = sketch.getSelectedDocument();
 const selection = document.selectedLayers;
@@ -32,13 +33,23 @@ var onRun = function(context) {
 
 	var overrideSelect = createAlertSelect(instanceOverrides.valueForKey('affectedLayer').valueForKey('name'),0,NSMakeRect(0,getMaxYOfView(alertContent),alertWidth,alertSelectHeight));
 
+	var overrideSelectDelegate = new MochaJSDelegate({
+		"comboBoxSelectionDidChange:" : (function() {
+			let currentValue = instanceOverrides[overrideSelect.indexOfSelectedItem()].valueForKey('currentValue');
+
+			overrideValue.setStringValue(currentValue);
+		})
+	});
+
+	overrideSelect.setDelegate(overrideSelectDelegate.getClassInstance());
+
 	alertContent.addSubview(overrideSelect);
 
 	var overrideValueLabel = createAlertLabel('New override value:',NSMakeRect(0,getMaxYOfView(alertContent,alertItemPadding),alertWidth,alertLabelHeight));
 
 	alertContent.addSubview(overrideValueLabel);
 
-	var overrideValue = createAlertField('',NSMakeRect(0,getMaxYOfView(alertContent),alertWidth,alertFieldHeight));
+	var overrideValue = createAlertField(instanceOverrides[0].valueForKey('currentValue'),NSMakeRect(0,getMaxYOfView(alertContent),alertWidth,alertFieldHeight));
 
 	alertContent.addSubview(overrideValue);
 

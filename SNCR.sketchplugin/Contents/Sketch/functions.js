@@ -970,7 +970,7 @@ sncr.descriptions = {
 					var artboardDesc = MSTextLayer.new();
 					artboardDesc.setStringValue(artboardDescription);
 					artboardDesc.setName(sncr.descriptions.config.descriptionLinkPrefix + artboard.name());
-					artboardDesc.setTextBehaviour(1);
+					artboardDesc.setTextBehaviour(0);
 
 					// Apply style to artboard description
 					if (artboardDescStyle.newInstance) {
@@ -988,6 +988,7 @@ sncr.descriptions = {
 
 					// Set artboard description width
 					artboardDesc.frame().setWidth(artboard.frame().width());
+					artboardDesc.setTextBehaviour(1);
 
 					// Resize description and parent groups to account for children
 					if (sketch.version.sketch > 52) {
@@ -1057,10 +1058,11 @@ sncr.descriptions = {
 			selections.description.absoluteRect().setY(selections.artboard.frame().y() + selections.artboard.frame().height() + sncr.descriptions.config.descriptionYOffset);
 
 			// Set artboard description text behavior
-			selections.description.setTextBehaviour(1);
+			selections.description.setTextBehaviour(0);
 
 			// Set artboard description width
 			selections.description.frame().setWidth(selections.artboard.frame().width());
+			selections.description.setTextBehaviour(1);
 
 			// If the artboard description is not in the description group...
 			if (selections.description.parentGroup() != descGroup) {
@@ -1187,10 +1189,11 @@ sncr.descriptions = {
 					var layerWidth = (settings.descriptionWidth && settings.descriptionWidth != "") ? settings.descriptionWidth : artboard.frame().width();
 
 					// Set artboard description text behavior
-					layer.setTextBehaviour(1);
+					layer.setTextBehaviour(0);
 
 					// Set artboard description width
 					layer.frame().setWidth(layerWidth);
+					layer.setTextBehaviour(1);
 
 					// Set artboard description x/y in relation to artboard, with offsets
 					if (settings.descriptionPosition == 1) { // Right
