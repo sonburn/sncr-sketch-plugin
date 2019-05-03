@@ -10,7 +10,7 @@
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added function to replace a text override for all instances of a selected symbol.</li>
+				<li>Fix for artboard description height issues, and replace override function will now show current override value in field.</li>
 				</ul>
 				]]>
 			</description>
