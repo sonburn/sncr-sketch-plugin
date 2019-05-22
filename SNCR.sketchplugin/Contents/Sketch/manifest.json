@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.6",
+	"version" : "1.7",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -187,8 +187,7 @@
 			"name" : "Add/Edit Condition for Selected Layer",
 			"identifier" : "conditions-set",
 			"script" : "handlers.js",
-			"handler" : "conditionsSet",
-			"icon" : "icons/conditions-set.png"
+			"handler" : "conditionsSet"
 		},
 		{
 			"name" : "Add Wireframe Slice",
