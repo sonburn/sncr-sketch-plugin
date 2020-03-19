@@ -271,6 +271,11 @@
 			"icon" : "icons/other-hotspots.png"
 		},
 		{
+			"name" : "Split Master into Platforms",
+			"identifier" : "library-split-master-into-platforms",
+			"script" : "Library/split-master-into-platforms.js"
+		},
+		{
 			"name" : "Disable Style Overrides for All Symbols on Page",
 			"identifier" : "symbols-disable-style-overrides",
 			"script" : "Symbols/disable-style-overrides.js"
@@ -406,6 +411,12 @@
 						"title" : "Hotspots",
 						"items" : [
 							"hotspots-toggle-all-in-document"
+						]
+					},
+					{
+						"title" : "Library",
+						"items" : [
+							"library-split-master-into-platforms"
 						]
 					},
 					{
