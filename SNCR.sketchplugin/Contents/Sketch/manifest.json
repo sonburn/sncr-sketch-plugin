@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.7",
+	"version" : "1.8",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -218,6 +218,11 @@
 			"icon" : "icons/wireframes-export.png"
 		},
 		{
+			"name" : "Create Artboard Instance of Artboard Symbol",
+			"identifier" : "artboards-create-artboard-instance-of-artboard-symbol",
+			"script" : "Artboards/create-artboard-instance-of-artboard-symbol.js"
+		},
+		{
 			"name" : "Create Slice Around All…",
 			"identifier" : "artboards-create-slice-around-all",
 			"script" : "Artboards/create-slice-around.js",
@@ -240,9 +245,19 @@
 			"script" : "Artboards/update-export-settings-for-all-on-page.js"
 		},
 		{
-			"name" : "Generate New ID",
-			"identifier" : "document-generate-new-id",
-			"script" : "Document/generate-new-id.js"
+			"name" : "Get Current ID",
+			"identifier" : "document-get-current-id",
+			"script" : "Document/get-current-id.js"
+		},
+		{
+			"name" : "Set Custom ID",
+			"identifier" : "document-set-custom-id",
+			"script" : "Document/set-custom-id.js"
+		},
+		{
+			"name" : "Set Random ID",
+			"identifier" : "document-set-random-id",
+			"script" : "Document/set-random-id.js"
 		},
 		{
 			"name" : "Update Content Bounds",
@@ -252,7 +267,8 @@
 		{
 			"name" : "Toggle All Hotspots in Document",
 			"identifier" : "hotspots-toggle-all-in-document",
-			"script" : "Hotspots/toggle-all-in-document.js"
+			"script" : "Hotspots/toggle-all-in-document.js",
+			"icon" : "icons/other-hotspots.png"
 		},
 		{
 			"name" : "Disable Style Overrides for All Symbols on Page",
@@ -365,6 +381,7 @@
 					{
 						"title" : "Artboards",
 						"items" : [
+							"artboards-create-artboard-instance-of-artboard-symbol",
 							"artboards-create-slice-around-all",
 							"artboards-create-slice-around-selected",
 							"artboards-insert-mask-in-selected",
@@ -374,7 +391,9 @@
 					{
 						"title" : "Document",
 						"items" : [
-							"document-generate-new-id"
+							"document-get-current-id",
+							"document-set-custom-id",
+							"document-set-random-id"
 						]
 					},
 					{

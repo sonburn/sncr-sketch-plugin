@@ -2008,7 +2008,7 @@ sncr.sections = {
 		var defaultSettings = {};
 		defaultSettings.sectionTitleWidth = "";
 		defaultSettings.sectionTitleXOffset = 0;
-		defaultSettings.sectionTitleYOffset = 0;
+		defaultSettings.sectionTitleYOffset = -108;
 
 		defaultSettings = getCachedSettings(context,sncr.data,defaultSettings,sncr.pluginDomain);
 
