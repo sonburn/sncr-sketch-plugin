@@ -214,7 +214,7 @@ sncr.annotations = {
 				}
 
 				if (layer.flow() && layer.flow().destinationArtboardID() != "") {
-					createAnnotation(layer,layer.flow().destinationArtboardID());
+					sncr.annotations.createAnnotation(layer,layer.flow().destinationArtboardID());
 				}
 
 				// If context.actionContext present (called by AddFlow.finish), don't bother drilling deeper as the
@@ -228,7 +228,7 @@ sncr.annotations = {
 								overrideValue = override.overrideValue();
 
 							if (overridePoint.property() == "flowDestination" && overrideValue && overrideValue != "") {
-								createAnnotation(layer,overrideValue,overridePoint.layerID());
+								sncr.annotations.createAnnotation(layer,overrideValue,overridePoint.layerID());
 							}
 
 							// if (overridePoint.property() == "symbolID") {
@@ -239,7 +239,7 @@ sncr.annotations = {
 							// 			nestedOverrideValue = nestedOverride.overrideValue();
 							//
 							// 		if (nestedOverridePoint.property() == "flowDestination" && nestedOverrideValue != "") {
-							// 			createAnnotation(layer,nestedOverrideValue,nestedOverridePoint.layerID(),layer.symbolMaster());
+							// 			sncr.annotations.createAnnotation(layer,nestedOverrideValue,nestedOverridePoint.layerID(),layer.symbolMaster());
 							// 		}
 							// 	});
 							// }
@@ -255,102 +255,6 @@ sncr.annotations = {
 			updatedArtboards.forEach(function(artboardID){
 				sncr.annotations.updateAnnotations(context,artboardID);
 			});
-		}
-
-		function createAnnotation(linkedObject,destinationArtboardID,flowObjectID) {
-			var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
-				noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
-
-			var destinationArtboardName;
-
-			if (destinationArtboardID == "back") {
-				destinationArtboardName = "Back to originating screen";
-			} else if (sncr.data.layerWithID(destinationArtboardID)) {
-				destinationArtboardName = sncr.data.layerWithID(destinationArtboardID).name();
-			} else {
-				destinationArtboardName = "Unknown";
-			}
-
-			var artboardAnnotations = sncr.annotations.getAnnotations(linkedObject.parentArtboard().objectID());
-
-			var predicate;
-
-			if (flowObjectID) {
-				predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == '" + flowObjectID + "'",sncr.pluginDomain,sncr.pluginDomain);
-			} else {
-				predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == nil",sncr.pluginDomain,sncr.pluginDomain);
-			}
-
-			var existingNote = artboardAnnotations.filteredArrayUsingPredicate(predicate).firstObject();
-
-			if (!existingNote) {
-				var annotation = MSTextLayer.new();
-				annotation.setStringValue(destinationArtboardName);
-				annotation.setName(destinationArtboardName);
-				annotation.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
-				annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-				annotation.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
-				annotation.setTextBehaviour(1);
-				annotation.frame().setWidth(sncr.annotations.config.annotationWidth);
-
-				noteGroup.addLayers([annotation]);
-
-				sncr.command.setValue_forKey_onLayer(linkedObject.objectID(),sncr.annotations.config.annotationLinkKey,annotation);
-				sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,annotation);
-				sncr.command.setValue_forKey_onLayer(linkedObject.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,annotation);
-
-				if (flowObjectID) {
-					sncr.command.setValue_forKey_onLayer(flowObjectID,"flowObjectID",annotation);
-				}
-			} else {
-				var existingString = existingNote.stringValue();
-
-				if (existingString.indexOf("\n") != -1 || existingString.indexOf("\r") != -1) {
-					var n = existingString.indexOf("\n"),
-						r = existingString.indexOf("\r"),
-						returnIndex,
-						returnType;
-
-					if (n != -1 && r != -1) {
-						if (n < r) {
-							returnIndex = n;
-							returnType = "\n";
-						} else {
-							returnIndex = r;
-							returnType = "\r";
-						}
-					} else if (n != -1) {
-						returnIndex = n;
-						returnType = "\n";
-					} else {
-						returnIndex = r;
-						returnType = "\r";
-					}
-
-					var rangeBegin = returnIndex + 1,
-						rangeEnd = existingString.length() - rangeBegin,
-						newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
-
-					existingNote.setStringValue(newString);
-					existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
-
-					var rangeBegin = newString.indexOf("\n") + 1,
-						rangeEnd = newString.length - rangeBegin,
-						range = NSMakeRange(rangeBegin,rangeEnd),
-						rangeFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace,sncr.annotations.config.annotationStyleData.fontSize);
-
-					existingNote.addAttribute_value_forRange(NSFontAttributeName,rangeFont,range);
-				} else {
-					existingNote.setStringValue(destinationArtboardName);
-					existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
-				}
-
-				existingNote.setName(destinationArtboardName);
-				existingNote.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-				existingNote.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
-				existingNote.setTextBehaviour(1);
-				existingNote.frame().setWidth(sncr.annotations.config.annotationWidth);
-			}
 		}
 	},
 	designateSelected: function(annotation) {
@@ -387,6 +291,101 @@ sncr.annotations = {
 			}
 
 			sketch.UI.message(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
+		}
+	},
+	createAnnotation: function(linkedObject,destinationArtboardID,flowObjectID) {
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
+			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+
+		var destinationArtboardName;
+
+		if (destinationArtboardID == "back") {
+			destinationArtboardName = "Back to originating screen";
+		} else if (sncr.data.layerWithID(destinationArtboardID)) {
+			destinationArtboardName = sncr.data.layerWithID(destinationArtboardID).name();
+		} else {
+			destinationArtboardName = "Unknown";
+		}
+
+		var artboardAnnotations = sncr.annotations.getAnnotations(linkedObject.parentArtboard().objectID());
+
+		var predicate;
+
+		if (flowObjectID) {
+			predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == '" + flowObjectID + "'",sncr.pluginDomain,sncr.pluginDomain);
+		} else {
+			predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " == '" + linkedObject.objectID() + "' && function(userInfo,'valueForKeyPath:',%@).flowObjectID == nil",sncr.pluginDomain,sncr.pluginDomain);
+		}
+
+		var existingNote = artboardAnnotations.filteredArrayUsingPredicate(predicate).firstObject();
+
+		if (!existingNote) {
+			var annotation = MSTextLayer.new();
+			annotation.setStringValue(destinationArtboardName);
+			annotation.setName(destinationArtboardName);
+			annotation.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+			annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+			annotation.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
+			annotation.setTextBehaviour(1);
+			annotation.frame().setWidth(sncr.annotations.config.annotationWidth);
+
+			noteGroup.addLayers([annotation]);
+
+			sncr.command.setValue_forKey_onLayer(linkedObject.objectID(),sncr.annotations.config.annotationLinkKey,annotation);
+			sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,annotation);
+			sncr.command.setValue_forKey_onLayer(linkedObject.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,annotation);
+
+			if (flowObjectID) {
+				sncr.command.setValue_forKey_onLayer(flowObjectID,"flowObjectID",annotation);
+			}
+		} else {
+			var existingString = existingNote.stringValue();
+
+			if (existingString.indexOf("\n") != -1 || existingString.indexOf("\r") != -1) {
+				var n = existingString.indexOf("\n"),
+					r = existingString.indexOf("\r"),
+					returnIndex,
+					returnType;
+
+				if (n != -1 && r != -1) {
+					if (n < r) {
+						returnIndex = n;
+						returnType = "\n";
+					} else {
+						returnIndex = r;
+						returnType = "\r";
+					}
+				} else if (n != -1) {
+					returnIndex = n;
+					returnType = "\n";
+				} else {
+					returnIndex = r;
+					returnType = "\r";
+				}
+
+				var rangeBegin = returnIndex + 1,
+					rangeEnd = existingString.length() - rangeBegin,
+					newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
+
+				existingNote.setStringValue(newString);
+				existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+
+				var rangeBegin = newString.indexOf("\n") + 1,
+					rangeEnd = newString.length - rangeBegin,
+					range = NSMakeRange(rangeBegin,rangeEnd),
+					rangeFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace,sncr.annotations.config.annotationStyleData.fontSize);
+
+				existingNote.addAttribute_value_forRange(NSFontAttributeName,rangeFont,range);
+			} else {
+				existingNote.setStringValue(destinationArtboardName);
+				existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+			}
+
+			existingNote.setName(destinationArtboardName);
+			existingNote.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+			existingNote.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
+			existingNote.setTextBehaviour(1);
+			existingNote.frame().setWidth(sncr.annotations.config.annotationWidth);
 		}
 	},
 	getAnnotations: function(artboardID) {
@@ -460,43 +459,52 @@ sncr.annotations = {
 		sketch.UI.message(annotationName + sncr.strings["annotation-link-complete"] + source.name());
 	},
 	updateAnnotations: function(context,artboardID) {
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
-			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName),
-			updateCount = 0,
-			removeCount = 0,
-			artboardsWithAnnotations = NSMutableArray.array();
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain);
+		var annotations = sncr.page.children().filteredArrayUsingPredicate(predicate);
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+		var updateCount = 0;
+		var removeCount = 0;
+		var artboardsWithAnnotations = NSMutableArray.array();
 
 		// If there are no annotations...
 		if (annotations.count() == 0) {
-			// If the function was not invoked by action...
-			if (!context.actionContext) {
-				// Display feedback
-				sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"]);
-			}
+			// Display feedback if the function was not invoked by an action...
+			if (!context.actionContext) sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"]);
 		}
 
-		// Loop through annotations...
+		// Iterate through annotations...
 		annotations.forEach(function(annotation){
 			// Get linked object
-			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
-				linkedObject = sncr.data.layerWithID(linkedObjectID);
+			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation);
+			var linkedObject = sncr.data.layerWithID(linkedObjectID);
 
 			// If linked object exists on current page...
 			if (linkedObject && linkedObject.parentPage() == sncr.page) {
+				// Get ID of parent artboard of linked object
 				var artboardWithAnnotation = linkedObject.parentArtboard().objectID();
 
+				// If no artboardID was passed, or if artboardID was passed and it matches ID of parent artboard of linked object
 				if (!artboardID || artboardID == artboardWithAnnotation) {
+					// Get the flowObjectID, if one exists (used if annotation links to a flow layer)
 					var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain);
 
-					// If annotation links to a flow layer...
+					// If a flowObjectID exists...
 					if (flowObjectID) {
+						// If the flow object still exists...
 						if (linkedObject.symbolMaster().layerWithID(flowObjectID)) {
+							// Get destinationArtboardID in order to update linked annotation destination
+							var destinationArtboardID = sketch.fromNative(linkedObject).overrides.filter(o => o.path == flowObjectID)[0].value;
+
+							// Update annotation destination
+							sncr.annotations.createAnnotation(linkedObject,destinationArtboardID,flowObjectID);
+
 							// Determine annotation Y position
-							var flowLayerRect = createNewRectForFlowLayer(linkedObject,flowObjectID),
-								annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
-						} else {
+							var flowLayerRect = createNewRectForFlowLayer(linkedObject,flowObjectID);
+							var annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
+						}
+						// Otherwise...
+						else {
 							// Remove stored values for linked artboard
 							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,annotation);
 							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,annotation);
@@ -521,6 +529,15 @@ sncr.annotations = {
 					}
 					// If annotation links to an object...
 					else {
+						// If object has a flow destination...
+						if (linkedObject.flow()) {
+							// Get destinationArtboardID in order to update linked annotation destination
+							var destinationArtboardID = linkedObject.flow().destinationArtboardID();
+
+							// Update annotation destination
+							sncr.annotations.createAnnotation(linkedObject,destinationArtboardID);
+						}
+
 						// Determine annotation Y position
 						var annotationY = linkedObject.absoluteRect().y() + linkedObject.frame().height()/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
 					}
