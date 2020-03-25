@@ -29,8 +29,8 @@ var sncr = {
 			connectionsGroupName : "Connections",
 			annotationXOffset : 48,
 			annotationYOffset : 0,
-			annotationWidth : 256,
-			annotationSpacing : 12,
+			annotationWidth : 240,
+			annotationSpacing : 8,
 			annotationLinkKey : "linkedToObject",
 			annotationLinkTypeKey : "linkType",
 			annotationLinkTypeValue : "annotation",
@@ -279,15 +279,13 @@ sncr.annotations = {
 				count = 0;
 
 			while (selection = selectionLoop.nextObject()) {
-				if (selection instanceof MSTextLayer) {
-					sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,selection);
+				sncr.command.setValue_forKey_onLayer(sncr.annotations.config.annotationLinkTypeValue,sncr.annotations.config.annotationLinkTypeKey,selection);
 
-					annotationName = selection.name().split(/\r\n|\r|\n/g)[0];
+				annotationName = selection.name().split(/\r\n|\r|\n/g)[0];
 
-					log(annotationName + sncr.strings["annotation-designate-complete"]);
+				log(annotationName + sncr.strings["annotation-designate-complete"]);
 
-					count++;
-				}
+				count++;
 			}
 
 			sketch.UI.message(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
@@ -418,18 +416,32 @@ sncr.annotations = {
 		}
 
 		// Selection variables
-		var firstObject = sncr.selection.firstObject(),
-			lastObject = sncr.selection.lastObject(),
-			annotation,
-			source;
+		var firstObject = sncr.selection.firstObject();
+		var firstObjectClass = firstObject.class();
+		var firstObjectAnnotation = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkTypeKey,firstObject);
+		var lastObject = sncr.selection.lastObject();
+		var lastObjectClass = lastObject.class();
+		var lastObjectAnnotation = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkTypeKey,lastObject);
+		var annotation;
+		var source;
 
 		// If only the first object is a text layer...
-		if (firstObject.class() == "MSTextLayer" && lastObject.class() != "MSTextLayer") {
+		if (firstObjectClass == "MSTextLayer" && lastObjectClass != "MSTextLayer") {
 			annotation = firstObject;
 			source = lastObject;
 		}
 		// If only the second object is a text layer...
-		else if (firstObject.class() != "MSTextLayer" && lastObject.class() == "MSTextLayer") {
+		else if (firstObjectClass != "MSTextLayer" && lastObjectClass == "MSTextLayer") {
+			annotation = lastObject;
+			source = firstObject;
+		}
+		// If the first object is the annotation...
+		else if (firstObjectAnnotation == 'annotation' && !lastObjectAnnotation) {
+			annotation = firstObject;
+			source = lastObject;
+		}
+		// If the second object is the annotation...
+		else if (!firstObjectAnnotation && lastObjectAnnotation == 'annotation') {
 			annotation = lastObject;
 			source = firstObject;
 		}
@@ -478,6 +490,10 @@ sncr.annotations = {
 			// Get linked object
 			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation);
 			var linkedObject = sncr.data.layerWithID(linkedObjectID);
+			var targetRect = linkedObject.absoluteRect().rect();
+
+			var annotationPosition = sncr.command.valueForKey_onLayer('position',annotation);
+			annotationPosition = (annotationPosition) ? annotationPosition : 0;
 
 			// If linked object exists on current page...
 			if (linkedObject && linkedObject.parentPage() == sncr.page) {
@@ -501,6 +517,7 @@ sncr.annotations = {
 
 							// Determine annotation Y position
 							var flowLayerRect = createNewRectForFlowLayer(linkedObject,flowObjectID);
+							targetRect = flowLayerRect;
 							var annotationY = flowLayerRect.origin.y + flowLayerRect.size.height/2 + sncr.annotations.config.annotationYOffset - sncr.annotations.config.annotationStyleData.lineHeight/2;
 						}
 						// Otherwise...
@@ -544,18 +561,56 @@ sncr.annotations = {
 
 					// Get max X of artboard, or parent artboard
 					var artboardMaxX = CGRectGetMaxX(linkedObject.parentArtboard().rect());
+					var artboardMidX = CGRectGetMidX(linkedObject.parentArtboard().rect());
+					var artboardMinX = CGRectGetMinX(linkedObject.parentArtboard().rect());
 
-					// Update annotation position
-					annotation.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
+					if (CGRectGetMidX(targetRect) < artboardMidX && annotation.class() != "MSSymbolInstance" && annotationPosition != 1) {
+						// Update annotation x position (left of artboard)
+						annotation.absoluteRect().setX(artboardMinX - sncr.annotations.config.annotationWidth - sncr.annotations.config.annotationXOffset);
+					} else {
+						// Update annotation x position (right of artboard)
+						annotation.absoluteRect().setX(artboardMaxX + sncr.annotations.config.annotationXOffset);
+					}
+
+					// Update annotation y position
 					annotation.absoluteRect().setY(annotationY);
 
 					// Update annotation width
 					annotation.frame().setWidth(sncr.annotations.config.annotationWidth);
 
-					// Update annotation style
-					annotation.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
-					annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
-					annotation.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
+					// If annotation is a text layer...
+					if (annotation.class() == "MSTextLayer") {
+						// Update annotation style
+						annotation.setFontSize(sncr.annotations.config.annotationStyleData.fontSize);
+						annotation.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
+
+						if (CGRectGetMidX(targetRect) < artboardMidX && annotationPosition != 1) {
+							annotation.setTextAlignment(1);
+						} else {
+							annotation.setTextAlignment(sncr.annotations.config.annotationStyleData.textAlignment);
+						}
+					}
+
+					// If annotation is a symbol instance...
+					if (annotation.class() == "MSSymbolInstance") {
+						// Get overrides in annotation...
+						let overrides = sketch.fromNative(annotation).overrides.filter(o => o.editable);
+
+						// Iterate through overrides...
+						overrides.forEach(override => {
+							if (override.property === 'flowDestination') {
+								let group = override.path.substr(0,override.path.indexOf('/'));
+								let text = overrides.find(o => o.id.substr(0,o.id.indexOf('/')) == group && o.property == 'stringValue');
+								let destination = sketch.getSelectedDocument().getLayerWithID(override.value);
+								let name = destination.name.substr(0,destination.name.indexOf(' '));
+
+								text.value = name;
+							}
+						});
+
+						// Adjust annotation size
+						sketch.fromNative(annotation).resizeWithSmartLayout();
+					}
 
 					// Update annotation layer name
 					annotation.setName(sncr.annotations.config.annotationLinkPrefix + linkedObject.name());
@@ -615,21 +670,23 @@ sncr.annotations = {
 				var siblings = sncr.annotations.getAnnotations(artboardID);
 
 				if (siblings.count() > 1) {
-					var siblingSort = NSSortDescriptor.sortDescriptorWithKey_ascending("absoluteRect.y",1);
-						siblings = siblings.sortedArrayUsingDescriptors([siblingSort]);
+					var sortByX = NSSortDescriptor.sortDescriptorWithKey_ascending("absoluteRect.x",1);
+					var sortByY = NSSortDescriptor.sortDescriptorWithKey_ascending("absoluteRect.y",1);
+
+					siblings = siblings.sortedArrayUsingDescriptors([sortByX,sortByY]);
 
 					// Iterate through the siblings...
 					for (var i = 0; i < siblings.length; i++) {
 						// If there is a next sibling...
 						if (i + 1 < siblings.length) {
 							// Sibling variables
-							var thisSibling = siblings[i],
-								nextSibling = siblings[i+1];
+							var thisSibling = siblings[i];
+							var nextSibling = siblings[i+1];
 
-							// If this sibling and the next intersect...
-							if (CGRectGetMaxY(thisSibling.rect()) >= CGRectGetMinY(nextSibling.rect())) {
+							// If this sibling and the next are on the same vertical plane, and intersect...
+							if (CGRectGetMinX(thisSibling.rect()) == CGRectGetMinX(nextSibling.rect()) && CGRectGetMaxY(thisSibling.rect()) + sncr.annotations.config.annotationSpacing >= CGRectGetMinY(nextSibling.rect())) {
 								// Adjust the Y coordinate of the next sibling
-								nextSibling.frame().setY(nextSibling.frame().y() + CGRectGetMaxY(thisSibling.rect()) - CGRectGetMinY(nextSibling.rect()) + sncr.annotations.config.annotationSpacing);
+								nextSibling.frame().setY(CGRectGetMaxY(thisSibling.rect()) + sncr.annotations.config.annotationSpacing);
 							}
 						}
 					}
@@ -681,30 +738,27 @@ sncr.annotations = {
 	},
 	updateConnections: function() {
 		// Connections variables
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.connectionsGroupKey + " == true", sncr.pluginDomain),
-			connectionsGroup = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject(),
-			connections = [];
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.connectionsGroupKey + " == true", sncr.pluginDomain);
+		var connectionsGroup = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
 
-		// If connections group exists...
-		if (connectionsGroup) {
-			// Remove connections group
-			connectionsGroup.removeFromParent();
-		}
+		// Remove connections group if it exists...
+		if (connectionsGroup) connectionsGroup.removeFromParent();
 
 		// Create annotations loop
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil", sncr.pluginDomain),
-			annotations = sncr.page.children().filteredArrayUsingPredicate(predicate),
-			annotationLoop = annotations.objectEnumerator(),
-			annotation;
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil", sncr.pluginDomain);
+		var annotations = sncr.page.children().filteredArrayUsingPredicate(predicate);
+
+		// Connections variable
+		var connections = [];
 
 		// Loop through annotations...
-		while (annotation = annotationLoop.nextObject()) {
+		annotations.forEach(function(annotation){
 			// Get ID for linked object
 			var linkedObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier(sncr.annotations.config.annotationLinkKey,annotation,sncr.pluginDomain);
 
 			// Get linked object on current page
-			var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID),
-				linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
+			var predicate = NSPredicate.predicateWithFormat("objectID == %@",linkedObjectID);
+			var linkedObject = sncr.page.children().filteredArrayUsingPredicate(predicate).firstObject();
 
 			// If linked object exists...
 			if (linkedObject) {
@@ -735,7 +789,7 @@ sncr.annotations = {
 				// Add connection object to connections array
 				connections.push(connection);
 			}
-		}
+		});
 
 		// Set parent group
 		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
@@ -747,10 +801,29 @@ sncr.annotations = {
 		connectionsGroup = MSLayerGroup.new();
 
 		// Iterate through the connections...
-		connections.forEach(function(connection){
-			var linkRect = connection.linkRect,
-				startPoint = NSMakePoint(CGRectGetMaxX(linkRect) + sncr.annotations.config.annotationArrowStartXOffset,CGRectGetMidY(linkRect) + sncr.annotations.config.annotationArrowStartYOffset),
-				endPoint = NSMakePoint(connection.endPoint.x + sncr.annotations.config.annotationArrowEndXOffset,connection.endPoint.y + sncr.annotations.config.annotationArrowEndYOffset);
+		connections.forEach(function(connection,i){
+			var linkRect = connection.linkRect;
+			var startPoint;
+			var startPointX;
+			var startPointY;
+			var endPoint;
+			var endPointX;
+			var endPointY;
+
+			if (CGRectGetMinX(linkRect) < connection.endPoint.x) {
+				startPointX = CGRectGetMaxX(linkRect) + sncr.annotations.config.annotationArrowStartXOffset;
+				startPointY = CGRectGetMidY(linkRect) + sncr.annotations.config.annotationArrowStartYOffset;
+				endPointX = connection.endPoint.x + sncr.annotations.config.annotationArrowEndXOffset;
+				endPointY = connection.endPoint.y + sncr.annotations.config.annotationArrowEndYOffset;
+			} else {
+				startPointX = CGRectGetMinX(linkRect) - sncr.annotations.config.annotationArrowStartXOffset;
+				startPointY = CGRectGetMidY(linkRect) + sncr.annotations.config.annotationArrowStartYOffset;
+				endPointX = connection.endPoint.x + sncr.annotations.config.annotationWidth - sncr.annotations.config.annotationArrowEndXOffset;
+				endPointY = connection.endPoint.y + sncr.annotations.config.annotationArrowEndYOffset;
+			}
+
+			startPoint = NSMakePoint(Math.round(startPointX),Math.round(startPointY));
+			endPoint = NSMakePoint(Math.round(endPointX),Math.round(endPointY));
 
 			var linePath = NSBezierPath.bezierPath();
 			linePath.moveToPoint(startPoint);
@@ -758,16 +831,16 @@ sncr.annotations = {
 			if (startPoint.y == endPoint.y) {
 				linePath.lineToPoint(endPoint);
 			} else {
-				var controlPoint1Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 100),
-					controlPoint2Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 100),
-					controlPoint1 = NSMakePoint(startPoint.x + controlPoint1Offset, startPoint.y),
-					controlPoint2 = NSMakePoint(endPoint.x - controlPoint2Offset, endPoint.y);
+				var controlPoint1Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 24);
+				var controlPoint2Offset = Math.max(Math.abs(endPoint.x - startPoint.x)/2, 24);
+				var controlPoint1 = NSMakePoint(startPoint.x + controlPoint1Offset, startPoint.y);
+				var controlPoint2 = NSMakePoint(endPoint.x - controlPoint2Offset, endPoint.y);
 
 				linePath.curveToPoint_controlPoint1_controlPoint2(endPoint,controlPoint1,controlPoint2);
 			}
 
-			var lineLayer = (MSShapeGroup.shapeWithBezierPath) ? MSShapeGroup.shapeWithBezierPath(MSPath.pathWithBezierPath(linePath)) : MSShapeGroup.layerWithPath(MSPath.pathWithBezierPath(linePath));
-			lineLayer.setName(sncr.annotations.config.annotationArrowName);
+			var lineLayer = MSShapePathLayer.layerWithPath(MSPath.pathWithBezierPath(linePath));
+			lineLayer.setName(sncr.annotations.config.annotationArrowName + ' ' + i);
 			lineLayer.style().setStartMarkerType(sncr.annotations.config.annotationArrowStartType);
 			lineLayer.style().setEndMarkerType(sncr.annotations.config.annotationArrowEndType);
 
@@ -2838,13 +2911,20 @@ function logFunctionStart(output,command) {
 }
 
 function createNewRectForFlowLayer(linkedObject,flowObjectID) {
-	var layer = linkedObject.symbolMaster().layerWithID(flowObjectID),
-		offsetX = layer.absoluteRect().rect().origin.x - linkedObject.symbolMaster().absoluteRect().rect().origin.x,
-		offsetY = layer.absoluteRect().rect().origin.y - linkedObject.symbolMaster().absoluteRect().rect().origin.y,
-		offsetWidth = linkedObject.absoluteRect().rect().size.width - linkedObject.symbolMaster().absoluteRect().rect().size.width,
-		offsetHeight = linkedObject.absoluteRect().rect().size.height - linkedObject.symbolMaster().absoluteRect().rect().size.height,
-		newX = linkedObject.absoluteRect().rect().origin.x + offsetX + offsetWidth,
-		newY = linkedObject.absoluteRect().rect().origin.y + offsetY + offsetHeight;
+	var objectRect = linkedObject.absoluteRect().rect();
 
-	return NSMakeRect(newX,newY,layer.rect().size.width,layer.rect().size.height);
+	var master = linkedObject.symbolMaster();
+	var masterRect = master.absoluteRect().rect();
+
+	var flowRect = master.layerWithID(flowObjectID).absoluteRect().rect();
+
+	var offsetX = flowRect.origin.x - masterRect.origin.x;
+	var offsetY = flowRect.origin.y - masterRect.origin.y;
+	var offsetWidth = objectRect.size.width - masterRect.size.width;
+	var offsetHeight = objectRect.size.height - masterRect.size.height;
+
+	var newX = objectRect.origin.x + offsetX + offsetWidth;
+	var newY = objectRect.origin.y + offsetY + offsetHeight;
+
+	return NSMakeRect(newX,newY,flowRect.size.width,flowRect.size.height);
 }
