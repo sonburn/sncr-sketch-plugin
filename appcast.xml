@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.11</title>
+			<title>Version 1.12</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added back ability to designate an annotation layer, and removed text layer restriction. Annotations can now appear on the left of an artboard. Adjusted annotation layout values and improved annotation connection arrows.</li>
+				<li>Annotations can now be created for nested hotspots, implemented fix for missing annotation targets.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.11" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.12" />
 		</item>
 	</channel>
 </rss>

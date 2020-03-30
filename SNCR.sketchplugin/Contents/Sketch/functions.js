@@ -206,53 +206,38 @@ sncr.annotations = {
 		function annotateSelections(layers) {
 			var updatedArtboards = NSMutableArray.array();
 
-			layers.forEach(function(layer) {
+			layers.forEach(layer => {
 				var artboardID = layer.parentArtboard().objectID();
 
-				if (!updatedArtboards.containsObject(artboardID)) {
-					updatedArtboards.addObject(artboardID);
-				}
-
-				if (layer.flow() && layer.flow().destinationArtboardID() != "") {
+				if (layer.flow() && layer.flow().destinationArtboardID()) {
 					sncr.annotations.createAnnotation(layer,layer.flow().destinationArtboardID());
+
+					if (!updatedArtboards.containsObject(artboardID)) {
+						updatedArtboards.addObject(artboardID);
+					}
 				}
 
 				// If context.actionContext present (called by AddFlow.finish), don't bother drilling deeper as the
 				// action is not triggered by updating the flow of a nested hotspot.
 				if (!context.actionContext) {
 					if (layer instanceof MSSymbolInstance && layer.overrides()) {
-						var overrides = layer.availableOverrides();
+						var overrides = sketch.fromNative(layer).overrides.filter(o => o.editable && o.property === 'flowDestination' && o.value);
 
-						overrides.forEach(function(override) {
-							var overridePoint = override.overridePoint(),
-								overrideValue = override.overrideValue();
+						overrides.forEach(o => {
+							let value = o.value;
+							let path = (o.path.includes('/')) ? o.path.substr(0,o.path.indexOf('/')) : o.path;
 
-							if (overridePoint.property() == "flowDestination" && overrideValue && overrideValue != "") {
-								sncr.annotations.createAnnotation(layer,overrideValue,overridePoint.layerID());
+							sncr.annotations.createAnnotation(layer,value,path);
+
+							if (!updatedArtboards.containsObject(artboardID)) {
+								updatedArtboards.addObject(artboardID);
 							}
-
-							// if (overridePoint.property() == "symbolID") {
-							// 	var nestedOverrides = layer.symbolMaster().layerWithID(overridePoint.layerID()).availableOverrides();
-							//
-							// 	nestedOverrides.forEach(function(nestedOverride) {
-							// 		var nestedOverridePoint = nestedOverride.overridePoint(),
-							// 			nestedOverrideValue = nestedOverride.overrideValue();
-							//
-							// 		if (nestedOverridePoint.property() == "flowDestination" && nestedOverrideValue != "") {
-							// 			sncr.annotations.createAnnotation(layer,nestedOverrideValue,nestedOverridePoint.layerID(),layer.symbolMaster());
-							// 		}
-							// 	});
-							// }
 						});
-					}
-
-					if (layer.containsLayers()) {
-						annotateSelections(layer.layers());
 					}
 				}
 			});
 
-			updatedArtboards.forEach(function(artboardID){
+			updatedArtboards.forEach(artboardID => {
 				sncr.annotations.updateAnnotations(context,artboardID);
 			});
 		}
@@ -292,8 +277,8 @@ sncr.annotations = {
 		}
 	},
 	createAnnotation: function(linkedObject,destinationArtboardID,flowObjectID) {
-		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
-			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
 		var destinationArtboardName;
 
@@ -339,11 +324,14 @@ sncr.annotations = {
 		} else {
 			var existingString = existingNote.stringValue();
 
+			var noteTitleFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize);
+			var noteDescFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace,sncr.annotations.config.annotationStyleData.fontSize);
+
 			if (existingString.indexOf("\n") != -1 || existingString.indexOf("\r") != -1) {
-				var n = existingString.indexOf("\n"),
-					r = existingString.indexOf("\r"),
-					returnIndex,
-					returnType;
+				var n = existingString.indexOf("\n");
+				var r = existingString.indexOf("\r");
+				var returnIndex;
+				var returnType;
 
 				if (n != -1 && r != -1) {
 					if (n < r) {
@@ -361,25 +349,25 @@ sncr.annotations = {
 					returnType = "\r";
 				}
 
-				var rangeBegin = returnIndex + 1,
-					rangeEnd = existingString.length() - rangeBegin,
-					newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
+				var rangeBegin = returnIndex + 1;
+				var rangeEnd = existingString.length() - rangeBegin;
+				var newString = destinationArtboardName + "\n" + existingString.substr(rangeBegin,rangeEnd);
 
 				existingNote.setStringValue(newString);
-				existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+				existingNote.setFont(noteTitleFont);
 
-				var rangeBegin = newString.indexOf("\n") + 1,
-					rangeEnd = newString.length - rangeBegin,
-					range = NSMakeRange(rangeBegin,rangeEnd),
-					rangeFont = NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace,sncr.annotations.config.annotationStyleData.fontSize);
+				var rangeBegin = newString.indexOf("\n") + 1;
+				var rangeEnd = newString.length - rangeBegin;
+				var range = NSMakeRange(rangeBegin,rangeEnd);
 
-				existingNote.addAttribute_value_forRange(NSFontAttributeName,rangeFont,range);
+				existingNote.addAttribute_value_forRange(NSFontAttributeName,noteDescFont,range);
 			} else {
 				existingNote.setStringValue(destinationArtboardName);
-				existingNote.setFont(NSFont.fontWithName_size(sncr.annotations.config.annotationStyleData.fontFace + " Bold",sncr.annotations.config.annotationStyleData.fontSize));
+				existingNote.setFont(noteTitleFont);
 			}
 
 			existingNote.setName(destinationArtboardName);
+
 			existingNote.setLineHeight(sncr.annotations.config.annotationStyleData.lineHeight);
 			existingNote.setTextColor(MSImmutableColor.colorWithSVGString(sncr.annotations.config.annotationStyleData.fontColor));
 			existingNote.setTextBehaviour(1);
@@ -387,17 +375,17 @@ sncr.annotations = {
 		}
 	},
 	getAnnotations: function(artboardID) {
-		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName),
-			noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
+		var parentGroup = getParentGroup(sncr.page,sncr.parentGroupName);
+		var noteGroup = getChildGroup(parentGroup,sncr.artboardNoteGroupName);
 
-		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain),
-			annotations = noteGroup.children().filteredArrayUsingPredicate(predicate);
+		var predicate = NSPredicate.predicateWithFormat("userInfo != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkKey + " != nil && function(userInfo,'valueForKeyPath:',%@)." + sncr.annotations.config.annotationLinkTypeKey + " == " + sncr.annotations.config.annotationLinkTypeValue,sncr.pluginDomain);
+		var annotations = noteGroup.children().filteredArrayUsingPredicate(predicate);
 
 		var annotationArray = NSMutableArray.array();
 
-		annotations.forEach(function(annotation){
-			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation),
-				linkedObject = sncr.data.layerWithID(linkedObjectID);
+		annotations.forEach(annotation => {
+			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation);
+			var linkedObject = sncr.data.layerWithID(linkedObjectID);
 
 			if (linkedObject && linkedObject.parentArtboard().objectID() == artboardID) {
 				annotationArray.addObject(annotation);
@@ -490,13 +478,14 @@ sncr.annotations = {
 			// Get linked object
 			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation);
 			var linkedObject = sncr.data.layerWithID(linkedObjectID);
-			var targetRect = linkedObject.absoluteRect().rect();
 
 			var annotationPosition = sncr.command.valueForKey_onLayer('position',annotation);
 			annotationPosition = (annotationPosition) ? annotationPosition : 0;
 
 			// If linked object exists on current page...
 			if (linkedObject && linkedObject.parentPage() == sncr.page) {
+				var targetRect = linkedObject.absoluteRect().rect();
+
 				// Get ID of parent artboard of linked object
 				var artboardWithAnnotation = linkedObject.parentArtboard().objectID();
 
@@ -510,7 +499,7 @@ sncr.annotations = {
 						// If the flow object still exists...
 						if (linkedObject.symbolMaster().layerWithID(flowObjectID)) {
 							// Get destinationArtboardID in order to update linked annotation destination
-							var destinationArtboardID = sketch.fromNative(linkedObject).overrides.filter(o => o.path == flowObjectID)[0].value;
+							var destinationArtboardID = sketch.fromNative(linkedObject).overrides.filter(o => o.property === 'flowDestination' && o.path.includes(flowObjectID))[0].value;
 
 							// Update annotation destination
 							sncr.annotations.createAnnotation(linkedObject,destinationArtboardID,flowObjectID);
@@ -598,7 +587,7 @@ sncr.annotations = {
 
 						// Iterate through overrides...
 						overrides.forEach(override => {
-							if (override.property === 'flowDestination') {
+							if (override.property === 'flowDestination' && override.value) {
 								let group = override.path.substr(0,override.path.indexOf('/'));
 								let text = overrides.find(o => o.id.substr(0,o.id.indexOf('/')) == group && o.property == 'stringValue');
 								let destination = sketch.getSelectedDocument().getLayerWithID(override.value);
@@ -666,7 +655,8 @@ sncr.annotations = {
 
 		// If annotation group is not empty...
 		if (noteGroup.layers().count() > 0) {
-			artboardsWithAnnotations.forEach(function(artboardID){
+			artboardsWithAnnotations.forEach(artboardID => {
+				var artboard = sncr.data.layerWithID(artboardID);
 				var siblings = sncr.annotations.getAnnotations(artboardID);
 
 				if (siblings.count() > 1) {
