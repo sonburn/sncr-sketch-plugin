@@ -221,7 +221,7 @@ sncr.annotations = {
 				// action is not triggered by updating the flow of a nested hotspot.
 				if (!context.actionContext) {
 					if (layer instanceof MSSymbolInstance && layer.overrides()) {
-						var overrides = sketch.fromNative(layer).overrides.filter(o => o.editable && o.property === 'flowDestination' && o.value);
+						var overrides = sketch.fromNative(layer).overrides.filter(o => o.editable && o.property === 'flowDestination' && o.value != 'null');
 
 						overrides.forEach(o => {
 							let value = o.value;
@@ -240,6 +240,8 @@ sncr.annotations = {
 			updatedArtboards.forEach(artboardID => {
 				sncr.annotations.updateAnnotations(context,artboardID);
 			});
+
+			if (!updatedArtboards.length) sketch.UI.message('The selected layer(s) have nothing to annotate');
 		}
 	},
 	designateSelected: function(annotation) {
@@ -248,12 +250,12 @@ sncr.annotations = {
 
 			var annotationName = annotation.name().split(/\r\n|\r|\n/g)[0];
 
-			log(annotationName + sncr.strings["annotation-designate-complete"]);
+			log(annotationName + sncr.strings['annotation-designate-complete']);
 
-			sketch.UI.message(annotationName + sncr.strings["annotation-designate-complete"]);
+			sketch.UI.message(annotationName + sncr.strings['annotation-designate-complete']);
 		} else {
 			if (!sncr.selection) {
-				sketch.UI.alert(sncr.strings["annotation-designate-plugin"],sncr.strings["annotation-designate-problem"]);
+				sketch.UI.alert(sncr.strings['annotation-designate-plugin'],sncr.strings['annotation-designate-problem']);
 
 				return;
 			}
@@ -268,12 +270,12 @@ sncr.annotations = {
 
 				annotationName = selection.name().split(/\r\n|\r|\n/g)[0];
 
-				log(annotationName + sncr.strings["annotation-designate-complete"]);
+				log(annotationName + sncr.strings['annotation-designate-complete']);
 
 				count++;
 			}
 
-			sketch.UI.message(((count == 1) ? annotationName : count) + sncr.strings["annotation-designate-complete"]);
+			sketch.UI.message(((count == 1) ? annotationName : count) + sncr.strings['annotation-designate-complete']);
 		}
 	},
 	createAnnotation: function(linkedObject,destinationArtboardID,flowObjectID) {
@@ -319,7 +321,7 @@ sncr.annotations = {
 			sncr.command.setValue_forKey_onLayer(linkedObject.parentArtboard().objectID(),sncr.annotations.config.annotationParentKey,annotation);
 
 			if (flowObjectID) {
-				sncr.command.setValue_forKey_onLayer(flowObjectID,"flowObjectID",annotation);
+				sncr.command.setValue_forKey_onLayer(flowObjectID,'flowObjectID',annotation);
 			}
 		} else {
 			var existingString = existingNote.stringValue();
@@ -470,7 +472,7 @@ sncr.annotations = {
 		// If there are no annotations...
 		if (annotations.count() == 0) {
 			// Display feedback if the function was not invoked by an action...
-			if (!context.actionContext) sketch.UI.message(updateCount + sncr.strings["annotation-update-complete"]);
+			if (!context.actionContext) sketch.UI.message(updateCount + sncr.strings['annotation-update-complete']);
 		}
 
 		// Iterate through annotations...
@@ -492,7 +494,7 @@ sncr.annotations = {
 				// If no artboardID was passed, or if artboardID was passed and it matches ID of parent artboard of linked object
 				if (!artboardID || artboardID == artboardWithAnnotation) {
 					// Get the flowObjectID, if one exists (used if annotation links to a flow layer)
-					var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain);
+					var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier('flowObjectID',annotation,sncr.pluginDomain);
 
 					// If a flowObjectID exists...
 					if (flowObjectID) {
@@ -515,7 +517,7 @@ sncr.annotations = {
 							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,annotation);
 							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,annotation);
 							sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,annotation);
-							sncr.command.setValue_forKey_onLayer(nil,"flowObjectID",annotation);
+							sncr.command.setValue_forKey_onLayer(nil,'flowObjectID',annotation);
 
 							// Create annotation name
 							var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,"");
@@ -636,7 +638,7 @@ sncr.annotations = {
 				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkKey,annotation);
 				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationLinkTypeKey,annotation);
 				sncr.command.setValue_forKey_onLayer(nil,sncr.annotations.config.annotationParentKey,annotation);
-				sncr.command.setValue_forKey_onLayer(nil,"flowObjectID",annotation);
+				sncr.command.setValue_forKey_onLayer(nil,'flowObjectID',annotation);
 
 				// Create annotation name
 				var annotationName = annotation.name().replace(sncr.annotations.config.annotationLinkPrefix,"");
@@ -752,9 +754,9 @@ sncr.annotations = {
 
 			// If linked object exists...
 			if (linkedObject) {
-				var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier("flowObjectID",annotation,sncr.pluginDomain);
+				var flowObjectID = sncr.command.valueForKey_onLayer_forPluginIdentifier('flowObjectID',annotation,sncr.pluginDomain);
 
-				if (linkedObject.class() == "MSSymbolInstance" && flowObjectID) {
+				if (linkedObject.class() == 'MSSymbolInstance' && flowObjectID) {
 					// Create connection object
 					var connection = {
 						linkID : annotation.objectID(),
@@ -2907,6 +2909,41 @@ function createNewRectForFlowLayer(linkedObject,flowObjectID) {
 	var masterRect = master.absoluteRect().rect();
 
 	var flowRect = master.layerWithID(flowObjectID).absoluteRect().rect();
+
+
+
+
+
+
+	// log(flowRect)
+	//
+	// var overrides = linkedObject.overrideContainer().flattenedChildren();
+	//
+	// overrides.forEach(o => {
+	// 	let value = String(o.availableOverride().internalOverrideValue());
+	//
+	// 	if (value.includes('flowDestination')) {
+	// 		let path = (value.includes('/')) ? value.substr(0,value.indexOf('/')) : value;
+	//
+	// 		if (path == flowObjectID) {
+	// 			var foo = CGPathGetPathBoundingBox(o.pathInInstance());
+	//
+	// 			var parentRect = linkedObject.absoluteRect().rect();
+	//
+	// 			let w = parentRect.origin.x + foo.origin.x;
+	// 			let x = parentRect.origin.y + foo.origin.y;
+	// 			let y = foo.size.width;
+	// 			let z = foo.size.height;
+	//
+	// 			return NSMakeRect(w,x,y,z);
+	// 		}
+	// 	}
+	// });
+
+
+
+
+
 
 	var offsetX = flowRect.origin.x - masterRect.origin.x;
 	var offsetY = flowRect.origin.y - masterRect.origin.y;
