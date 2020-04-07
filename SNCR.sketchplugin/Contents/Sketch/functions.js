@@ -221,7 +221,7 @@ sncr.annotations = {
 				// action is not triggered by updating the flow of a nested hotspot.
 				if (!context.actionContext) {
 					if (layer instanceof MSSymbolInstance && layer.overrides()) {
-						var overrides = sketch.fromNative(layer).overrides.filter(o => o.editable && o.property === 'flowDestination' && o.value != 'null');
+						var overrides = sketch.fromNative(layer).overrides.filter(o => o.editable && o.property === 'flowDestination' && !['','null'].includes(o.value));
 
 						overrides.forEach(o => {
 							let value = o.value;

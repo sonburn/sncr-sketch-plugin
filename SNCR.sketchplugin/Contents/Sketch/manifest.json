@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.13",
+	"version" : "1.14",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -235,9 +235,14 @@
 			"handler" : "sliceSelected"
 		},
 		{
+			"name" : "Increment Version Numbers for Selected…",
+			"identifier" : "artboards-increment-version-numbers-for-selected",
+			"script" : "Artboards/increment-version-numbers.js"
+		},
+		{
 			"name" : "Increment Version Numbers for Artboards on Page…",
 			"identifier" : "artboards-increment-version-numbers-on-page",
-			"script" : "Artboards/increment-version-numbers-on-page.js",
+			"script" : "Artboards/increment-version-numbers.js"
 		},
 		{
 			"name" : "Insert Mask in Selected Artboards",

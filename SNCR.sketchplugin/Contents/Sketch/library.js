@@ -14,6 +14,8 @@ function createAlertField(value,frame) {
 	var textField = NSTextField.alloc().initWithFrame(frame);
 
 	textField.setStringValue(value);
+	textField.setFont(NSFont.systemFontOfSize(13));
+	textField.setBezeled(true);
 
 	return textField;
 }
@@ -42,6 +44,16 @@ function createAlertLabelBold(text,frame) {
 	textField.setSelectable(false);
 
 	return textField;
+}
+
+function createAlertPopupButton(items,select,frame) {
+	var button = NSPopUpButton.alloc().initWithFrame(frame);
+
+	button.addItemsWithTitles(items);
+	button.selectItemAtIndex(select);
+	//button.setFont(NSFont.systemFontOfSize(12));
+
+	return button;
 }
 
 function createAlertRadios(options,selected,format,x,y) {
@@ -92,6 +104,20 @@ function createAlertSelect(items,select,frame) {
 	comboBox.setCompletes(1);
 
 	return comboBox;
+}
+
+function createAlertWindow(context,name,text) {
+	var alertWindow = COSAlertWindow.new();
+
+	var iconPath = context.plugin.urlForResourceNamed('icon.png').path();
+	var icon = NSImage.alloc().initByReferencingFile(iconPath);
+
+	alertWindow.setIcon(icon);
+	alertWindow.setMessageText(name);
+
+	if (text) { alertWindow.setInformativeText(text); }
+
+	return alertWindow;
 }
 
 function getDocumentSettings(settings) {

@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.13</title>
+			<title>Version 1.14</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Fix for "Unknown" annotations being created for hotspots with no value.</li>
+				<li>Updated Increment Artboards function to allow for selection of position to inrement, additional fix for "Unknown" annotations being created for hotspots with no value.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.13" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.14" />
 		</item>
 	</channel>
 </rss>
