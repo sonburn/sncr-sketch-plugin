@@ -11,6 +11,12 @@ var onRun = function(context) {
 	}
 
 	var selection = selections[0];
+
+	if (selection.type != 'SymbolMaster') {
+		sketch.UI.alert('Create Artboard Instance of Artboard Symbol','Artboard is not a symbol.');
+		return false;
+	}
+
 	var selectionFrame = selection.sketchObject.frame();
 
 	var artboard = new sketch.Artboard({
@@ -27,8 +33,21 @@ var onRun = function(context) {
 
 	page.sketchObject.insertLayer_afterLayer(artboard,selection.sketchObject);
 
+	var instance = selection.sketchObject.newSymbolInstance();
+	instance.setHasFixedTop(1);
+	instance.setHasFixedRight(1);
+	instance.setHasFixedBottom(1);
+	instance.setHasFixedLeft(1);
+
+	artboard.addLayer(instance);
 	artboard.setHasBackgroundColor(1);
-	artboard.addLayer(selection.sketchObject.newSymbolInstance());
+	artboard.setResizesContent(1);
+	artboard.exportOptions().setLayerOptions(2);
+
+	var exportFormat = artboard.exportOptions().addExportFormat();
+	exportFormat.setScale(2);
+	exportFormat.setFileFormat('png');
+
 	artboard.select_byExtendingSelection(1,0);
 
 	sketch.UI.message('Instance of artboard created');

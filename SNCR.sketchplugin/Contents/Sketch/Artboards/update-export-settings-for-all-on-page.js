@@ -24,7 +24,11 @@ var onRun = function(context) {
 			updated = true;
 		}
 
-		if (updated) count++;
+		if (updated) {
+			log(`Export settings were updated for ${artboard.name()}`);
+
+			count++;
+		}
 	}
 
 	document.reloadInspector();
