@@ -88,6 +88,10 @@ var annotationsLink = function(context) {
 	sncr.init(context,"annotations-link");
 }
 
+var annotationsPosition = function(context) {
+	sncr.init(context,"annotations-position");
+}
+
 var annotationsUpdate = function(context) {
 	sncr.init(context,"annotations-update");
 }

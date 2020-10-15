@@ -1,6 +1,7 @@
 @import 'delegate.js';
 
 var sketch = require("sketch");
+var debug = false;
 
 var sncr = {
 	init: function(context,command) {
@@ -156,6 +157,9 @@ var sncr = {
 					break;
 				case "annotations-link" :
 					this.annotations.linkSelected(context);
+					break;
+				case "annotations-position" :
+					this.annotations.updatePosition(context);
 					break;
 				case "annotations-update" :
 					this.annotations.updateAnnotations(context);
@@ -476,7 +480,9 @@ sncr.annotations = {
 		}
 
 		// Iterate through annotations...
-		annotations.forEach(function(annotation){
+		annotations.forEach(annotation => {
+			if (debug) log('Processing annotation ' + annotation.name() + ' (' + annotation.objectID() + ')');
+
 			// Get linked object
 			var linkedObjectID = sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkKey,annotation);
 			var linkedObject = sncr.data.layerWithID(linkedObjectID);
@@ -584,6 +590,8 @@ sncr.annotations = {
 
 					// If annotation is a symbol instance...
 					if (annotation.class() == "MSSymbolInstance") {
+						//log(`Working on ${annotation.name()}…`);
+
 						// Get overrides in annotation...
 						let overrides = sketch.fromNative(annotation).overrides.filter(o => o.editable);
 
@@ -593,9 +601,15 @@ sncr.annotations = {
 								let group = override.path.substr(0,override.path.indexOf('/'));
 								let text = overrides.find(o => o.id.substr(0,o.id.indexOf('/')) == group && o.property == 'stringValue');
 								let destination = sketch.getSelectedDocument().getLayerWithID(override.value);
-								let name = destination.name.substr(0,destination.name.indexOf(' '));
 
-								text.value = name;
+								if (destination) {
+									let name = destination.name.substr(0,destination.name.indexOf(' '));
+
+									text.value = name;
+								} else {
+									// Display feedback
+									sketch.UI.message(`There is a problematic hotspot override on the annotation for ${annotation.name()}…`);
+								}
 							}
 						});
 
@@ -865,6 +879,25 @@ sncr.annotations = {
 
 		// Set stored value on connections group
 		sncr.command.setValue_forKey_onLayer_forPluginIdentifier(true,sncr.annotations.config.connectionsGroupKey,connectionsGroup,sncr.pluginDomain);
+	},
+	updatePosition: function() {
+		// If nothing is selected...
+		if (!sncr.selection) {
+			sketch.UI.alert(sncr.strings["annotation-link-plugin"],'Select an annotation.');
+			return;
+		}
+
+		var count = 0;
+
+		sncr.selection.forEach(layer => {
+			if (sncr.command.valueForKey_onLayer(sncr.annotations.config.annotationLinkTypeKey,layer)) {
+				sncr.command.setValue_forKey_onLayer_forPluginIdentifier(1,'position',layer,sncr.pluginDomain);
+				count++;
+			}
+		});
+
+		// Display feedback
+		sketch.UI.message(count + ' annotation(s) updated');
 	},
 	settings: function(context,command) {
 		// Setting variables

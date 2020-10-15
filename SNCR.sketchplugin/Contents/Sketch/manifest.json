@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.15",
+	"version" : "1.16",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -169,6 +169,12 @@
 			"script" : "handlers.js",
 			"handler" : "annotationsLink",
 			"icon" : "icons/annotations-link.png"
+		},
+		{
+			"name" : "Force Selected Annotations Position to Right",
+			"identifier" : "annotations-position",
+			"script" : "handlers.js",
+			"handler" : "annotationsPosition"
 		},
 		{
 			"name" : "Update All Linked Annotations on Page",
@@ -356,6 +362,7 @@
 					"annotations-create",
 					"annotations-designate",
 					"annotations-link",
+					"annotations-position",
 					"annotations-update",
 					"-",
 					"annotations-settings"
