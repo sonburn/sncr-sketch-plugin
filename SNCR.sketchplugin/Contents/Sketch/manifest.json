@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.16",
+	"version" : "1.17",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -276,6 +276,11 @@
 			"script" : "Document/set-random-id.js"
 		},
 		{
+			"name" : "Export Page to Zeplin",
+			"identifier" : "export-page-to-zeplin",
+			"script" : "Export/page-to-zeplin.js"
+		},
+		{
 			"name" : "Update Content Bounds",
 			"identifier" : "group-update-content-bounds",
 			"script" : "Groups/update-content-bounds.js"
@@ -417,6 +422,12 @@
 							"document-get-current-id",
 							"document-set-custom-id",
 							"document-set-random-id"
+						]
+					},
+					{
+						"title" : "Export",
+						"items" : [
+							"export-page-to-zeplin"
 						]
 					},
 					{

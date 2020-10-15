@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.16</title>
+			<title>Version 1.17</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added ability to force annotation to the right (when drawn on the left).</li>
+				<li>Added function to select all artboards/symbols on a page, and export to Zeplin.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.16" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.17" />
 		</item>
 	</channel>
 </rss>
