@@ -6,11 +6,11 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.17</title>
+			<title>Version 1.18</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added function to select all artboards/symbols on a page, and export to Zeplin.</li>
+				<li>Fix for Zeplin export function.</li>
 				</ul>
 				]]>
 			</description>
