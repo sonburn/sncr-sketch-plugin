@@ -17,15 +17,13 @@ var onRun = function(context) {
 		return false;
 	}
 
-	var selectionFrame = selection.sketchObject.frame();
-
 	var artboard = new sketch.Artboard({
 		name: selection.name,
 		frame: new sketch.Rectangle(
-			selectionFrame.origin().x + selectionFrame.size().width + 100,
-			selectionFrame.origin().y,
-			selectionFrame.size().width,
-			selectionFrame.size().height
+			selection.frame.x + selection.frame.width + 100,
+			selection.frame.y,
+			selection.frame.width,
+			selection.frame.height
 		)
 	});
 

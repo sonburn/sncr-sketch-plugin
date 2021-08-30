@@ -148,19 +148,19 @@ function getPluginAlertIcon() {
 }
 
 function getSelectionSize(selections) {
-	var minX, minY, maxX, maxY;
+	let minX, minY, maxX, maxY
 
-	minX = minY = Number.MAX_VALUE;
-	maxX = maxY = -0xFFFFFFFF;
+	minX = minY = Number.MAX_VALUE
+	maxX = maxY = -0xFFFFFFFF
 
-	selections.forEach(function(selection){
-		var frame = selection.frame();
+	selections.forEach(selection => {
+		let rect = selection.rect()
 
-		minX = Math.min(minX,frame.minX());
-		minY = Math.min(minY,frame.minY());
-		maxX = Math.max(maxX,frame.maxX());
-		maxY = Math.max(maxY,frame.maxY());
-	});
+		minX = Math.min(minX,CGRectGetMinX(rect))
+		minY = Math.min(minY,CGRectGetMinY(rect))
+		maxX = Math.max(maxX,CGRectGetMaxX(rect))
+		maxY = Math.max(maxY,CGRectGetMaxY(rect))
+	})
 
 	return {
 		width: maxX - minX,

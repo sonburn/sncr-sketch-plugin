@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.19",
+	"version" : "1.20",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -302,6 +302,11 @@
 			"script" : "Symbols/replace-override-for-instances-of-selection.js"
 		},
 		{
+			"name" : "Replace Override Fills with Swatch",
+			"identifier" : "symbols-replace-override-fills-with-swatch",
+			"script" : "Symbols/replace-override-fills-with-swatch.js"
+		},
+		{
 			"name" : "Recreate and Remove Original",
 			"identifier" : "textlayers-recreate-and-remove-original",
 			"script" : "Text Layers/recreate-and-remove-original.js"
@@ -312,9 +317,19 @@
 			"script" : "Text Layers/update-text-to-match-style-name.js"
 		},
 		{
-			"name" : "Add Selections to Manifest",
-			"identifier" : "customization-add-selections-to-manifest",
-			"script" : "Customization/add-selections-to-manifest.js"
+			"name" : "Add Feature Link to Manifest",
+			"identifier" : "customization-add-feature-link-to-manifest",
+			"script" : "Customization/add-feature-link-to-manifest.js"
+		},
+		{
+			"name" : "Add Strings to Manifest",
+			"identifier" : "customization-add-strings-to-manifest",
+			"script" : "Customization/add-strings-to-manifest.js"
+		},
+		{
+			"name" : "Run Manifest Audit",
+			"identifier" : "customization-run-manifest-audit",
+			"script" : "Customization/run-manifest-audit.js"
 		},
 		{
 			"script": "Data/script.js",
@@ -406,7 +421,10 @@
 			{
 				"title" : "Customization Portal",
 				"items" : [
-					"customization-add-selections-to-manifest"
+					"customization-add-feature-link-to-manifest",
+					"customization-add-strings-to-manifest",
+					"-",
+					"customization-run-manifest-audit"
 				]
 			},
 			"-",
@@ -458,7 +476,8 @@
 						"title" : "Symbols",
 						"items" : [
 							"symbols-disable-style-overrides",
-							"symbols-replace-override-for-instances-of-selection"
+							"symbols-replace-override-for-instances-of-selection",
+							"symbols-replace-override-fills-with-swatch"
 						]
 					},
 					{

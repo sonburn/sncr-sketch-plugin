@@ -4,14 +4,14 @@ var onRun = function(context) {
 	const selections = document.selectedLayers.layers
 
 	if (!selections.length) {
-		sketch.UI.alert(`Add Selections to Manifest`,`Something must be selected.`)
+		sketch.UI.alert(`Add Translation Text to Manifest`,`Select a text layer or symbol instance with a text override.`)
 		return
 	}
 
 	var fileManager = NSFileManager.defaultManager()
 
 	var manifestName = 'manifest.json'
-	var manifestPath = document.path.replace(document.sketchObject.displayName(),manifestName)
+	var manifestPath = document.path.replace(escape(document.sketchObject.displayName()),manifestName)
 	manifestPath = manifestPath.replaceAll('%20',' ')
 	var manifestData = {}
 	var manifestExists = false

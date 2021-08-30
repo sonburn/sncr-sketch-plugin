@@ -6,15 +6,15 @@
 		<description>A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.</description>
 		<language>en</language>
 		<item>
-			<title>Version 1.19</title>
+			<title>Version 1.20</title>
 			<description>
 				<![CDATA[
 				<ul>
-				<li>Added function to create text manifest for string swapping and translations.</li>
+				<li>Fixed function to create slice around artboards or selection, added more functionality for customization portal, added function to replace override fills with a swatch.</li>
 				</ul>
 				]]>
 			</description>
-			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.19" />
+			<enclosure url="https://github.com/sonburn/sncr-sketch-plugin/archive/master.zip" sparkle:version="1.20" />
 		</item>
 	</channel>
 </rss>
