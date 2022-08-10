@@ -3,7 +3,7 @@
 	"description" : "A plugin of Sketch actions which are useful in the workflows of the designers at Synchronoss Technologies Inc.",
 	"author" : "Jason Burns",
 	"homepage" : "https://github.com/sonburn/sncr-sketch-plugin",
-	"version" : "1.20",
+	"version" : "1.21",
 	"identifier" : "com.sncr.sketch",
 	"appcast" : "https://raw.githubusercontent.com/sonburn/sncr-sketch-plugin/master/appcast.xml",
 	"icon" : "icon.png",
@@ -286,6 +286,12 @@
 			"script" : "Groups/update-content-bounds.js"
 		},
 		{
+			"name" : "Create Hotspot Over Selected Overrides",
+			"identifier" : "hotspots-create-over-selected-overrides",
+			"script" : "Hotspots/create-over-selected-overrides.js",
+			"shortcut" : "cmd option shift h",
+		},
+		{
 			"name" : "Toggle All Hotspots in Document",
 			"identifier" : "hotspots-toggle-all-in-document",
 			"script" : "Hotspots/toggle-all-in-document.js",
@@ -305,6 +311,11 @@
 			"name" : "Replace Override Fills with Swatch",
 			"identifier" : "symbols-replace-override-fills-with-swatch",
 			"script" : "Symbols/replace-override-fills-with-swatch.js"
+		},
+		{
+			"name" : "Convert to Japanese Style",
+			"identifier" : "textstyles-convert-to-japanese-style",
+			"script" : "Text Styles/convert-to-japanese-style.js"
 		},
 		{
 			"name" : "Recreate and Remove Original",
@@ -343,7 +354,7 @@
 					"SupplyRandomImageFromFolder" : "onSupplyRandomImageFromFolder"
 				}
 			}
-		},
+		}
 	],
 	"menu" : {
 		"title" : "SNCR",
@@ -469,6 +480,7 @@
 					{
 						"title" : "Hotspots",
 						"items" : [
+							"hotspots-create-over-selected-overrides",
 							"hotspots-toggle-all-in-document"
 						]
 					},
@@ -478,6 +490,12 @@
 							"symbols-disable-style-overrides",
 							"symbols-replace-override-for-instances-of-selection",
 							"symbols-replace-override-fills-with-swatch"
+						]
+					},
+					{
+						"title" : "Text Styles",
+						"items" : [
+							"textstyles-convert-to-japanese-style"
 						]
 					},
 					{

@@ -1,5 +1,8 @@
 @import 'system.js';
 
+const sketch = require("sketch")
+const util = require("util")
+
 var DataSupplier = require("sketch/data-supplier");
 
 var onStartup = function() {

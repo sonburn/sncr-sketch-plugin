@@ -2183,19 +2183,19 @@ sncr.sections = {
 	},
 	validateSelected: function(context) {
 		// Get latest selections, as they may have been changed by Insert
-		var selections = sncr.page.selectedLayers().layers();
+		let selections = sketch.getSelectedDocument().selectedLayers
 
 		// If two objects are not selected...
-		if (selections.count() != 2) {
+		if (selections.length != 2) {
 			// Display feedback
-			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"])
 
-			return false;
+			return false
 		}
 
 		// Selection variables
-		var firstObject = selections.firstObject(),
-			lastObject = selections.lastObject();
+		let firstObject = selections.layers[0].sketchObject
+		let lastObject = selections.layers[1].sketchObject
 
 		// If the first item is not an artboard and the second item is an artboard...
 		if ((firstObject.class() != "MSArtboardGroup" || firstObject.class() != "MSSymbolMaster") && (lastObject.class() == "MSArtboardGroup" || lastObject.class() == "MSSymbolMaster")) {
@@ -2214,9 +2214,9 @@ sncr.sections = {
 		// If the selections are two artboards...
 		else {
 			// Display feedback
-			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"]);
+			sketch.UI.alert(sncr.strings["section-link-plugin"],sncr.strings["section-link-problem"])
 
-			return false;
+			return false
 		}
 	},
 	getName: function(object) {

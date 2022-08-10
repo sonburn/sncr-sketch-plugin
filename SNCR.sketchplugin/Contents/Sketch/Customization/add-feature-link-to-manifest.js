@@ -34,6 +34,10 @@ var onRun = function(context) {
 			"name" : "Backup & Restore"
 		},
 		{
+			"key" : "genius",
+			"name" : "Genius"
+		},
+		{
 			"key" : "googleAuth",
 			"name" : "Google Authentication"
 		},
@@ -44,6 +48,14 @@ var onRun = function(context) {
 		{
 			"key" : "photoPrint",
 			"name" : "Photo Printing"
+		},
+		{
+			"key" : "privateFolder",
+			"name" : "Private Folder"
+		},
+		{
+			"key" : "scanQRCode",
+			"name" : "Scan QR Code (Kitamura)"
 		},
 		{
 			"key" : "tagSearch",

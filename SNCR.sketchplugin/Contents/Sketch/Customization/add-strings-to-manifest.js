@@ -28,10 +28,11 @@ var onRun = function(context) {
 	var matchCount = 0
 	var skipCount = 0
 
-	const addString = (platform,parentInfo,stringObjectID,stringExample,stringKey,stringReplace) => {
+	const addString = (platform,parentArtboard,parentGroup,stringObjectID,stringExample,stringKey,stringReplace) => {
 		let string = {
 			platform : platform,
-			parentGroup : parentInfo,
+			parentArtboard : parentArtboard,
+			parentGroup : parentGroup,
 			stringObjectID : stringObjectID,
 			stringExample : stringExample,
 			stringKey : stringKey
@@ -72,19 +73,19 @@ var onRun = function(context) {
 
 	function processLayer(layer) {
 		if (layer.type == 'Text' || layer.type == 'SymbolInstance' && layer.overrides.filter(o => o.property === 'stringValue' && o.editable && o.value != ' ').length) {
-			var parentPage = layer.sketchObject.parentPage()
-			var parentGroup = layer.sketchObject.parentGroup()
-			var parentInfo = (parentGroup) ? parentGroup.name() + ' (' + parentGroup.objectID() + ')' : ''
+			let parentPage = layer.sketchObject.parentPage().name()
+			let parentArtboard = `${layer.sketchObject.parentArtboard().name()} (${layer.sketchObject.parentArtboard().objectID()})`
+			let parentGroup = (layer.sketchObject.parentGroup()) ? `${layer.sketchObject.parentGroup().name()} (${layer.sketchObject.parentGroup().objectID()})` : ''
 
-			var platform = ''
+			let platform = ''
 
-			if (parentPage.name().includes('Android') || parentGroup.name().includes('Android')) {
+			if (parentPage.includes('Android') || parentArtboard.includes('Android')) {
 				platform = 'android'
-			} else if (parentPage.name().includes('iPhone') || parentGroup.name().includes('iPad') || parentGroup.name().includes('iOS')) {
+			} else if (parentPage.includes('iOS') || parentArtboard.includes('iPad') || parentArtboard.includes('iPhone')) {
 				platform = 'ios'
 			}
 
-			var overrides = (layer.overrides) ? layer.overrides.filter(o => o.property === 'stringValue' && o.editable && o.value != ' ') : null
+			let overrides = (layer.overrides) ? layer.overrides.filter(o => o.property === 'stringValue' && o.editable && o.value != ' ') : null
 
 			if (overrides) {
 				overrides.reverse().forEach(override => {
@@ -93,7 +94,9 @@ var onRun = function(context) {
 					let stringKey = ''
 					let stringReplace
 
-					if (!manifestData.strings.find(s => s.stringObjectID == stringObjectID)) {
+					let stringEntry = manifestData.strings.find(s => s.stringObjectID == stringObjectID)
+
+					if (!stringEntry) {
 						if (platform != '') {
 							let stringMatch = manifestData.strings.find(s => s.platform == platform && s.stringObjectID.includes(override.id) && s.stringExample == stringExample)
 
@@ -106,8 +109,13 @@ var onRun = function(context) {
 							}
 						}
 
-						addString(platform,parentInfo,stringObjectID,stringExample,stringKey,stringReplace)
+						addString(platform,parentArtboard,parentGroup,stringObjectID,stringExample,stringKey,stringReplace)
 					} else {
+						stringEntry.platform = platform
+						stringEntry.parentArtboard = parentArtboard
+						stringEntry.parentGroup = parentGroup
+						stringEntry.stringExample = stringExample
+
 						skipString(stringObjectID,stringExample)
 					}
 				})
@@ -116,9 +124,16 @@ var onRun = function(context) {
 				let stringExample = layer.text
 				let stringKey = ''
 
-				if (!manifestData.strings.find(s => s.stringObjectID == stringObjectID)) {
-					addString(platform,parentInfo,stringObjectID,stringExample,stringKey)
+				let stringEntry = manifestData.strings.find(s => s.stringObjectID == stringObjectID)
+
+				if (!stringEntry) {
+					addString(platform,parentArtboard,parentGroup,stringObjectID,stringExample,stringKey)
 				} else {
+					stringEntry.platform = platform
+					stringEntry.parentArtboard = parentArtboard
+					stringEntry.parentGroup = parentGroup
+					stringEntry.stringExample = stringExample
+
 					skipString(stringObjectID,stringExample)
 				}
 			}
@@ -134,7 +149,7 @@ var onRun = function(context) {
 		fileManager.createDirectoryAtPath_withIntermediateDirectories_attributes_error(manifestPath.replace(manifestName,''),true,null,null)
 	}
 
-	if (addCount) manifestData.dataUsingEncoding_(NSUTF8StringEncoding).writeToFile_atomically_(manifestPath,true)
+	manifestData.dataUsingEncoding_(NSUTF8StringEncoding).writeToFile_atomically_(manifestPath,true)
 
 	var messageType = (manifestExists) ? 'updated' : 'created'
 	var messageAdd = (addCount == 1) ? `${addCount} string added` : `${addCount} strings added`
